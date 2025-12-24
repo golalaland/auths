@@ -207,8 +207,8 @@ btn.onclick = async () => {
   const p1 = password.value;
   const p2 = confirm.value;
 
-  if (p1.length < 6) {
-    msg.innerHTML = `<div class="error">Password must be at least 6 characters.</div>`;
+  if (p1.length < 8) {
+    msg.innerHTML = `<div class="error">Password must be at least 8 characters.</div>`;
     return;
   }
 
@@ -222,7 +222,7 @@ btn.onclick = async () => {
     msg.innerHTML = `<div class="success">Password reset successful.</div>`;
     btn.disabled = true;
 
-    setTimeout(() => window.location.href = "/login", 2500);
+    setTimeout(() => window.location.href = "https://cube.xixi.live/chat", 2500);
   } catch (e) {
     msg.innerHTML = `<div class="error">${e.message}</div>`;
   }
