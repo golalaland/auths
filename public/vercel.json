@@ -1,0 +1,6 @@
+{
+  "rewrites": 
+   { "source": "/forgot", "destination": "/forgot.html" },
+     { "source": "/menu", "destination": "/menu.html" }
+  ]
+}
