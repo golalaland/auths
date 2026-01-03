@@ -117,6 +117,32 @@ button:hover {
   font-size: 15px;
   margin-top: 10px;
 }
+.strength-bar {
+  width: 100%;
+  height: 6px;
+  background: #222;
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+#strengthFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: all 0.4s ease;
+  background: linear-gradient(90deg, #ff4444, #ffaa00, #a0d00a, #c3f60c);
+}
+
+.strength-text {
+  font-size: 12px;
+  text-align: left;
+  margin-top: 6px;
+  color: #aaa;
+  min-height: 18px;
+  transition: color 0.3s ease;
+}
 </style>
 </head>
 
@@ -165,6 +191,11 @@ button:hover {
       </svg>
     </span>
   </div>
+ <!-- Password Strength Meter -->
+<div id="strengthBar" class="strength-bar">
+  <div id="strengthFill"></div>
+</div>
+<div id="strengthText" class="strength-text"></div>
 
   <button id="resetBtn">Reset Password</button>
   <div id="message"></div>
@@ -219,10 +250,16 @@ btn.onclick = async () => {
 
   try {
     await confirmPasswordReset(auth, oobCode, p1);
-    msg.innerHTML = `<div class="success">Password reset successful.</div>`;
+      msg.innerHTML = `<div class="success">Password reset successful!<br>You'll be redirected shortly.</div>`;
+    btn.textContent = "Reset Complete ✓";
+    btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
     btn.disabled = true;
 
-    setTimeout(() => window.location.href = "https://cube.xixi.live/chat", 2500);
+    // Optional: Countdown outside (add <div id="redirectCountdown"></div> below .card and style like before)
+    let countdown = 3;
+    setTimeout(() => {
+      // existing redirect
+    }, 2500);
   } catch (e) {
     msg.innerHTML = `<div class="error">${e.message}</div>`;
   }
@@ -233,29 +270,72 @@ function toggleEye(inputId, toggleId) {
   const input = document.getElementById(inputId);
   const toggle = document.getElementById(toggleId);
   
-  if(input.type === 'password'){
+  if (input.type === 'password') {
     input.type = 'text';
-    toggle.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a3a3a3">
-      <path stroke="#6b6b6b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-      d="M3 10a13.358 13.358 0 0 0 3 2.685M21 10a13.358 13.358 0 0 1-3 2.685m-8 1.624L9.5 16.5m.5-2.19a10.59 10.59 0 0 0 4 0m-4 0a11.275 11.275 0 0 1-4-1.625m8 1.624.5 2.191m-.5-2.19a11.275 11.275 0 0 0 4-1.625m0 0 1.5 1.815M6 12.685 4.5 14.5"></path>
-      </svg>`;
+    toggle.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a3a3a3"><path stroke="#6b6b6b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10a13.358 13.358 0 0 0 3 2.685M21 10a13.358 13.358 0 0 1-3 2.685m-8 1.624L9.5 16.5m.5-2.19a10.59 10.59 0 0 0 4 0m-4 0a11.275 11.275 0 0 1-4-1.625m8 1.624.5 2.191m-.5-2.19a11.275 11.275 0 0 0 4-1.625m0 0 1.5 1.815M6 12.685 4.5 14.5"></path></svg>';
   } else {
     input.type = 'password';
-    toggle.innerHTML = `<svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
-      <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842
-      c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843
-      C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149
-      s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
-      <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451
-      c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407
-      c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z">
-      </path>
-      </svg>`;
+    toggle.innerHTML = '<svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20"><path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842 c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843 C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149 s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path><path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451 c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407 c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z"></path></svg>';
   }
 }
 
 document.getElementById('togglePassword').onclick = () => toggleEye('password','togglePassword');
 document.getElementById('toggleConfirm').onclick = () => toggleEye('confirm','toggleConfirm');
+
+// Password Strength Checker
+const passwordInput = document.getElementById('password');
+const strengthFill = document.getElementById('strengthFill');
+const strengthText = document.getElementById('strengthText');
+
+function checkPasswordStrength(password) {
+  let strength = 0;
+  let text = "";
+  let colorWidth = "0%";
+
+  if (password.length >= 8) strength += 1;
+  if (password.length >= 12) strength += 1;
+  if (/[a-z]/.test(password)) strength += 1;
+  if (/[A-Z]/.test(password)) strength += 1;
+  if (/[0-9]/.test(password)) strength += 1;
+  if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+  switch (strength) {
+    case 0:
+    case 1:
+    case 2:
+      text = "Weak";
+      colorWidth = "25%";
+      strengthText.style.color = "#ff5c5c";
+      break;
+    case 3:
+    case 4:
+      text = "Medium";
+      colorWidth = "50%";
+      strengthText.style.color = "#ffaa00";
+      break;
+    case 5:
+      text = "Strong";
+      colorWidth = "75%";
+      strengthText.style.color = "#a0d00a";
+      break;
+    case 6:
+      text = "Very Strong";
+      colorWidth = "100%";
+      strengthText.style.color = "#c3f60c";
+      break;
+  }
+
+  strengthFill.style.width = colorWidth;
+  strengthText.textContent = text;
+}
+
+// Real-time update
+passwordInput.addEventListener('input', () => {
+  checkPasswordStrength(passwordInput.value);
+});
+
+// Initial check (empty)
+checkPasswordStrength('');
 </script>
 
 </body>
