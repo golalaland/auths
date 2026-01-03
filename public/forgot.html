@@ -99,26 +99,38 @@ button[disabled] {
   align-items: center;
 }
 
-.redirect-msg {
-  margin-top: 24px;
+/* Only the countdown line — outside the card */
+.redirect-countdown {
+  margin-top: 28px;
   text-align: center;
   font-size: 14px;
   color: #e0ff80;
   opacity: 0;
-  transition: opacity 0.4s ease;
-  max-width: 380px;
+  transition: opacity 0.5s ease;
 }
 
-.redirect-msg.visible {
+.redirect-countdown.visible {
   opacity: 1;
 }
 
-.redirect-msg strong {
+.redirect-countdown strong {
   color: #fff;
   font-weight: 800;
 }
-.success { color: var(--neon); }
-.error { color: #ff5c5c; }
+
+/* Keep these — used for the message inside the card */
+.success { 
+  color: var(--neon); 
+  text-align: center;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.error { 
+  color: #ff5c5c; 
+  text-align: center;
+  font-size: 13px;
+  margin-top: 12px;
+}
 </style>
 </head>
 
@@ -133,13 +145,13 @@ button[disabled] {
     <p>Enter your email and we’ll send you a reset link.</p>
     <input type="email" id="email" placeholder="Your email address" />
     <button id="sendBtn">Send Reset Link</button>
-    <div id="msg" class="msg"></div> <!-- Keep errors inside -->
+    <div id="msg" class="msg"></div> <!-- Success message stays here -->
   </div>
 
-  <!-- Redirect message goes HERE — outside the card -->
-  <div id="redirectMsg" class="redirect-msg"></div>
+  <!-- Only countdown goes here, outside the card -->
+  <div id="redirectCountdown" class="redirect-countdown"></div>
 </div>
-
+  
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -172,26 +184,24 @@ sendBtn.onclick = async () => {
     });
 
     // Step 2: Instantly switch to "Sent ✓"
-       // Success
     sendBtn.textContent = "Sent ✓";
     sendBtn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
 
-    // Hide any old error inside card
-    msg.innerHTML = "";
+    // Main success message INSIDE card
+    msg.innerHTML = `<div class="success">
+      If that email is linked to a CUBE account, you'll get a reset link shortly.
+    </div>`;
 
-    // Show redirect message OUTSIDE
-    const redirectMsg = document.getElementById('redirectMsg');
+    // Countdown OUTSIDE card
+    const countdownEl = document.getElementById('redirectCountdown');
     let countdown = 5;
-    redirectMsg.innerHTML = `
-      If that email is linked to a CUBE account, you'll get a reset link shortly.<br>
-      Redirecting to login in <strong>${countdown}</strong> seconds...
-    `;
-    redirectMsg.classList.add('visible');
+    countdownEl.innerHTML = `Redirecting to login in <strong>${countdown}</strong> seconds...`;
+    countdownEl.classList.add('visible');
 
     const timer = setInterval(() => {
       countdown--;
       if (countdown > 0) {
-        redirectMsg.querySelector('strong').textContent = countdown;
+        countdownEl.querySelector('strong').textContent = countdown;
       } else {
         clearInterval(timer);
         window.location.href = "/login";
