@@ -264,36 +264,67 @@ btn.onclick = async () => {
     return;
   }
 
-    try {
-      await confirmPasswordReset(auth, oobCode, p1);
+   try {
+  await confirmPasswordReset(auth, oobCode, p1);
 
-      // Inside card: success message
-      msg.innerHTML = `<div class="success">Password reset successful!<br>You'll be redirected shortly.</div>`;
+  // Success: inside the card
+  msg.innerHTML = `<div class="success">
+    Password reset successful!<br>
+    You'll be redirected shortly.
+  </div>`;
 
-      // Button update
-      btn.textContent = "Reset Complete ✓";
-      btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
-      btn.disabled = true;
+  // Button update
+  btn.textContent = "Reset Complete ✓";
+  btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
+  btn.disabled = true;
 
-      // Countdown OUTSIDE card
-      const countdownEl = document.getElementById('redirectCountdown');
-      let countdown = 3;
-      countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
-      countdownEl.classList.add('visible');
+  // Countdown: outside the card
+  const countdownEl = document.getElementById('redirectCountdown');
+  let countdown = 3;
+  countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
+  countdownEl.classList.add('visible');
 
-      const timer = setInterval(() => {
-        countdown--;
-        if (countdown > 0) {
-          countdownEl.querySelector('strong').textContent = countdown;
-        } else {
-          clearInterval(timer);
-          window.location.href = "https://cube.xixi.live/chat";
-        }
-      }, 1000);
-
-    } catch (e) {
-      msg.innerHTML = `<div class="error">${e.message}</div>`;
+  const timer = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      countdownEl.querySelector('strong').textContent = countdown;
+    } else {
+      clearInterval(timer);
+      window.location.href = "https://cube.xixi.live/chat";
     }
+  }, 1000);
+
+} catch (e) {
+  let errorMessage = "Something went wrong. Please try again.";
+  let showRetryLink = false;
+
+  // Specific handling for the most common error
+  if (e.code === 'auth/invalid-action-code' || 
+      e.code === 'auth/expired-action-code') {
+    errorMessage = "This reset link is invalid or has already expired.";
+    showRetryLink = true;
+  } else if (e.code === 'auth/user-disabled') {
+    errorMessage = "This account has been disabled.";
+  } else if (e.message) {
+    errorMessage = e.message;
+  }
+
+  msg.innerHTML = `<div class="error">${errorMessage}</div>`;
+
+  // Add "Request new link" helper when appropriate
+  if (showRetryLink) {
+    const retryLink = document.createElement('a');
+    retryLink.href = "https://auth.cube.xixi.live/forgot.html"; // adjust if your forgot page has a different path
+    retryLink.textContent = "Request a new reset link";
+    retryLink.style.display = "block";
+    retryLink.style.marginTop = "14px";
+    retryLink.style.color = "var(--neon)";
+    retryLink.style.fontSize = "14px";
+    retryLink.style.textAlign = "center";
+    retryLink.style.textDecoration = "underline";
+    msg.appendChild(retryLink);
+  }
+}
 };
 
 // 🔑 Eye toggle logic
