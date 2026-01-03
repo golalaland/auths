@@ -143,6 +143,31 @@ button:hover {
   min-height: 18px;
   transition: color 0.3s ease;
 }
+.reset-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.redirect-countdown {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 14px;
+  color: #e0ff80;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.redirect-countdown.visible {
+  opacity: 1;
+}
+
+.redirect-countdown strong {
+  color: #fff;
+  font-weight: 800;
+}
 </style>
 </head>
 
@@ -158,50 +183,41 @@ button:hover {
   <h1>Reset Your Password</h1>
   <p>Choose a new password to regain access.</p>
 
-  <div class="field">
-    <input type="password" id="password" placeholder="New password" />
-    <span class="eye" id="togglePassword">
-      <!-- Eye open SVG -->
-      <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
-        <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842
-        c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843
-        C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149
-        s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
-        <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451
-        c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407
-        c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z">
-        </path>
-      </svg>
-    </span>
-  </div>
+ <!-- New Password Field with Eye Toggle + Strength Meter -->
+<div class="field">
+  <input type="password" id="password" placeholder="New password" />
+  <span class="eye" id="togglePassword">
+    <!-- Eye open SVG (default state) -->
+    <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
+      <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842 c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843 C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149 s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
+      <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451 c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407 c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z"></path>
+    </svg>
+  </span>
+</div>
 
-  <div class="field">
-    <input type="password" id="confirm" placeholder="Confirm password" />
-    <span class="eye" id="toggleConfirm">
-      <!-- Eye open SVG -->
-      <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
-        <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842
-        c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843
-        C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149
-        s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
-        <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451
-        c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407
-        c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z">
-        </path>
-      </svg>
-    </span>
-  </div>
- <!-- Password Strength Meter -->
-<div id="strengthBar" class="strength-bar">
+<!-- Password Strength Meter (only under New password) -->
+<div class="strength-bar">
   <div id="strengthFill"></div>
 </div>
 <div id="strengthText" class="strength-text"></div>
 
-  <button id="resetBtn">Reset Password</button>
-  <div id="message"></div>
-
+<!-- Confirm Password Field with Eye Toggle -->
+<div class="field">
+  <input type="password" id="confirm" placeholder="Confirm password" />
+  <span class="eye" id="toggleConfirm">
+    <!-- Eye open SVG (default state) -->
+    <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
+      <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842 c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843 C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149 s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
+      <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451 c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407 c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z"></path>
+    </svg>
+  </span>
 </div>
 
+<!-- Reset Button & Message -->
+<button id="resetBtn">Reset Password</button>
+<div id="message"></div>
+
+  
 <!-- 🔌 Firebase CDN + reset logic -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -248,21 +264,36 @@ btn.onclick = async () => {
     return;
   }
 
-  try {
-    await confirmPasswordReset(auth, oobCode, p1);
-      msg.innerHTML = `<div class="success">Password reset successful!<br>You'll be redirected shortly.</div>`;
-    btn.textContent = "Reset Complete ✓";
-    btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
-    btn.disabled = true;
+    try {
+      await confirmPasswordReset(auth, oobCode, p1);
 
-    // Optional: Countdown outside (add <div id="redirectCountdown"></div> below .card and style like before)
-    let countdown = 3;
-    setTimeout(() => {
-      // existing redirect
-    }, 2500);
-  } catch (e) {
-    msg.innerHTML = `<div class="error">${e.message}</div>`;
-  }
+      // Inside card: success message
+      msg.innerHTML = `<div class="success">Password reset successful!<br>You'll be redirected shortly.</div>`;
+
+      // Button update
+      btn.textContent = "Reset Complete ✓";
+      btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
+      btn.disabled = true;
+
+      // Countdown OUTSIDE card
+      const countdownEl = document.getElementById('redirectCountdown');
+      let countdown = 3;
+      countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
+      countdownEl.classList.add('visible');
+
+      const timer = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+          countdownEl.querySelector('strong').textContent = countdown;
+        } else {
+          clearInterval(timer);
+          window.location.href = "https://cube.xixi.live/chat";
+        }
+      }, 1000);
+
+    } catch (e) {
+      msg.innerHTML = `<div class="error">${e.message}</div>`;
+    }
 };
 
 // 🔑 Eye toggle logic
