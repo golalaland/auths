@@ -117,23 +117,45 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
 const msg = document.getElementById('msg');
+const sendBtn = document.getElementById('sendBtn');
 
-document.getElementById('sendBtn').onclick = async () => {
+sendBtn.onclick = async () => {
   const email = document.getElementById('email').value.trim();
   if (!email) {
     msg.innerHTML = `<div class="error">Enter your email.</div>`;
     return;
   }
+
+  sendBtn.disabled = true; // Prevent double-click
+  sendBtn.textContent = "Sending...";
+
   try {
     await sendPasswordResetEmail(auth, email, {
       url: "https://auth.cube.xixi.live/reset.html"
     });
-    msg.innerHTML = `<div class="success">If that email is linked to a CUBE account, you'll get a reset link shortly.</div>`;
+
+    // Success — with countdown
+    let countdown = 5;
+    msg.innerHTML = `<div class="success">
+      If that email is linked to a CUBE account, you'll get a reset link shortly.<br>
+      Redirecting to login in <strong>${countdown}</strong> seconds...
+    </div>`;
+
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        msg.querySelector('strong').textContent = countdown;
+      } else {
+        clearInterval(timer);
+        window.location.href = "https://cube.xixi.live/chat"; // ← Change this if your login page is somewhere else (e.g. "/tm" or "/")
+      }
+    }, 1000);
+
   } catch (e) {
-    // Only catches real errors like network/issues — not "user not found"
     msg.innerHTML = `<div class="error">Something went wrong. Try again.</div>`;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send Reset Link";
   }
 };
 </script>
