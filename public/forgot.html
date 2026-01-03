@@ -83,6 +83,14 @@ button {
   font-size: 13px;
   margin-top: 12px;
 }
+.success strong {
+  color: #fff;
+  font-weight: 800;
+}
+button[disabled] {
+  opacity: 0.9;
+  cursor: not-allowed;
+}
 
 .success { color: var(--neon); }
 .error { color: #ff5c5c; }
@@ -127,7 +135,8 @@ sendBtn.onclick = async () => {
     return;
   }
 
-  sendBtn.disabled = true; // Prevent double-click
+  // Step 1: Show "Sending..."
+  sendBtn.disabled = true;
   sendBtn.textContent = "Sending...";
 
   try {
@@ -135,7 +144,11 @@ sendBtn.onclick = async () => {
       url: "https://auth.cube.xixi.live/reset.html"
     });
 
-    // Success — with countdown
+    // Step 2: Instantly switch to "Sent ✓"
+    sendBtn.textContent = "Sent ✓";
+    sendBtn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)"; // slightly darker green to show completion
+
+    // Step 3: Show success message with countdown
     let countdown = 5;
     msg.innerHTML = `<div class="success">
       If that email is linked to a CUBE account, you'll get a reset link shortly.<br>
@@ -148,17 +161,18 @@ sendBtn.onclick = async () => {
         msg.querySelector('strong').textContent = countdown;
       } else {
         clearInterval(timer);
-        window.location.href = "https://cube.xixi.live/chat"; // ← Change this if your login page is somewhere else (e.g. "/tm" or "/")
+        window.location.href = "/login"; // ← change if your login page is different
       }
     }, 1000);
 
   } catch (e) {
+    // Error: reset button
     msg.innerHTML = `<div class="error">Something went wrong. Try again.</div>`;
     sendBtn.disabled = false;
     sendBtn.textContent = "Send Reset Link";
+    sendBtn.style.background = ""; // reset gradient
   }
 };
 </script>
-
 </body>
 </html>
