@@ -122,20 +122,18 @@ const msg = document.getElementById('msg');
 
 document.getElementById('sendBtn').onclick = async () => {
   const email = document.getElementById('email').value.trim();
-
   if (!email) {
     msg.innerHTML = `<div class="error">Enter your email.</div>`;
     return;
   }
-
   try {
     await sendPasswordResetEmail(auth, email, {
       url: "https://auth.cube.xixi.live/reset.html"
     });
-
-    msg.innerHTML = `<div class="success">Reset link sent. Check your email.</div>`;
+    msg.innerHTML = `<div class="success">If that email is linked to a CUBE account, you'll get a reset link shortly.</div>`;
   } catch (e) {
-    msg.innerHTML = `<div class="error">${e.message}</div>`;
+    // Only catches real errors like network/issues — not "user not found"
+    msg.innerHTML = `<div class="error">Something went wrong. Try again.</div>`;
   }
 };
 </script>
