@@ -213,6 +213,8 @@ button:hover {
   </span>
 </div>
 
+  <div id="redirectCountdown" class="redirect-countdown"></div>
+
 <!-- Reset Button & Message -->
 <button id="resetBtn">Reset Password</button>
 <div id="message"></div>
@@ -245,86 +247,102 @@ const btn = document.getElementById('resetBtn');
 const password = document.getElementById('password');
 const confirm = document.getElementById('confirm');
 
+// Initial check: invalid or missing link
 if (mode !== 'resetPassword' || !oobCode) {
   msg.innerHTML = `<div class="error">Invalid or expired reset link.</div>`;
   btn.disabled = true;
 }
 
+// Main reset button handler
 btn.onclick = async () => {
-  const p1 = password.value;
-  const p2 = confirm.value;
+  const p1 = password.value.trim();
+  const p2 = confirm.value.trim();
 
+  // Basic validation
   if (p1.length < 8) {
     msg.innerHTML = `<div class="error">Password must be at least 8 characters.</div>`;
     return;
   }
-
   if (p1 !== p2) {
     msg.innerHTML = `<div class="error">Passwords do not match.</div>`;
     return;
   }
 
-   try {
-  await confirmPasswordReset(auth, oobCode, p1);
-
-  // Success: inside the card
-  msg.innerHTML = `<div class="success">
-    Password reset successful!<br>
-    You'll be redirected shortly.
-  </div>`;
-
-  // Button update
-  btn.textContent = "Reset Complete ✓";
-  btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
+  // Disable button during processing
   btn.disabled = true;
+  btn.textContent = "Processing...";
 
-  // Countdown: outside the card
-  const countdownEl = document.getElementById('redirectCountdown');
-  let countdown = 3;
-  countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
-  countdownEl.classList.add('visible');
+  try {
+    await confirmPasswordReset(auth, oobCode, p1);
 
-  const timer = setInterval(() => {
-    countdown--;
-    if (countdown > 0) {
-      countdownEl.querySelector('strong').textContent = countdown;
-    } else {
-      clearInterval(timer);
-      window.location.href = "https://cube.xixi.live/chat";
+    // SUCCESS STATE
+    msg.innerHTML = `<div class="success">
+      Password reset successful!<br>
+      You'll be redirected shortly.
+    </div>`;
+
+    btn.textContent = "Reset Complete ✓";
+    btn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
+
+    // COUNTDOWN + REDIRECT (safe even if element is missing)
+    const countdownEl = document.getElementById('redirectCountdown');
+    let countdown = 3;
+
+    if (countdownEl) {
+      countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
+      countdownEl.classList.add('visible');
     }
-  }, 1000);
 
-} catch (e) {
-  let errorMessage = "Something went wrong. Please try again.";
-  let showRetryLink = false;
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        if (countdownEl) {
+          countdownEl.querySelector('strong').textContent = countdown;
+        }
+      } else {
+        clearInterval(timer);
+        window.location.href = "https://cube.xixi.live/chat";
+      }
+    }, 1000);
 
-  // Specific handling for the most common error
-  if (e.code === 'auth/invalid-action-code' || 
-      e.code === 'auth/expired-action-code') {
-    errorMessage = "This reset link is invalid or has already expired.";
-    showRetryLink = true;
-  } else if (e.code === 'auth/user-disabled') {
-    errorMessage = "This account has been disabled.";
-  } else if (e.message) {
-    errorMessage = e.message;
+  } catch (e) {
+    // ERROR HANDLING (friendly + helpful)
+    let errorMessage = "Something went wrong. Please try again.";
+    let showRetryLink = false;
+
+    if (e.code === 'auth/invalid-action-code' || e.code === 'auth/expired-action-code') {
+      errorMessage = "This reset link is invalid or has already expired.";
+      showRetryLink = true;
+    } else if (e.code === 'auth/user-disabled') {
+      errorMessage = "This account has been disabled.";
+    } else if (e.code === 'auth/weak-password') {
+      errorMessage = "Password is too weak. Please use a stronger one.";
+    } else if (e.message) {
+      errorMessage = e.message;
+    }
+
+    msg.innerHTML = `<div class="error">${errorMessage}</div>`;
+
+    // Add "Request new link" button for expired/invalid codes
+    if (showRetryLink) {
+      const retryLink = document.createElement('a');
+      retryLink.href = "https://auth.cube.xixi.live/forgot.html"; // change if needed
+      retryLink.textContent = "Request a new reset link";
+      retryLink.style.display = "block";
+      retryLink.style.marginTop = "16px";
+      retryLink.style.color = "var(--neon)";
+      retryLink.style.fontSize = "14px";
+      retryLink.style.textAlign = "center";
+      retryLink.style.textDecoration = "underline";
+      retryLink.style.fontWeight = "600";
+      msg.appendChild(retryLink);
+    }
+
+    // Re-enable button on error
+    btn.disabled = false;
+    btn.textContent = "Reset Password";
+    btn.style.background = ""; // reset to original
   }
-
-  msg.innerHTML = `<div class="error">${errorMessage}</div>`;
-
-  // Add "Request new link" helper when appropriate
-  if (showRetryLink) {
-    const retryLink = document.createElement('a');
-    retryLink.href = "https://auth.cube.xixi.live/forgot.html"; // adjust if your forgot page has a different path
-    retryLink.textContent = "Request a new reset link";
-    retryLink.style.display = "block";
-    retryLink.style.marginTop = "14px";
-    retryLink.style.color = "var(--neon)";
-    retryLink.style.fontSize = "14px";
-    retryLink.style.textAlign = "center";
-    retryLink.style.textDecoration = "underline";
-    msg.appendChild(retryLink);
-  }
-}
 };
 
 // 🔑 Eye toggle logic
