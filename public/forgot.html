@@ -91,7 +91,32 @@ button[disabled] {
   opacity: 0.9;
   cursor: not-allowed;
 }
+.forgot-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
+.redirect-msg {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #e0ff80;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  max-width: 380px;
+}
+
+.redirect-msg.visible {
+  opacity: 1;
+}
+
+.redirect-msg strong {
+  color: #fff;
+  font-weight: 800;
+}
 .success { color: var(--neon); }
 .error { color: #ff5c5c; }
 </style>
@@ -99,18 +124,20 @@ button[disabled] {
 
 <body>
 
-<div class="card">
-  <div class="logo">
-    <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962" alt="">
+<div class="forgot-container">
+  <div class="card">
+    <div class="logo">
+      <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962" alt="">
+    </div>
+    <h1>Forgot your password?</h1>
+    <p>Enter your email and we’ll send you a reset link.</p>
+    <input type="email" id="email" placeholder="Your email address" />
+    <button id="sendBtn">Send Reset Link</button>
+    <div id="msg" class="msg"></div> <!-- Keep errors inside -->
   </div>
 
-  <h1>Forgot your password?</h1>
-  <p>Enter your email and we’ll send you a reset link.</p>
-
-  <input type="email" id="email" placeholder="Your email address" />
-  <button id="sendBtn">Send Reset Link</button>
-
-  <div id="msg" class="msg"></div>
+  <!-- Redirect message goes HERE — outside the card -->
+  <div id="redirectMsg" class="redirect-msg"></div>
 </div>
 
 <script type="module">
@@ -145,26 +172,31 @@ sendBtn.onclick = async () => {
     });
 
     // Step 2: Instantly switch to "Sent ✓"
+       // Success
     sendBtn.textContent = "Sent ✓";
-    sendBtn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)"; // slightly darker green to show completion
+    sendBtn.style.background = "linear-gradient(135deg, #a0d00a, #80b000)";
 
-    // Step 3: Show success message with countdown
+    // Hide any old error inside card
+    msg.innerHTML = "";
+
+    // Show redirect message OUTSIDE
+    const redirectMsg = document.getElementById('redirectMsg');
     let countdown = 5;
-    msg.innerHTML = `<div class="success">
+    redirectMsg.innerHTML = `
       If that email is linked to a CUBE account, you'll get a reset link shortly.<br>
       Redirecting to login in <strong>${countdown}</strong> seconds...
-    </div>`;
+    `;
+    redirectMsg.classList.add('visible');
 
     const timer = setInterval(() => {
       countdown--;
       if (countdown > 0) {
-        msg.querySelector('strong').textContent = countdown;
+        redirectMsg.querySelector('strong').textContent = countdown;
       } else {
         clearInterval(timer);
-        window.location.href = "https://cube.xixi.live/chat"; // ← change if your login page is different
+        window.location.href = "/login";
       }
     }, 1000);
-
   } catch (e) {
     // Error: reset button
     msg.innerHTML = `<div class="error">Something went wrong. Try again.</div>`;
