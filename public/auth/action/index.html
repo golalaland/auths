@@ -173,51 +173,43 @@ button:hover {
 
 <body>
 
-<div class="card">
+<!-- Main container to center everything -->
+<div class="reset-container">
+  <!-- The actual card/modal -->
+  <div class="card">
+    <!-- 🔰 LOGO -->
+    <div class="logo">
+      <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962" alt="Logo" onerror="this.style.display='none'">
+    </div>
+    <h1>Reset Your Password</h1>
+    <p>Choose a new password to regain access.</p>
 
-  <!-- 🔰 LOGO -->
-  <div class="logo">
-    <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962" alt="Logo" onerror="this.style.display='none'">
+    <!-- New Password + Strength Meter -->
+    <div class="field">
+      <input type="password" id="password" placeholder="New password" />
+      <span class="eye" id="togglePassword"> ... </span>
+    </div>
+    <div class="strength-bar">
+      <div id="strengthFill"></div>
+    </div>
+    <div id="strengthText" class="strength-text"></div>
+
+    <!-- Confirm Password -->
+    <div class="field">
+      <input type="password" id="confirm" placeholder="Confirm password" />
+      <span class="eye" id="toggleConfirm"> ... </span>
+    </div>
+
+    <!-- Button + Message -->
+    <button id="resetBtn">Reset Password</button>
+    <div id="message"></div>
   </div>
+  <!-- ← Card ends here -->
 
-  <h1>Reset Your Password</h1>
-  <p>Choose a new password to regain access.</p>
-
- <!-- New Password Field with Eye Toggle + Strength Meter -->
-<div class="field">
-  <input type="password" id="password" placeholder="New password" />
-  <span class="eye" id="togglePassword">
-    <!-- Eye open SVG (default state) -->
-    <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
-      <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842 c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843 C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149 s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
-      <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451 c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407 c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z"></path>
-    </svg>
-  </span>
-</div>
-
-<!-- Password Strength Meter (only under New password) -->
-<div class="strength-bar">
-  <div id="strengthFill"></div>
-</div>
-<div id="strengthText" class="strength-text"></div>
-
-<!-- Confirm Password Field with Eye Toggle -->
-<div class="field">
-  <input type="password" id="confirm" placeholder="Confirm password" />
-  <span class="eye" id="toggleConfirm">
-    <!-- Eye open SVG (default state) -->
-    <svg viewBox="0 0 519.578 519.578" fill="#d6d6d6" width="20" height="20">
-      <path d="M513.095,245.101c0,0-140.683-139.842-253.291-139.842c-112.608,0-253.292,139.842-253.292,139.842 c-8.645,8.109-8.721,21.42,0,29.375c0,0,140.684,139.843,253.292,139.843c112.608,0,253.291-139.843,253.291-139.843 C521.663,266.368,521.816,253.134,513.095,245.101z M260.875,372.397c-61.889,0-112.149-50.185-112.149-112.149 s50.184-112.149,112.149-112.149c61.965,0,112.148,50.26,112.148,112.149S322.763,372.397,260.875,372.397z"></path>
-      <path d="M259.574,187.726c-39.321,0-71.222,32.053-71.222,71.451c0,39.397,31.901,71.451,71.222,71.451 c39.321,0,71.222-32.054,71.222-71.451C330.796,219.78,298.896,187.726,259.574,187.726z M286.426,259.407 c-12.163,0-22.108-9.946-22.108-22.262s9.945-22.261,22.108-22.261s22.108,9.945,22.108,22.261S298.742,259.407,286.426,259.407z"></path>
-    </svg>
-  </span>
-</div>
-
+  <!-- Countdown: OUTSIDE the card, just like forgot page -->
   <div id="redirectCountdown" class="redirect-countdown"></div>
-
-<!-- Reset Button & Message -->
-<button id="resetBtn">Reset Password</button>
-<div id="message"></div>
+</div>
+<!-- ← Container ends -->
 
   
 <!-- 🔌 Firebase CDN + reset logic -->
@@ -270,7 +262,7 @@ btn.onclick = async () => {
 
   // Disable button during processing
   btn.disabled = true;
-  btn.textContent = "Processing...";
+  btn.textContent = "Resetting...";
 
   try {
     await confirmPasswordReset(auth, oobCode, p1);
@@ -278,7 +270,6 @@ btn.onclick = async () => {
     // SUCCESS STATE
     msg.innerHTML = `<div class="success">
       Password reset successful!<br>
-      You'll be redirected shortly.
     </div>`;
 
     btn.textContent = "Reset Complete ✓";
@@ -289,7 +280,7 @@ btn.onclick = async () => {
     let countdown = 3;
 
     if (countdownEl) {
-      countdownEl.innerHTML = `Redirecting to chat in <strong>${countdown}</strong> seconds...`;
+      countdownEl.innerHTML = `Redirecting to lounge in <strong>${countdown}</strong> seconds...`;
       countdownEl.classList.add('visible');
     }
 
