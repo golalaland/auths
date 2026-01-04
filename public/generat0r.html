@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Filename Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #f0f0f0; text-align: center; }
+        h1 { margin-bottom: 30px; }
+        #filename { font-size: 28px; font-weight: bold; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px; word-break: break-all; }
+        button { padding: 15px 30px; font-size: 18px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .options { margin: 30px; }
+        label { margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Secure Random Filename Generator</h1>
+    <p>For renaming your sensitive .html files (e.g., TOTP generator)</p>
+    
+    <div class="options">
+        <label><input type="radio" name="style" value="uuid" checked> UUID (very unique, dash-separated)</label><br>
+        <label><input type="radio" name="style" value="hex"> Long random hex (lowercase, no dashes)</label><br>
+        <label><input type="radio" name="style" value="alnum"> Random letters + numbers (mixed case)</label><br>
+        <label><input type="radio" name="style" value="words"> Human-readable words + number (e.g., wolf-tango-cherry-4589)</label>
+    </div>
+    
+    <button onclick="generate()">Generate New Filename</button>
+    
+    <div id="filename">Click generate to get started!</div>
+
+    <script>
+        // Cryptographically secure random values using Web Crypto API
+        function getRandomValues(array) {
+            return crypto.getRandomValues(array);
+        }
+
+        function generateUUID() {
+            const uuid = crypto.randomUUID(); // Modern browsers support this directly (secure)
+            return uuid + '.html';
+        }
+
+        function generateHex() {
+            const bytes = new Uint8Array(20); // 40 hex chars
+            getRandomValues(bytes);
+            return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('') + '.html';
+        }
+
+        function generateAlnum() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            const bytes = new Uint8Array(32);
+            getRandomValues(bytes);
+            for (let i = 0; i < bytes.length; i++) {
+                result += chars[bytes[i] % chars.length];
+            }
+            return result + '.html';
+        }
+
+        function generateWords() {
+            const words = ['alpha','bravo','charlie','delta','echo','foxtrot','golf','hotel','india','juliet','kilo','lima','mike','november','oscar','papa','quebec','romeo','sierra','tango','uniform','victor','whiskey','xray','yankee','zulu',
+                           'apple','banana','cherry','dragon','elephant','falcon','grape','hawk','island','jungle','kiwi','lemon','mango','ninja','ocean','panda','quark','robot','shadow','tiger','umbra','viper','wolf','xenon','yellow','zebra'];
+            const bytes = new Uint8Array(5);
+            getRandomValues(bytes);
+            const w1 = words[bytes[0] % words.length];
+            const w2 = words[bytes[1] % words.length];
+            const w3 = words[bytes[2] % words.length];
+            const num = ((bytes[3] << 8) + bytes[4]) % 10000;
+            return `${w1}-${w2}-${w3}-${num.toString().padStart(4,'0')}.html`;
+        }
+
+        function generate() {
+            const style = document.querySelector('input[name="style"]:checked').value;
+            let filename;
+            if (style === 'uuid') filename = generateUUID();
+            else if (style === 'hex') filename = generateHex();
+            else if (style === 'alnum') filename = generateAlnum();
+            else if (style === 'words') filename = generateWords();
+
+            document.getElementById('filename').textContent = filename;
+        }
+
+        // Generate one on load
+        generate();
+    </script>
+</body>
+</html>
