@@ -5,43 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Filename Generator</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background: #f0f0f0; text-align: center; }
-        h1 { margin-bottom: 30px; }
-        #filename { font-size: 28px; font-weight: bold; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px; word-break: break-all; }
-        button { padding: 15px 30px; font-size: 18px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 40px auto; 
+            background: #f0f0f0; 
+            text-align: center; 
+        }
+        h1 { margin-bottom: 10px; }
+        p { color: #555; margin-bottom: 30px; }
+        .options { 
+            margin: 30px 0; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        label { 
+            display: block; 
+            margin: 12px 0; 
+            font-size: 16px; 
+            cursor: pointer; 
+        }
+        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        #result-container {
+            position: relative;
+            margin: 30px auto;
+            max-width: 90%;
+        }
+        #filename { 
+            font-size: 26px; 
+            font-weight: bold; 
+            background: white; 
+            padding: 25px 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); 
+            word-break: break-all; 
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        #filename:hover { 
+            background: #f8f8f8; 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); 
+        }
+        #filename.copied {
+            background: #e8f5e9 !important;
+            transform: scale(1.02);
+        }
+
+        button { 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            background: #4caf50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin-top: 20px;
+        }
         button:hover { background: #45a049; }
-        .options { margin: 30px; }
-        label { margin: 10px; }
+
+        .copy-notice {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <h1>Secure Random Filename Generator</h1>
-    <p>For renaming your sensitive .html files (e.g., TOTP generator)</p>
+    <p>Generate strong, unpredictable filenames for your secret .html files (like TOTP generators)</p>
     
     <div class="options">
-        <label><input type="radio" name="style" value="uuid" checked> UUID (very unique, dash-separated)</label><br>
-        <label><input type="radio" name="style" value="hex"> Long random hex (lowercase, no dashes)</label><br>
-        <label><input type="radio" name="style" value="alnum"> Random letters + numbers (mixed case)</label><br>
-        <label><input type="radio" name="style" value="words"> Human-readable words + number (e.g., wolf-tango-cherry-4589)</label>
+        <label><input type="radio" name="style" value="uuid" checked> UUID (most unique, e.g. 123e4567-e89b-...)</label>
+        <label><input type="radio" name="style" value="hex"> Long hex string (40 random chars)</label>
+        <label><input type="radio" name="style" value="alnum"> Mixed letters + numbers (32 chars)</label>
+        <label><input type="radio" name="style" value="words"> Readable words + number (e.g. wolf-tango-cherry-4589)</label>
     </div>
     
     <button onclick="generate()">Generate New Filename</button>
     
-    <div id="filename">Click generate to get started!</div>
+    <div id="result-container">
+        <div id="filename" onclick="copyToClipboard()">Click here or the button above to start!</div>
+    </div>
+
+    <div class="copy-notice">Click the filename to copy it to clipboard</div>
 
     <script>
-        // Cryptographically secure random values using Web Crypto API
+        // Secure random using Web Crypto API
         function getRandomValues(array) {
             return crypto.getRandomValues(array);
         }
 
         function generateUUID() {
-            const uuid = crypto.randomUUID(); // Modern browsers support this directly (secure)
-            return uuid + '.html';
+            return crypto.randomUUID() + '.html';
         }
 
         function generateHex() {
-            const bytes = new Uint8Array(20); // 40 hex chars
+            const bytes = new Uint8Array(20);
             getRandomValues(bytes);
             return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('') + '.html';
         }
@@ -80,8 +144,27 @@
             document.getElementById('filename').textContent = filename;
         }
 
-        // Generate one on load
-        generate();
+        async function copyToClipboard() {
+            const filename = document.getElementById('filename').textContent;
+            if (filename.includes('Click here') || !filename.endsWith('.html')) return;
+
+            try {
+                await navigator.clipboard.writeText(filename);
+                const el = document.getElementById('filename');
+                el.classList.add('copied');
+                const original = el.textContent;
+                el.textContent = 'Copied to clipboard!';
+                setTimeout(() => {
+                    el.textContent = original;
+                    el.classList.remove('copied');
+                }, 1500);
+            } catch (err) {
+                alert('Copy failed — please copy manually:\n\n' + filename);
+            }
+        }
+
+        // Generate one on page load
+        window.onload = generate;
     </script>
 </body>
 </html>
