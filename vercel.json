@@ -1,6 +1,8 @@
 {
   "rewrites": [
     { "source": "/0fe4a760-df02-4801-badd-889b8caf3643", "destination": "/for$got.html" },
+      { "source": "/cQBwqUwWxJHMqltVB4a3wNxwCTgZlrRF", "destination": "/private$read.html" },
+    
     { "source": "/menu", "destination": "/menu.html" },
 
     { "source": "/mhbUxw1M9hfVjydr4BSiW1KVXpX1ziay", "destination": "/generat0r.html" }
