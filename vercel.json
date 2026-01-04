@@ -3,7 +3,6 @@
     { "source": "/forgot", "destination": "/forgot.html" },
     { "source": "/menu", "destination": "/menu.html" },
 
-    // Your secret generator inside the auths folder
     { "source": "/generator", "destination": "/auths/generat0r.html" }
   ]
 }
