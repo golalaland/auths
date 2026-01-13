@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Partner Hive Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <!-- Your Firebase config here -->
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+  authDomain: "dettyverse.firebaseapp.com",
+  projectId: "dettyverse",
+  storageBucket: "dettyverse.firebasestorage.app",
+  messagingSenderId: "1036459652488",
+  appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+  measurementId: "G-NX2KWZW85V"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+</head>
+<body>
+  <h1>Your Hive Dashboard</h1>
+  <div id="stats"></div>
+
+  <script>
+    async function loadHiveStats() {
+      const currentUser = firebase.auth().currentUser;
+      if (!currentUser) {
+        document.getElementById('stats').innerHTML = "<p>Please sign in</p>";
+        return;
+      }
+
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      const hiveName = userDoc.data()?.hiveName;
+
+      if (!hiveName) {
+        document.getElementById('stats').innerHTML = "<p>You are not a hive partner yet.</p>";
+        return;
+      }
+
+      // Count all hosts with this hiveName
+      const hostsQuery = db.collection('users')
+        .where('hiveName', '==', hiveName)
+        .where('isHost', '==', true);
+      const hostsSnap = await hostsQuery.get();
+      const totalHosts = hostsSnap.size;
+
+      // Count VIPs among them
+      const vipsQuery = hostsQuery.where('isVIP', '==', true).where('hasPaid', '==', true);
+      const vipsSnap = await vipsQuery.get();
+      const totalVIPs = vipsSnap.size;
+
+      const vipFee = 19999;
+      const hiveBonusPercent = 0.05;
+      const totalBonus = totalVIPs * vipFee * hiveBonusPercent;
+
+      document.getElementById('stats').innerHTML = `
+        <h2>Hive: ${hiveName}</h2>
+        <p>Total Hosts in your hive: <strong>${totalHosts}</strong></p>
+        <p>Total VIPs activated: <strong>${totalVIPs}</strong></p>
+        <p>Total hiveBonus earned: <strong>₦${totalBonus.toLocaleString()}</strong></p>
+      `;
+    }
+
+    // Call on page load
+    loadHiveStats();
+  </script>
+</body>
+</html>
