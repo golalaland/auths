@@ -1,154 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Partner Hive Dashboard</title>
-
-  <!-- Firebase Compat Libraries (all versions match) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partner Hive Dashboard - Cube</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 30px;
-      background: #f8f9fa;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
       color: #333;
     }
-    h1 { text-align: center; color: #2c3e50; }
-    #stats {
-      margin-top: 30px;
-      padding: 25px;
+    h1, h2 {
+      text-align: center;
+      color: #007bff;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .loading { text-align: center; font-style: italic; color: #666; padding: 40px 0; }
-    .error { color: #e74c3c; text-align: center; font-weight: bold; padding: 20px; background: #ffebee; border-radius: 8px; }
+    .config-info {
+      text-align: center;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
     .stat-card {
-      margin: 15px 0;
+      border: 1px solid #ddd;
       padding: 15px;
-      background: #f1f8ff;
-      border-left: 5px solid #3498db;
-      border-radius: 6px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    button {
-      background: #3498db;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 15px;
+    .stat-card strong {
+      color: #007bff;
     }
-    button:hover { background: #2980b9; }
+    .error {
+      color: red;
+      text-align: center;
+    }
+    .loading {
+      color: gray;
+      text-align: center;
+    }
+    .hive-list {
+      margin-top: 20px;
+    }
+    .hive-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .global-totals {
+      margin-top: 20px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>Your Hive Dashboard</h1>
-  <div id="stats" class="loading">Loading your hive stats... (please wait 5–10 seconds)</div>
+  <div class="container">
+    <h1>Partner Hive Dashboard</h1>
+    <div id="stats">
+      <p class="loading">Loading dashboard...</p>
+    </div>
+  </div>
 
-  <button onclick="firebase.auth().signInWithEmailAndPassword('testpartner@email.com', 'yourpassword')">Quick Login as Test Partner</button>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
- <script>
-  // Your Firebase config (same as before)
-  const firebaseConfig = { /* your config here */ };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  <script>
+   const firebaseConfig = {
+  apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+  authDomain: "dettyverse.firebaseapp.com",
+  projectId: "dettyverse",
+  storageBucket: "dettyverse.firebasestorage.app",
+  messagingSenderId: "1036459652488",
+  appId: "1:1036452488:web:e8910172ed16e9cac9b63d",
+  measurementId: "G-NX2KWZW85V",
+  databaseURL: "https://dettyverse-default-rtdb.firebaseio.com/"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const ADMIN_EMAILS = [
+      "youradminemail@gmail.com", // ← add your email(s) here
+      "admin@cube.xixi.com" // ← add more if needed
+    ];
 
-  const ADMIN_EMAILS = [
-    "youradminemail@gmail.com",      // ← add your email(s) here
-    "admin@cube.xixi.com"            // ← add more if needed
-  ];
+    const VIP_FEE = 19999;
+    const HIVE_BONUS_PERCENT = 5;
+    const HIVE_PERCENT = HIVE_BONUS_PERCENT / 100;
 
-  auth.onAuthStateChanged(async (user) => {
-    const statsDiv = document.getElementById('stats');
-
-    if (!user) {
-      statsDiv.innerHTML = '<p class="error">Please sign in first.</p>';
-      return;
-    }
-
-    statsDiv.innerHTML = '<p class="loading">Loading dashboard...</p>';
-
-    try {
-      const userDoc = await db.collection('users').doc(user.uid).get();
-      if (!userDoc.exists) {
-        statsDiv.innerHTML = '<p class="error">User profile not found.</p>';
+    auth.onAuthStateChanged(async (user) => {
+      const statsDiv = document.getElementById('stats');
+      if (!user) {
+        statsDiv.innerHTML = '<p class="error">Please sign in first.</p>';
         return;
       }
-
-      const userData = userDoc.data();
-      const isAdmin = ADMIN_EMAILS.includes(user.email);
-
-      if (isAdmin) {
-        // === ADMIN MODE: Show all hives ===
-        statsDiv.innerHTML = '<h2>Admin: All Hive Overview</h2>';
-
-        // Get all users with hiveName (non-empty)
-        const allUsersSnap = await db.collection('users')
-          .where('hiveName', '!=', '')
-          .get();
-
-        const hiveStats = {};
-
-        allUsersSnap.forEach(doc => {
-          const d = doc.data();
-          if (!d.hiveName) return;
-
-          if (!hiveStats[d.hiveName]) {
-            hiveStats[d.hiveName] = { hosts: 0, vips: 0 };
-          }
-
-          if (d.isHost) hiveStats[d.hiveName].hosts++;
-          if (d.isVIP && d.hasPaid) hiveStats[d.hiveName].vips++;
-        });
-
-        let totalHosts = 0;
-        let totalVIPs = 0;
-        let html = '<div class="stat-card"><strong>All Hives Summary</strong><br>';
-
-        for (const [hive, stats] of Object.entries(hiveStats)) {
-          const bonus = stats.vips * 19999 * 0.05;
-          totalHosts += stats.hosts;
-          totalVIPs += stats.vips;
-
-          html += `
-            <div style="margin:10px 0;">
-              <strong>${hive}</strong><br>
-              Hosts: ${stats.hosts} | VIPs: ${stats.vips} | Bonus: ₦${bonus.toLocaleString(undefined, {minimumFractionDigits:2})}
-            </div>`;
-        }
-
-        html += `
-          <br><strong>Global Totals:</strong><br>
-          All Hosts: ${totalHosts.toLocaleString()} | All VIPs: ${totalVIPs.toLocaleString()}
-          <br>Total Potential Bonus Paid: ₦${(totalVIPs * 19999 * 0.05).toLocaleString(undefined, {minimumFractionDigits:2})}
-          </div>`;
-
-        statsDiv.innerHTML = html;
-      } else {
-        // === Normal Partner Mode ===
-        const hiveName = userData.hiveName;
-
-        if (!hiveName) {
-          statsDiv.innerHTML = '<p class="error">You are not assigned as a hive partner yet.</p>';
+      statsDiv.innerHTML = '<p class="loading">Loading dashboard...</p>';
+      try {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          statsDiv.innerHTML = '<p class="error">User profile not found.</p>';
           return;
         }
+        const userData = userDoc.data();
+        const isAdmin = ADMIN_EMAILS.includes(user.email);
 
-        // ... (your existing partner stats code here)
-        // Count hosts, VIPs, calculate bonus...
-        // (copy from previous version if you want)
+        // Display config info at top
+        let configHtml = `<p class="config-info">VIP Fee: ₦${VIP_FEE.toLocaleString()} | Hive Bonus: ${HIVE_BONUS_PERCENT}%</p>`;
+
+        if (isAdmin) {
+          // === ADMIN MODE: Show all hives ===
+          statsDiv.innerHTML = configHtml + '<h2>Admin: All Hive Overview</h2><p class="loading">Fetching data...</p>';
+          const query = db.collection('users').where('hiveName', '!=', '');
+          query.onSnapshot((snap) => {
+            const hiveStats = {};
+            snap.forEach(doc => {
+              const d = doc.data();
+              if (!d.hiveName) return;
+              if (!hiveStats[d.hiveName]) {
+                hiveStats[d.hiveName] = { hosts: 0, vips: 0 };
+              }
+              if (d.isHost) hiveStats[d.hiveName].hosts++;
+              if (d.isVIP && d.hasPaid) hiveStats[d.hiveName].vips++;
+            });
+            let totalHosts = 0;
+            let totalVIPs = 0;
+            let totalBonus = 0;
+            let html = configHtml + '<h2>Admin: All Hive Overview</h2><div class="hive-list">';
+            for (const [hive, stats] of Object.entries(hiveStats)) {
+              const bonus = stats.vips * VIP_FEE * HIVE_PERCENT;
+              totalHosts += stats.hosts;
+              totalVIPs += stats.vips;
+              totalBonus += bonus;
+              html += `
+                <div class="stat-card hive-item">
+                  <strong>${hive}</strong><br>
+                  Hosts: ${stats.hosts.toLocaleString()} | VIPs: ${stats.vips.toLocaleString()} | Bonus: ₦${bonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                </div>`;
+            }
+            html += '</div>';
+            html += `
+              <div class="stat-card global-totals">
+                <strong>Global Totals:</strong><br>
+                All Hosts: ${totalHosts.toLocaleString()} | All VIPs: ${totalVIPs.toLocaleString()}<br>
+                Total Bonus Paid: ₦${totalBonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
+              </div>`;
+            statsDiv.innerHTML = html;
+          }, (error) => {
+            statsDiv.innerHTML = configHtml + `<p class="error">Error fetching data: ${error.message}</p>`;
+          });
+        } else {
+          // === Normal Partner Mode ===
+          const hiveName = userData.hiveName;
+          if (!hiveName) {
+            statsDiv.innerHTML = configHtml + '<p class="error">You are not assigned as a hive partner yet.</p>';
+            return;
+          }
+          statsDiv.innerHTML = configHtml + `<h2>${hiveName} Hive Dashboard</h2><p class="loading">Fetching data...</p>`;
+          const query = db.collection('users').where('hiveName', '==', hiveName);
+          query.onSnapshot((snap) => {
+            let hosts = 0;
+            let vips = 0;
+            snap.forEach(doc => {
+              const d = doc.data();
+              if (d.isHost) hosts++;
+              if (d.isVIP && d.hasPaid) vips++;
+            });
+            const bonus = vips * VIP_FEE * HIVE_PERCENT;
+            const html = configHtml + `
+              <h2>${hiveName} Hive Dashboard</h2>
+              <div class="stat-card">
+                <strong>Hosts:</strong> ${hosts.toLocaleString()}
+              </div>
+              <div class="stat-card">
+                <strong>Paid VIPs:</strong> ${vips.toLocaleString()}
+              </div>
+              <div class="stat-card">
+                <strong>Hive Bonus Earned:</strong> ₦${bonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
+              </div>`;
+            statsDiv.innerHTML = html;
+          }, (error) => {
+            statsDiv.innerHTML = configHtml + `<p class="error">Error fetching data: ${error.message}</p>`;
+          });
+        }
+      } catch (error) {
+        statsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
       }
-    } catch (error) {
-      statsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-    }
-  });
-</script>
+    });
+  </script>
 </body>
 </html>
