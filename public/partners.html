@@ -155,7 +155,7 @@
 
       // Redirect to dashboard after short delay (better UX)
       setTimeout(() => {
-        window.location.href = 'partner-dashboard.html';
+        window.location.href = 'https://auth.cube.xixi.live/partners.html';
       }, 800);
 
     } catch (error) {
@@ -204,7 +204,7 @@
     if (user && window.location.pathname.includes('login.html')) {
       messageDiv.innerHTML = '<p style="color: #2e7d32;">Already signed in! Redirecting...</p>';
       setTimeout(() => {
-        window.location.href = 'partner.html';
+        window.location.href = 'https://auth.cube.xixi.live/partners.html';
       }, 1000);
     }
   });
