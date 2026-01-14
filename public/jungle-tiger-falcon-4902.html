@@ -643,41 +643,63 @@ async function applyRewards() {
       });
       dopeAlert('Configs saved');
     }
-    async function loadWithdrawals() {
-      const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
-      tableBody.innerHTML = '';
-      const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
-      const snap = await getDocs(q);
-      snap.forEach(d => {
-        const w = d.data();
-        let dateStr = "Unknown";
-        if (w.requestedAt?.toDate) dateStr = w.requestedAt.toDate().toLocaleString();
-        const row = document.createElement('tr');
-        row.dataset.id = d.id;
-        row.innerHTML = `
-          <td>${dateStr}</td>
-          <td>${w.username || "—"}</td>
-          <td>${(w.uid || "").replace(/_/g, ".")}</td>
-          <td>₦${(w.amount || 0).toLocaleString()}</td>
-          <td>${w.bankName || "—"}</td>
-          <td>${w.bankAccountNumber || "—"}</td>
-          <td>${w.status || "pending"}</td>
-          <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
-        `;
-        const markBtn = row.querySelector('.mark-paid-withdraw');
-        if (markBtn) {
-          markBtn.addEventListener('click', async () => {
-            if (await showConfirm('Mark Paid', `Mark as paid?`)) {
-              showLoader('Marking...');
-              await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
-              hideLoader();
-              loadWithdrawals();
-            }
-          });
+ async function loadWithdrawals() {
+  const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
+  tableBody.innerHTML = '';
+
+  const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
+  const snap = await getDocs(q);
+
+  for (const d of snap.docs) {
+    const w = d.data();
+
+    let dateStr = "Unknown";
+    if (w.requestedAt?.toDate) {
+      dateStr = w.requestedAt.toDate().toLocaleString();
+    }
+
+    // Fetch fullName from users collection
+    let displayName = "—";
+    if (w.uid) {
+      const userRef = doc(db, "users", w.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        displayName = userData.fullName || w.username || "—";
+      } else {
+        displayName = w.username || "—";
+      }
+    }
+
+    const row = document.createElement('tr');
+    row.dataset.id = d.id;
+
+    row.innerHTML = `
+      <td>${dateStr}</td>
+      <td>${displayName}</td>
+      <td>${(w.uid || "").replace(/_/g, ".")}</td>
+      <td>₦${(w.amount || 0).toLocaleString()}</td>
+      <td>${w.bankName || "—"}</td>
+      <td>${w.bankAccountNumber || "—"}</td>
+      <td>${w.status || "pending"}</td>
+      <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
+    `;
+
+    const markBtn = row.querySelector('.mark-paid-withdraw');
+    if (markBtn) {
+      markBtn.addEventListener('click', async () => {
+        if (await showConfirm('Mark Paid', `Mark as paid?`)) {
+          showLoader('Marking...');
+          await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+          hideLoader();
+          loadWithdrawals();
         }
-        tableBody.appendChild(row);
       });
     }
+
+    tableBody.appendChild(row);
+  }
+}
     async function loadHostWithdrawals() {
       const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
       tableBody.innerHTML = '';
@@ -798,7 +820,7 @@ async function exportHostWithdrawalsCSV() {
     const user = userSnap.data() || {};
 
     const amount = w.amount || 0;
-    const note = `Host Withdrawal for ${user.fullName || w.username || 'Host'}`;
+    const note = `Host Cash Reward for ${user.fullName || w.username || 'Host'}`;
     const ref = `HWD-${d.id}`;
     const recipient = ''; 
     const bankSlug = user.bankSlug || ''; 
