@@ -1,199 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Partner Hive Dashboard - Cube</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Cube Partner Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f4f4;
       margin: 0;
       padding: 20px;
-      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
-    h1, h2 {
-      text-align: center;
-      color: #007bff;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
+    .login-container {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 420px;
     }
-    .config-info {
+    h1 {
       text-align: center;
-      margin-bottom: 20px;
-      font-style: italic;
-    }
-    .stat-card {
-      border: 1px solid #ddd;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .stat-card strong {
       color: #007bff;
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #444;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
     }
     .error {
-      color: red;
+      color: #d32f2f;
       text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
     }
     .loading {
-      color: gray;
       text-align: center;
-    }
-    .hive-list {
-      margin-top: 20px;
-    }
-    .hive-item {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
-    }
-    .global-totals {
-      margin-top: 20px;
-      font-weight: bold;
+      color: #666;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Partner Hive Dashboard</h1>
-    <div id="stats">
-      <p class="loading">Loading dashboard...</p>
-    </div>
+
+  <div class="login-container">
+    <h1>Partner Dashboard Login</h1>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="you@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required autocomplete="current-password" />
+      </div>
+
+      <button type="submit">Sign In</button>
+    </form>
+
+    <div id="message"></div>
   </div>
 
+  <!-- Firebase Compat SDK (v8) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <script>
-   const firebaseConfig = {
-  apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
-  authDomain: "dettyverse.firebaseapp.com",
-  projectId: "dettyverse",
-  storageBucket: "dettyverse.firebasestorage.app",
-  messagingSenderId: "1036459652488",
-  appId: "1:1036452488:web:e8910172ed16e9cac9b63d",
-  measurementId: "G-NX2KWZW85V",
-  databaseURL: "https://dettyverse-default-rtdb.firebaseio.com/"
-};
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const ADMIN_EMAILS = [
-      "youradminemail@gmail.com", // ← add your email(s) here
-      "admin@cube.xixi.com" // ← add more if needed
-    ];
+<!-- Place this at the bottom of your <body>, after the form -->
 
-    const VIP_FEE = 19999;
-    const HIVE_BONUS_PERCENT = 5;
-    const HIVE_PERCENT = HIVE_BONUS_PERCENT / 100;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-    auth.onAuthStateChanged(async (user) => {
-      const statsDiv = document.getElementById('stats');
-      if (!user) {
-        statsDiv.innerHTML = '<p class="error">Please sign in first.</p>';
-        return;
+<script>
+  // =============================================
+  // Firebase Configuration - DETTYVERSE PROJECT
+  // =============================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+    authDomain: "dettyverse.firebaseapp.com",
+    projectId: "dettyverse",
+    storageBucket: "dettyverse.firebasestorage.app",
+    messagingSenderId: "1036459652488",
+    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+    measurementId: "G-NX2KWZW85V",
+    databaseURL: "https://dettyverse-default-rtdb.firebaseio.com/"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // DOM Elements
+  const loginForm = document.getElementById('loginForm');
+  const messageDiv = document.getElementById('message');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const submitButton = loginForm.querySelector('button[type="submit"]');
+
+  // Prevent multiple submissions
+  let isSubmitting = false;
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+    isSubmitting = true;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Signing in...';
+
+    // Clear previous messages
+    messageDiv.innerHTML = '<p class="loading">Authenticating...</p>';
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    try {
+      // Sign in
+      await auth.signInWithEmailAndPassword(email, password);
+
+      // Optional: Small success feedback before redirect
+      messageDiv.innerHTML = '<p style="color: #2e7d32; font-weight: bold;">Login successful! Redirecting...</p>';
+
+      // Redirect to dashboard after short delay (better UX)
+      setTimeout(() => {
+        window.location.href = 'partner-dashboard.html';
+      }, 800);
+
+    } catch (error) {
+      let userFriendlyMessage = 'Login failed. Please try again.';
+
+      switch (error.code) {
+        case 'auth/invalid-email':
+          userFriendlyMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/user-not-found':
+          userFriendlyMessage = 'No account found with this email.';
+          break;
+        case 'auth/wrong-password':
+          userFriendlyMessage = 'Incorrect password.';
+          break;
+        case 'auth/too-many-requests':
+          userFriendlyMessage = 'Too many failed attempts. Please try again later or reset your password.';
+          break;
+        case 'auth/user-disabled':
+          userFriendlyMessage = 'This account has been disabled.';
+          break;
+        default:
+          userFriendlyMessage = error.message || 'An unexpected error occurred.';
+          console.error('Login error:', error); // For debugging
       }
-      statsDiv.innerHTML = '<p class="loading">Loading dashboard...</p>';
-      try {
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (!userDoc.exists) {
-          statsDiv.innerHTML = '<p class="error">User profile not found.</p>';
-          return;
-        }
-        const userData = userDoc.data();
-        const isAdmin = ADMIN_EMAILS.includes(user.email);
 
-        // Display config info at top
-        let configHtml = `<p class="config-info">VIP Fee: ₦${VIP_FEE.toLocaleString()} | Hive Bonus: ${HIVE_BONUS_PERCENT}%</p>`;
+      messageDiv.innerHTML = `<p class="error">${userFriendlyMessage}</p>`;
+    } finally {
+      isSubmitting = false;
+      submitButton.disabled = false;
+      submitButton.textContent = 'Sign In';
+    }
+  });
 
-        if (isAdmin) {
-          // === ADMIN MODE: Show all hives ===
-          statsDiv.innerHTML = configHtml + '<h2>Admin: All Hive Overview</h2><p class="loading">Fetching data...</p>';
-          const query = db.collection('users').where('hiveName', '!=', '');
-          query.onSnapshot((snap) => {
-            const hiveStats = {};
-            snap.forEach(doc => {
-              const d = doc.data();
-              if (!d.hiveName) return;
-              if (!hiveStats[d.hiveName]) {
-                hiveStats[d.hiveName] = { hosts: 0, vips: 0 };
-              }
-              if (d.isHost) hiveStats[d.hiveName].hosts++;
-              if (d.isVIP && d.hasPaid) hiveStats[d.hiveName].vips++;
-            });
-            let totalHosts = 0;
-            let totalVIPs = 0;
-            let totalBonus = 0;
-            let html = configHtml + '<h2>Admin: All Hive Overview</h2><div class="hive-list">';
-            for (const [hive, stats] of Object.entries(hiveStats)) {
-              const bonus = stats.vips * VIP_FEE * HIVE_PERCENT;
-              totalHosts += stats.hosts;
-              totalVIPs += stats.vips;
-              totalBonus += bonus;
-              html += `
-                <div class="stat-card hive-item">
-                  <strong>${hive}</strong><br>
-                  Hosts: ${stats.hosts.toLocaleString()} | VIPs: ${stats.vips.toLocaleString()} | Bonus: ₦${bonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                </div>`;
-            }
-            html += '</div>';
-            html += `
-              <div class="stat-card global-totals">
-                <strong>Global Totals:</strong><br>
-                All Hosts: ${totalHosts.toLocaleString()} | All VIPs: ${totalVIPs.toLocaleString()}<br>
-                Total Bonus Paid: ₦${totalBonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
-              </div>`;
-            statsDiv.innerHTML = html;
-          }, (error) => {
-            statsDiv.innerHTML = configHtml + `<p class="error">Error fetching data: ${error.message}</p>`;
-          });
-        } else {
-          // === Normal Partner Mode ===
-          const hiveName = userData.hiveName;
-          if (!hiveName) {
-            statsDiv.innerHTML = configHtml + '<p class="error">You are not assigned as a hive partner yet.</p>';
-            return;
-          }
-          statsDiv.innerHTML = configHtml + `<h2>${hiveName} Hive Dashboard</h2><p class="loading">Fetching data...</p>`;
-          const query = db.collection('users').where('hiveName', '==', hiveName);
-          query.onSnapshot((snap) => {
-            let hosts = 0;
-            let vips = 0;
-            snap.forEach(doc => {
-              const d = doc.data();
-              if (d.isHost) hosts++;
-              if (d.isVIP && d.hasPaid) vips++;
-            });
-            const bonus = vips * VIP_FEE * HIVE_PERCENT;
-            const html = configHtml + `
-              <h2>${hiveName} Hive Dashboard</h2>
-              <div class="stat-card">
-                <strong>Hosts:</strong> ${hosts.toLocaleString()}
-              </div>
-              <div class="stat-card">
-                <strong>Paid VIPs:</strong> ${vips.toLocaleString()}
-              </div>
-              <div class="stat-card">
-                <strong>Hive Bonus Earned:</strong> ₦${bonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
-              </div>`;
-            statsDiv.innerHTML = html;
-          }, (error) => {
-            statsDiv.innerHTML = configHtml + `<p class="error">Error fetching data: ${error.message}</p>`;
-          });
-        }
-      } catch (error) {
-        statsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+  // Optional: Clear error message when user starts typing again
+  [emailInput, passwordInput].forEach(input => {
+    input.addEventListener('input', () => {
+      if (messageDiv.querySelector('.error')) {
+        messageDiv.innerHTML = '';
       }
     });
-  </script>
+  });
+
+  // Optional: Show loading state if user is already signed in (page refresh)
+  auth.onAuthStateChanged((user) => {
+    if (user && window.location.pathname.includes('login.html')) {
+      messageDiv.innerHTML = '<p style="color: #2e7d32;">Already signed in! Redirecting...</p>';
+      setTimeout(() => {
+        window.location.href = 'partner.html';
+      }, 1000);
+    }
+  });
+</script>
 </body>
 </html>
