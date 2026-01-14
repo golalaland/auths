@@ -3,30 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Cube Partner Dashboard</title>
+  <title>Partner Hive Dashboard - Dettyverse</title>
+
   <style>
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f4f4;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      color: #333;
       min-height: 100vh;
     }
-    .login-container {
-      background: white;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      width: 100%;
-      max-width: 420px;
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
     }
     h1 {
+      color: #1a73e8;
       text-align: center;
-      color: #007bff;
-      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 30px;
+      margin: 20px 0;
+    }
+    .login-form {
+      max-width: 420px;
+      margin: 60px auto;
     }
     .form-group {
       margin-bottom: 20px;
@@ -34,48 +39,67 @@
     label {
       display: block;
       margin-bottom: 8px;
-      font-weight: bold;
+      font-weight: 600;
       color: #444;
     }
     input {
       width: 100%;
-      padding: 12px;
+      padding: 12px 14px;
       border: 1px solid #ddd;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 16px;
       box-sizing: border-box;
     }
     button {
       width: 100%;
       padding: 14px;
-      background: #007bff;
+      background: #1a73e8;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 16px;
+      font-weight: 500;
       cursor: pointer;
       transition: background 0.2s;
     }
     button:hover {
-      background: #0056b3;
+      background: #1557b0;
     }
-    .error {
-      color: #d32f2f;
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
+    button:disabled {
+      background: #9ab8e8;
+      cursor: not-allowed;
     }
-    .loading {
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
       text-align: center;
-      color: #666;
-      margin-top: 10px;
+    }
+    .error { background: #ffebee; color: #c62828; }
+    .success { background: #e8f5e9; color: #2e7d32; }
+    .loading { color: #555; }
+    .hidden { display: none; }
+    .stat-card {
+      background: #f8fbff;
+      border: 1px solid #e3f2fd;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+    .stat-card h3 {
+      margin: 0 0 12px 0;
+      color: #1a73e8;
     }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <h1>Partner Dashboard Login</h1>
+<div class="container">
+
+  <!-- Login Section (shown when not authenticated) -->
+  <div id="loginSection" class="card login-form">
+    <h1>Partner Dashboard</h1>
+    <p style="text-align:center; color:#555; margin-bottom:30px;">Sign in to access your hive stats</p>
 
     <form id="loginForm">
       <div class="form-group">
@@ -88,25 +112,29 @@
         <input type="password" id="password" required autocomplete="current-password" />
       </div>
 
-      <button type="submit">Sign In</button>
+      <button type="submit" id="submitBtn">Sign In</button>
     </form>
 
-    <div id="message"></div>
+    <div id="message" class="message"></div>
   </div>
 
-  <!-- Firebase Compat SDK (v8) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <!-- Dashboard Section (shown when authenticated) -->
+  <div id="dashboardSection" class="hidden">
+    <h1>Partner Hive Dashboard</h1>
+    <div id="statsContent">
+      <p class="loading">Loading your hive data...</p>
+    </div>
+  </div>
 
-<!-- Place this at the bottom of your <body>, after the form -->
+</div>
 
+<!-- Firebase SDK (compat v8) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-  // =============================================
-  // Firebase Configuration - DETTYVERSE PROJECT
-  // =============================================
+  // ── Firebase Config ────────────────────────────────────────
   const firebaseConfig = {
     apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
     authDomain: "dettyverse.firebaseapp.com",
@@ -118,94 +146,134 @@
     databaseURL: "https://dettyverse-default-rtdb.firebaseio.com/"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.firestore();
 
   // DOM Elements
+  const loginSection = document.getElementById('loginSection');
+  const dashboardSection = document.getElementById('dashboardSection');
+  const statsContent = document.getElementById('statsContent');
   const loginForm = document.getElementById('loginForm');
   const messageDiv = document.getElementById('message');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const submitButton = loginForm.querySelector('button[type="submit"]');
+  const submitBtn = document.getElementById('submitBtn');
 
-  // Prevent multiple submissions
   let isSubmitting = false;
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // ── Auth State Listener (core logic) ───────────────────────
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      // User is signed in → show dashboard
+      loginSection.classList.add('hidden');
+      dashboardSection.classList.remove('hidden');
+      statsContent.innerHTML = '<p class="loading">Loading your hive data...</p>';
 
-    if (isSubmitting) return;
-    isSubmitting = true;
-    submitButton.disabled = true;
-    submitButton.textContent = 'Signing in...';
+      try {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          statsContent.innerHTML = '<div class="message error">User profile not found in database.</div>';
+          return;
+        }
 
-    // Clear previous messages
-    messageDiv.innerHTML = '<p class="loading">Authenticating...</p>';
+        const data = userDoc.data();
+        const isAdmin = data.isAdmin === true; // ← Recommended: use Firestore field
+        // Alternative (less secure): const isAdmin = ["admin@dettyverse.com"].includes(user.email);
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+        const hiveName = data.hiveName || '';
 
-    try {
-      // Sign in
-      await auth.signInWithEmailAndPassword(email, password);
+        // Config values (you can move to Firestore later)
+        const VIP_FEE = 19999;
+        const HIVE_BONUS_PERCENT = 5;
+        const HIVE_PERCENT = HIVE_BONUS_PERCENT / 100;
 
-      // Optional: Small success feedback before redirect
-      messageDiv.innerHTML = '<p style="color: #2e7d32; font-weight: bold;">Login successful! Redirecting...</p>';
+        let html = `
+          <div class="message success">Welcome, ${user.email}</div>
+          <p style="text-align:center;color:#666;margin-bottom:20px;">
+            VIP Fee: ₦${VIP_FEE.toLocaleString()} | Hive Bonus: ${HIVE_BONUS_PERCENT}%
+          </p>`;
 
-      // Redirect to dashboard after short delay (better UX)
-      setTimeout(() => {
-        window.location.href = 'https://auth.cube.xixi.live/partners.html';
-      }, 800);
+        if (isAdmin) {
+          html += '<h2 style="text-align:center;">Admin • All Hives Overview</h2>';
+          // ... (add your full admin logic here - query all hives)
+          // For brevity, showing placeholder - expand as needed
+          html += '<div class="stat-card"><strong>Admin mode active</strong><br>Full hive overview coming...</div>';
+        } else if (hiveName) {
+          html += `<h2 style="text-align:center;">${hiveName} Hive</h2>`;
+          // Real-time listener for this partner's hive
+          db.collection('users')
+            .where('hiveName', '==', hiveName)
+            .onSnapshot(snap => {
+              let hosts = 0, vips = 0;
+              snap.forEach(doc => {
+                const d = doc.data();
+                if (d.isHost) hosts++;
+                if (d.isVIP && d.hasPaid) vips++;
+              });
+              const bonus = vips * VIP_FEE * HIVE_PERCENT;
 
-    } catch (error) {
-      let userFriendlyMessage = 'Login failed. Please try again.';
-
-      switch (error.code) {
-        case 'auth/invalid-email':
-          userFriendlyMessage = 'Please enter a valid email address.';
-          break;
-        case 'auth/user-not-found':
-          userFriendlyMessage = 'No account found with this email.';
-          break;
-        case 'auth/wrong-password':
-          userFriendlyMessage = 'Incorrect password.';
-          break;
-        case 'auth/too-many-requests':
-          userFriendlyMessage = 'Too many failed attempts. Please try again later or reset your password.';
-          break;
-        case 'auth/user-disabled':
-          userFriendlyMessage = 'This account has been disabled.';
-          break;
-        default:
-          userFriendlyMessage = error.message || 'An unexpected error occurred.';
-          console.error('Login error:', error); // For debugging
+              statsContent.innerHTML = html + `
+                <div class="stat-card">
+                  <h3>Hosts</h3>
+                  <div style="font-size:2.2rem;font-weight:bold;">${hosts.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Paid VIPs</h3>
+                  <div style="font-size:2.2rem;font-weight:bold;">${vips.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                  <h3>Hive Bonus Earned</h3>
+                  <div style="font-size:2.2rem;font-weight:bold;color:#2e7d32;">
+                    ₦${bonus.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                  </div>
+                </div>`;
+            });
+        } else {
+          statsContent.innerHTML = html + `
+            <div class="message error">
+              You are not assigned as a hive partner yet.<br>
+              Contact admin to get your hiveName.
+            </div>`;
+        }
+      } catch (err) {
+        statsContent.innerHTML = `<div class="message error">Error: ${err.message}</div>`;
       }
-
-      messageDiv.innerHTML = `<p class="error">${userFriendlyMessage}</p>`;
-    } finally {
-      isSubmitting = false;
-      submitButton.disabled = false;
-      submitButton.textContent = 'Sign In';
+    } else {
+      // Not signed in → show login
+      dashboardSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
     }
   });
 
-  // Optional: Clear error message when user starts typing again
-  [emailInput, passwordInput].forEach(input => {
-    input.addEventListener('input', () => {
-      if (messageDiv.querySelector('.error')) {
-        messageDiv.innerHTML = '';
-      }
-    });
-  });
+  // ── Login Form Handler ─────────────────────────────────────
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-  // Optional: Show loading state if user is already signed in (page refresh)
-  auth.onAuthStateChanged((user) => {
-    if (user && window.location.pathname.includes('login.html')) {
-      messageDiv.innerHTML = '<p style="color: #2e7d32;">Already signed in! Redirecting...</p>';
-      setTimeout(() => {
-        window.location.href = 'https://auth.cube.xixi.live/partners.html';
-      }, 1000);
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+    messageDiv.innerHTML = '<p class="loading">Authenticating...</p>';
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      messageDiv.innerHTML = '<div class="message success">Success! Loading dashboard...</div>';
+      // No redirect needed - onAuthStateChanged will handle it
+    } catch (error) {
+      let msg = 'Login failed.';
+      if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
+      else if (error.code === 'auth/user-not-found') msg = 'Account not found.';
+      else if (error.code === 'auth/invalid-email') msg = 'Invalid email format.';
+      else if (error.code === 'auth/too-many-requests') msg = 'Too many attempts. Try again later.';
+      else msg = error.message;
+
+      messageDiv.innerHTML = `<div class="message error">${msg}</div>`;
+    } finally {
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
     }
   });
 </script>
