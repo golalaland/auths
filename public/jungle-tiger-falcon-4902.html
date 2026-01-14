@@ -761,7 +761,7 @@ async function applyRewards() {
     const user = userSnap.data() || {};
 
     const amount = w.amount || 0;
-    const note = `Withdrawal for ${user.fullName || w.username || 'User'}`;
+    const note = `Promotional Cash Gift for ${user.fullName || w.username || 'User'}`;
     const ref = `WD-${d.id}`;
     const recipient = ''; // leave empty unless you have recipient_code
     const bankSlug = user.bankSlug || ''; // preferred if you store slug
