@@ -717,70 +717,123 @@ async function applyRewards() {
         tableBody.appendChild(row);
       }
     }
-    async function exportWithdrawalsCSV() {
-      const headers = ['Transfer Amount','Transfer Note (Optional)','Transfer Reference (Optional)','Recipient Code (This overrides all other details if available)','Bank Code or Slug','Account Number','Account Name (Optional)','Email Address (Optional)'];
-      const rows = [headers];
-      const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
-      const snap = await getDocs(q);
+   async function exportWithdrawalsCSV() {
+  const headers = [
+    'Transfer Amount',
+    'Transfer Note (Optional)',
+    'Transfer Reference (Optional)',
+    'Recipient Code (This overrides all other details if available)',
+    'Bank Code or Slug',
+    'Account Number',
+    'Account Name (Optional)',
+    'Email Address (Optional)'
+  ];
+  const rows = [headers];
+
+  const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+  const snap = await getDocs(q);
+
+  for (const d of snap.docs) {
+    const w = d.data();
+    const userSnap = await getDoc(doc(db, 'users', w.uid));
+    const user = userSnap.data() || {};
+
+    const amount = w.amount || 0;
+    const note = `Withdrawal for ${user.fullName || w.username || 'User'}`;
+    const ref = `WD-${d.id}`;
+    const recipient = ''; // leave empty unless you have recipient_code
+    const bankSlug = user.bankSlug || ''; // preferred if you store slug
+    const bankDisplay = user.bankName || ''; // fallback to stored display name
+    const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
+    const accName = user.fullName || w.username || ''; // ← KEY CHANGE: use fullName
+    const email = user.email || '';
+
+    rows.push([
+      amount,
+      note,
+      ref,
+      recipient,
+      bankSlug || bankDisplay, // Paystack accepts slug or name here
+      accNum,
+      accName,
+      email
+    ]);
+  }
+
+  downloadCSV('withdrawals_paystack.csv', rows);
+
+  if (rows.length > 1) {
+    const count = rows.length - 1;
+    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported withdrawal${count === 1 ? '' : 's'} as paid?`);
+    if (ok) {
+      showLoader('Marking paid...');
       for (const d of snap.docs) {
-        const w = d.data();
-        const userSnap = await getDoc(doc(db, 'users', w.uid));
-        const user = userSnap.data() || {};
-        const amount = w.amount;
-        const note = `Withdrawal for ${w.username}`;
-        const ref = `WD-${d.id}`;
-        const recipient = '';
-        const bank = w.bankName || '';
-        const accNum = w.bankAccountNumber || '';
-        const accName = user.accountName || w.username || '';
-        const email = user.email || '';
-        rows.push([amount, note, ref, recipient, bank, accNum, accName, email]);
+        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
       }
-      downloadCSV('withdrawals_paystack.csv', rows);
-      if (rows.length > 1) {
-        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} exported withdrawals as paid?`);
-        if (ok) {
-          showLoader('Marking paid...');
-          for (const d of snap.docs) {
-            await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-          }
-          hideLoader();
-          loadWithdrawals();
-        }
-      }
+      hideLoader();
+      loadWithdrawals();
     }
-    async function exportHostWithdrawalsCSV() {
-      const headers = ['Transfer Amount','Transfer Note (Optional)','Transfer Reference (Optional)','Recipient Code (This overrides all other details if available)','Bank Code or Slug','Account Number','Account Name (Optional)','Email Address (Optional)'];
-      const rows = [headers];
-      const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
-      const snap = await getDocs(q);
+  }
+}
+
+async function exportHostWithdrawalsCSV() {
+  const headers = [
+    'Transfer Amount',
+    'Transfer Note (Optional)',
+    'Transfer Reference (Optional)',
+    'Recipient Code (This overrides all other details if available)',
+    'Bank Code or Slug',
+    'Account Number',
+    'Account Name (Optional)',
+    'Email Address (Optional)'
+  ];
+  const rows = [headers];
+
+  const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+  const snap = await getDocs(q);
+
+  for (const d of snap.docs) {
+    const w = d.data();
+    const userSnap = await getDoc(doc(db, 'users', w.uid));
+    const user = userSnap.data() || {};
+
+    const amount = w.amount || 0;
+    const note = `Host Withdrawal for ${user.fullName || w.username || 'Host'}`;
+    const ref = `HWD-${d.id}`;
+    const recipient = ''; 
+    const bankSlug = user.bankSlug || ''; 
+    const bankDisplay = user.bankName || ''; 
+    const accNum = user.bankAccountNumber || '';
+    const accName = user.fullName || w.username || ''; // ← KEY CHANGE: fullName
+    const email = user.email || '';
+
+    rows.push([
+      amount,
+      note,
+      ref,
+      recipient,
+      bankSlug || bankDisplay,
+      accNum,
+      accName,
+      email
+    ]);
+  }
+
+  downloadCSV('host_withdrawals_paystack.csv', rows);
+
+  if (rows.length > 1) {
+    const count = rows.length - 1;
+    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported host withdrawal${count === 1 ? '' : 's'} as paid?`);
+    if (ok) {
+      showLoader('Marking paid...');
       for (const d of snap.docs) {
-        const w = d.data();
-        const userSnap = await getDoc(doc(db, 'users', w.uid));
-        const user = userSnap.data() || {};
-        const amount = w.amount;
-        const note = `Host Withdrawal for ${w.username}`;
-        const ref = `HWD-${d.id}`;
-        const recipient = '';
-        const bank = user.bankName || '';
-        const accNum = user.bankAccountNumber || '';
-        const accName = user.accountName || w.username || '';
-        const email = user.email || '';
-        rows.push([amount, note, ref, recipient, bank, accNum, accName, email]);
+        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
       }
-      downloadCSV('host_withdrawals_paystack.csv', rows);
-      if (rows.length > 1) {
-        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} exported host withdrawals as paid?`);
-        if (ok) {
-          showLoader('Marking paid...');
-          for (const d of snap.docs) {
-            await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-          }
-          hideLoader();
-          loadHostWithdrawals();
-        }
-      }
+      hideLoader();
+      loadHostWithdrawals();
     }
+  }
+}
     // DOPE ALERT — REPLACE ALL alert() CALLS
 function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
   const alertBox = document.getElementById("dopeAlert");
