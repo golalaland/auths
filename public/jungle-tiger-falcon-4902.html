@@ -748,16 +748,16 @@ async function applyRewards() {
     const accName = user.fullName || w.username || ''; // ← KEY CHANGE: use fullName
     const email = user.email || '';
 
-    rows.push([
-      amount,
-      note,
-      ref,
-      recipient,
-      bankSlug || bankDisplay, // Paystack accepts slug or name here
-      accNum,
-      accName,
-      email
-    ]);
+   rows.push([
+  amount,                                 // plain number: 50000
+  note,                                   // "Host Withdrawal for NNAMDI ANYA"
+  ref,                                    // "hwd-..." (keep lowercase)
+  recipient || '', 
+  user.bankSlug || user.bankName || 'access-bank',  // prefer slug, fallback to name
+  accNum,
+  accName,
+  email
+]);
   }
 
   downloadCSV('withdrawals_paystack.csv', rows);
