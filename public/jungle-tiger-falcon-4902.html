@@ -113,786 +113,833 @@
       </table>
       <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
     </div>
+    <div id="referral-configs" style="margin-top:30px;">
+  <h3>Referral Ripple Percentages</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:600px;">
+    <label>Level 1 Cash %: <input id="l1-cash" type="number" step="0.1" min="0" max="100" value="10"></label>
+    <label>Level 1 Stars %: <input id="l1-stars" type="number" step="0.1" min="0" max="100" value="5"></label>
+    <label>Level 2 Cash %: <input id="l2-cash" type="number" step="0.1" min="0" max="100" value="5"></label>
+    <label>Level 2 Stars %: <input id="l2-stars" type="number" step="0.1" min="0" max="100" value="2"></label>
   </div>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp, runTransaction, addDoc, deleteDoc, onSnapshot
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    const firebaseConfig = {
-      apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
-      authDomain: "dettyverse.firebaseapp.com",
-      projectId: "dettyverse",
-      storageBucket: "dettyverse.firebasestorage.app",
-      messagingSenderId: "1036459652488",
-      appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
-      measurementId: "G-NX2KWZW85V"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const adminGate = document.getElementById("adminGate");
-    const adminPanel = document.getElementById("adminPanel");
-    const adminEmailInput = document.getElementById("adminEmail");
-    const adminCheckBtn = document.getElementById("adminCheckBtn");
-    const adminGateMsg = document.getElementById("adminGateMsg");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const loaderOverlay = document.getElementById("loaderOverlay");
-    const loaderText = document.getElementById("loaderText");
-    let currentAdmin = null;
-    let currentLbData = [];
-    let currentWinnersData = [];
-    let lbUnsub = null;
-    function showLoader(text = "Working...") {
-      loaderText.textContent = text;
-      loaderOverlay.style.display = "flex";
-    }
-    function hideLoader() { loaderOverlay.style.display = "none"; }
+  <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
+</div>
+  </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp, runTransaction, addDoc, deleteDoc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+    authDomain: "dettyverse.firebaseapp.com",
+    projectId: "dettyverse",
+    storageBucket: "dettyverse.firebasestorage.app",
+    messagingSenderId: "1036459652488",
+    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+    measurementId: "G-NX2KWZW85V"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const adminGate = document.getElementById("adminGate");
+  const adminPanel = document.getElementById("adminPanel");
+  const adminEmailInput = document.getElementById("adminEmail");
+  const adminCheckBtn = document.getElementById("adminCheckBtn");
+  const adminGateMsg = document.getElementById("adminGateMsg");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loaderOverlay = document.getElementById("loaderOverlay");
+  const loaderText = document.getElementById("loaderText");
+
+  let currentAdmin = null;
+  let currentLbData = [];
+  let currentWinnersData = [];
+  let lbUnsub = null;
+
+  function showLoader(text = "Working...") {
+    loaderText.textContent = text;
+    loaderOverlay.style.display = "flex";
+  }
+
+  function hideLoader() { loaderOverlay.style.display = "none"; }
+
   function showConfirm(title = "Confirm", msg = "Are you sure?") {
-  return new Promise(resolve => {
-    const overlay = document.createElement("div");
-    overlay.style.cssText = `
-      position:fixed;inset:0;
-      background:rgba(0,0,0,0.96);
-      backdrop-filter:blur(20px);
-      display:flex;align-items:center;justify-content:center;
-      z-index:999999;
-      opacity:0;
-      transition:opacity 0.5s ease;
-    `;
-    overlay.innerHTML = `
-      <div style="
-        background:linear-gradient(135deg,#1a0033,#2d1b69,#0f0c29);
-        padding:40px 32px;
-        border-radius:28px;
-        max-width:440px;
-        width:92%;
-        text-align:center;
-        box-shadow:0 0 120px rgba(255,0,110,0.6),inset 0 0 60px rgba(0,255,150,0.15);
-        border:3px solid transparent;
-        background-clip:padding-box;
-        position:relative;
-        overflow:hidden;
-        transform:scale(0.9);
-        transition:transform 0.6s cubic-bezier(0.18,0.89,0.32,1.28);
-      ">
+    return new Promise(resolve => {
+      const overlay = document.createElement("div");
+      overlay.style.cssText = `
+        position:fixed;inset:0;
+        background:rgba(0,0,0,0.96);
+        backdrop-filter:blur(20px);
+        display:flex;align-items:center;justify-content:center;
+        z-index:999999;
+        opacity:0;
+        transition:opacity 0.5s ease;
+      `;
+      overlay.innerHTML = `
         <div style="
-          position:absolute;
-          inset:0;
-          background:linear-gradient(45deg,transparent 30%,rgba(0,255,150,0.12) 50%,transparent 70%);
-          animation:shine 5s infinite;
-        "></div>
-        <h3 style="
-          margin:0 0 20px;
-          font-size:32px;
-          color:#0f9;
-          text-shadow:0 0 30px #0f9,0 0 60px #0f9;
-          font-weight:900;
-          letter-spacing:1px;
-        ">${title}</h3>
-        <p style="
-          margin:0 0 36px;
-          font-size:19px;
-          color:#fff;
-          line-height:1.7;
-          opacity:0.95;
-        ">${msg}</p>
-        <div style="display:flex;gap:22px;justify-content:center;">
-          <button id="no" style="
-            flex:1;
-            padding:18px;
-            background:#222;
-            color:#aaa;
-            border:none;
-            border-radius:20px;
-            font-weight:800;
-            font-size:16px;
-            cursor:pointer;
-            box-shadow:0 8px 25px rgba(0,0,0,0.7);
-            transition:all 0.3s;
-          " onmouseover="this.style.background='#444';this.style.transform='translateY(-4px)'"
-             onmouseout="this.style.background='#222';this.style.transform='translateY(0)'">CANCEL</button>
-          <button id="yes" style="
-            flex:1;
-            padding:18px;
-            background:linear-gradient(90deg,#ff006e,#ff3300,#ff006e);
-            color:#fff;
-            border:none;
-            border-radius:20px;
+          background:linear-gradient(135deg,#1a0033,#2d1b69,#0f0c29);
+          padding:40px 32px;
+          border-radius:28px;
+          max-width:440px;
+          width:92%;
+          text-align:center;
+          box-shadow:0 0 120px rgba(255,0,110,0.6),inset 0 0 60px rgba(0,255,150,0.15);
+          border:3px solid transparent;
+          background-clip:padding-box;
+          position:relative;
+          overflow:hidden;
+          transform:scale(0.9);
+          transition:transform 0.6s cubic-bezier(0.18,0.89,0.32,1.28);
+        ">
+          <div style="
+            position:absolute;
+            inset:0;
+            background:linear-gradient(45deg,transparent 30%,rgba(0,255,150,0.12) 50%,transparent 70%);
+            animation:shine 5s infinite;
+          "></div>
+          <h3 style="
+            margin:0 0 20px;
+            font-size:32px;
+            color:#0f9;
+            text-shadow:0 0 30px #0f9,0 0 60px #0f9;
             font-weight:900;
-            font-size:16px;
-            cursor:pointer;
-            box-shadow:0 12px 40px rgba(255,0,110,0.8);
-            animation:pulse 2s infinite;
-            background-size:200%;
-            transition:all 0.4s;
-          " onmouseover="this.style.transform='scale(1.08)';this.style.backgroundPosition='right'"
-             onmouseout="this.style.transform='scale(1)';this.style.backgroundPosition='left'">YES, DO IT</button>
+            letter-spacing:1px;
+          ">${title}</h3>
+          <p style="
+            margin:0 0 36px;
+            font-size:19px;
+            color:#fff;
+            line-height:1.7;
+            opacity:0.95;
+          ">${msg}</p>
+          <div style="display:flex;gap:22px;justify-content:center;">
+            <button id="no" style="
+              flex:1;
+              padding:18px;
+              background:#222;
+              color:#aaa;
+              border:none;
+              border-radius:20px;
+              font-weight:800;
+              font-size:16px;
+              cursor:pointer;
+              box-shadow:0 8px 25px rgba(0,0,0,0.7);
+              transition:all 0.3s;
+            " onmouseover="this.style.background='#444';this.style.transform='translateY(-4px)'"
+               onmouseout="this.style.background='#222';this.style.transform='translateY(0)'">CANCEL</button>
+            <button id="yes" style="
+              flex:1;
+              padding:18px;
+              background:linear-gradient(90deg,#ff006e,#ff3300,#ff006e);
+              color:#fff;
+              border:none;
+              border-radius:20px;
+              font-weight:900;
+              font-size:16px;
+              cursor:pointer;
+              box-shadow:0 12px 40px rgba(255,0,110,0.8);
+              animation:pulse 2s infinite;
+              background-size:200%;
+              transition:all 0.4s;
+            " onmouseover="this.style.transform='scale(1.08)';this.style.backgroundPosition='right'"
+               onmouseout="this.style.transform='scale(1)';this.style.backgroundPosition='left'">YES, DO IT</button>
+          </div>
         </div>
-      </div>
-    `;
-    // Add styles for animations
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes shine {
-        0% { transform: translateX(-150%) translateY(-150%) rotate(30deg); }
-        100% { transform: translateX(150%) translateY(150%) rotate(30deg); }
-      }
-      @keyframes pulse {
-        0%, 100% { box-shadow: 0 12px 40px rgba(255,0,110,0.8); }
-        50% { box-shadow: 0 20px 60px rgba(255,0,110,1); }
-      }
-    `;
-    document.head.appendChild(style);
-    document.body.appendChild(overlay);
-    // Animate in
-    setTimeout(() => {
-      overlay.style.opacity = "1";
-      overlay.querySelector("div > div").style.transform = "scale(1)";
-    }, 50);
-    // Button actions
-    overlay.querySelector("#no").onclick = () => {
-      overlay.style.opacity = "0";
-      setTimeout(() => { overlay.remove(); style.remove(); }, 500);
-      resolve(false);
-    };
-    overlay.querySelector("#yes").onclick = () => {
-      overlay.style.opacity = "0";
-      setTimeout(() => { overlay.remove(); style.remove(); }, 500);
-      resolve(true);
-    };
-    // Click outside to cancel
-    overlay.onclick = (e) => {
-      if (e.target === overlay) {
-        overlay.querySelector("#no").click();
-      }
-    };
+      `;
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes shine {
+          0% { transform: translateX(-150%) translateY(-150%) rotate(30deg); }
+          100% { transform: translateX(150%) translateY(150%) rotate(30deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { box-shadow: 0 12px 40px rgba(255,0,110,0.8); }
+          50% { box-shadow: 0 20px 60px rgba(255,0,110,1); }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        overlay.style.opacity = "1";
+        overlay.querySelector("div > div").style.transform = "scale(1)";
+      }, 50);
+      overlay.querySelector("#no").onclick = () => {
+        overlay.style.opacity = "0";
+        setTimeout(() => { overlay.remove(); style.remove(); }, 500);
+        resolve(false);
+      };
+      overlay.querySelector("#yes").onclick = () => {
+        overlay.style.opacity = "0";
+        setTimeout(() => { overlay.remove(); style.remove(); }, 500);
+        resolve(true);
+      };
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.querySelector("#no").click();
+        }
+      };
+    });
+  }
+
+  function getTodayDateString() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function downloadCSV(filename, rows) {
+    const csv = rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  adminCheckBtn.addEventListener("click", async () => {
+    const email = adminEmailInput.value.trim().toLowerCase();
+    if (!email) return adminGateMsg.textContent = "Enter email";
+    showLoader("Checking...");
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snap = await getDocs(q);
+    hideLoader();
+    if (snap.empty) return adminGateMsg.textContent = "Not found";
+    const data = snap.docs[0].data();
+    if (!data.isAdmin) return adminGateMsg.textContent = "Not admin";
+    currentAdmin = { id: snap.docs[0].id, email };
+    adminGate.style.display = "none";
+    adminPanel.style.display = "block";
+    initTabs();
+    await loadBidRounds();
+    await loadWinnerDates();
+    await loadConfigs();
+    initRewardRules();
+    await loadWithdrawals();
+    await loadHostWithdrawals();
+    await startLbListener();
   });
-}
-    function downloadCSV(filename, rows) {
-      const csv = rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
+
+  logoutBtn.addEventListener("click", () => {
+    if (lbUnsub) lbUnsub();
+    currentAdmin = null;
+    adminPanel.style.display = "none";
+    adminGate.style.display = "block";
+    adminEmailInput.value = "";
+    adminGateMsg.textContent = "";
+  });
+
+  document.getElementById('lb-type').addEventListener('change', startLbListener);
+  document.getElementById('lb-limit').addEventListener('change', startLbListener);
+  document.getElementById('bid-round').addEventListener('change', startLbListener);
+  document.getElementById('fetch-lb').addEventListener('click', startLbListener);
+  document.getElementById('save-winners').addEventListener('click', async () => {
+    showLoader("Saving winners...");
+    await saveWinners();
+    hideLoader();
+  });
+  document.getElementById('fetch-winners').addEventListener('click', async () => {
+    showLoader("Fetching history...");
+    await fetchWinnersHistory();
+    hideLoader();
+  });
+  document.getElementById('export-csv').addEventListener('click', exportCSV);
+  document.getElementById('clear-winners').addEventListener('click', async () => {
+    if (await showConfirm("Clear", "Clear all winners?")) {
+      showLoader("Clearing...");
+      await clearWinners();
+      hideLoader();
     }
-    adminCheckBtn.addEventListener("click", async () => {
-      const email = adminEmailInput.value.trim().toLowerCase();
-      if (!email) return adminGateMsg.textContent = "Enter email";
-      showLoader("Checking...");
-      const q = query(collection(db, "users"), where("email", "==", email));
-      const snap = await getDocs(q);
-      hideLoader();
-      if (snap.empty) return adminGateMsg.textContent = "Not found";
-      const data = snap.docs[0].data();
-      if (!data.isAdmin) return adminGateMsg.textContent = "Not admin";
-      currentAdmin = { id: snap.docs[0].id, email };
-      adminGate.style.display = "none";
-      adminPanel.style.display = "block";
-      initTabs();
-      await loadBidRounds();
-      await loadWinnerDates();
-      await loadConfigs();
-      initRewardRules();
-      await loadWithdrawals();
-      await loadHostWithdrawals();
-      await startLbListener(); // Start live listener for default tab
+  });
+  document.getElementById('add-rule').addEventListener('click', addRewardRule);
+  document.getElementById('apply-rewards').addEventListener('click', async () => {
+    showLoader("Applying rewards...");
+    await applyRewards();
+    hideLoader();
+  });
+  document.getElementById('send-notifs').addEventListener('click', async () => {
+    showLoader("Sending notifications...");
+    await sendNotifications();
+    hideLoader();
+  });
+  document.getElementById('save-configs').addEventListener('click', async () => {
+    showLoader("Saving configs...");
+    await saveConfigs();
+    hideLoader();
+  });
+  document.getElementById('export-withdrawals-csv').addEventListener('click', exportWithdrawalsCSV);
+  document.getElementById('export-host-withdrawals-csv').addEventListener('click', exportHostWithdrawalsCSV);
+
+  function initTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'leaderboards') startLbListener();
+        else if (tab.dataset.tab === 'winners') fetchWinnersHistory();
+        else if (tab.dataset.tab === 'withdrawals') loadWithdrawals();
+        else if (tab.dataset.tab === 'hostWithdrawals') loadHostWithdrawals();
+        if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
+          lbUnsub();
+          lbUnsub = null;
+        }
+      });
     });
-    logoutBtn.addEventListener("click", () => {
-      if (lbUnsub) lbUnsub();
-      currentAdmin = null;
-      adminPanel.style.display = "none";
-      adminGate.style.display = "block";
-      adminEmailInput.value = "";
-      adminGateMsg.textContent = "";
+  }
+
+  async function startLbListener() {
+    if (lbUnsub) lbUnsub();
+    const type = document.getElementById('lb-type').value;
+    const lbLimit = parseInt(document.getElementById('lb-limit').value) || 50;
+    const tableBody = document.getElementById('lb-table').querySelector('tbody');
+    tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    currentLbData = [];
+    if (type === 'bid') {
+      const roundId = document.getElementById('bid-round').value;
+      const q = query(collection(db, 'taps'), where('roundId', '==', roundId));
+      lbUnsub = onSnapshot(q, (snap) => {
+        const scores = {};
+        snap.forEach(d => {
+          const data = d.data();
+          if (!scores[data.uid]) scores[data.uid] = { uid: data.uid, username: data.username, taps: 0, email: '' };
+          scores[data.uid].taps += data.count;
+        });
+        currentLbData = Object.values(scores).sort((a,b) => b.taps - a.taps).slice(0, lbLimit);
+        renderLbTable();
+      });
+    } else {
+      const q = collection(db, 'users');
+      lbUnsub = onSnapshot(q, (snap) => {
+        const key = getLeaderboardKey(type);
+        const users = snap.docs.map(doc => {
+          const d = doc.data();
+          return { uid: doc.id, username: d.chatId, taps: d[`taps${type.charAt(0).toUpperCase() + type.slice(1)}`]?.[key] || 0, email: d.email };
+        });
+        currentLbData = users.filter(u => u.taps > 0).sort((a,b) => b.taps - a.taps).slice(0, lbLimit);
+        renderLbTable();
+      });
+    }
+  }
+
+  function renderLbTable() {
+    const tableBody = document.getElementById('lb-table').querySelector('tbody');
+    tableBody.innerHTML = '';
+    currentLbData.forEach((u, i) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${i+1}</td><td>${u.username}</td><td>${u.taps}</td><td>${u.email || ''}</td>`;
+      tableBody.appendChild(row);
     });
-    // Rest of the script remains the same
-    document.getElementById('lb-type').addEventListener('change', startLbListener);
-    document.getElementById('lb-limit').addEventListener('change', startLbListener);
-    document.getElementById('bid-round').addEventListener('change', startLbListener);
-    document.getElementById('fetch-lb').addEventListener('click', startLbListener);
-    document.getElementById('save-winners').addEventListener('click', async () => {
-      showLoader("Saving winners...");
-      await saveWinners();
-      hideLoader();
+  }
+
+  function getLeaderboardKey(period) {
+    const now = new Date();
+    if (period === 'daily') return now.toISOString().split('T')[0];
+    if (period === 'weekly') return `${now.getFullYear()}-W${getWeekNumber(now)}`;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function getWeekNumber(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  }
+
+  async function saveWinners() {
+    if (currentLbData.length === 0) return dopeAlert('No data');
+    const date = new Date().toISOString().split('T')[0];
+    const winnersRef = doc(db, 'winners', date);
+    await setDoc(winnersRef, {
+      date,
+      type: document.getElementById('lb-type').value,
+      roundId: document.getElementById('lb-type').value === 'bid' ? document.getElementById('bid-round').value : null,
+      winners: currentLbData.map((u, i) => ({ rank: i+1, ...u, rewards: { cash: 0, stars: 0 } })),
+      timestamp: serverTimestamp()
     });
-    document.getElementById('fetch-winners').addEventListener('click', async () => {
-      showLoader("Fetching history...");
-      await fetchWinnersHistory();
-      hideLoader();
+    dopeAlert('Saved');
+    loadWinnerDates();
+  }
+
+  async function loadBidRounds() {
+    const bids = await getDocs(collection(db, 'bids'));
+    const uniqueRounds = [...new Set(bids.docs.map(d => d.data().roundId))].sort((a,b) => b.localeCompare(a));
+    const select = document.getElementById('bid-round');
+    select.innerHTML = uniqueRounds.map(r => `<option value="${r}">${r}</option>`).join('');
+  }
+
+  async function loadWinnerDates() {
+    const winners = await getDocs(collection(db, 'winners'));
+    const dates = winners.docs.map(d => d.id).sort((a,b) => b.localeCompare(a));
+    const select = document.getElementById('reward-winners-date');
+    select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  async function fetchWinnersHistory() {
+    const from = document.getElementById('winners-from').value;
+    const to = document.getElementById('winners-to').value;
+    let q = query(collection(db, 'winners'), orderBy('date', 'desc'));
+    if (from) q = query(q, where('date', '>=', from));
+    if (to) q = query(q, where('date', '<=', to));
+    const snaps = await getDocs(q);
+    const tableBody = document.getElementById('winners-table').querySelector('tbody');
+    tableBody.innerHTML = '';
+    currentWinnersData = [];
+    snaps.docs.forEach(doc => {
+      const data = doc.data();
+      data.winners.forEach(w => {
+        const rewardsStr = `Cash: ${w.rewards.cash}, Stars: ${w.rewards.stars}`;
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${data.date}</td><td>${w.rank}</td><td>${w.username}</td><td>${w.taps}</td><td>${rewardsStr}</td>`;
+        tableBody.appendChild(row);
+        currentWinnersData.push({ date: data.date, ...w });
+      });
     });
-    document.getElementById('export-csv').addEventListener('click', exportCSV);
-    document.getElementById('clear-winners').addEventListener('click', async () => {
-      if (await showConfirm("Clear", "Clear all winners?")) {
-        showLoader("Clearing...");
-        await clearWinners();
-        hideLoader();
+  }
+
+ function exportCSV() {
+    if (currentWinnersData.length === 0) return dopeAlert('Fetch winners first');
+    const headers = ['Date','Rank','User','Taps','Cash','Stars','Email'];
+    const rows = [headers, ...currentWinnersData.map(w => [w.date, w.rank, w.username, w.taps, w.rewards.cash, w.rewards.stars, w.email || ''])];
+    downloadCSV(`winners_${getTodayDateString()}.csv`, rows);
+  }
+
+  async function clearWinners() {
+    const winners = await getDocs(collection(db, 'winners'));
+    for (const d of winners.docs) await deleteDoc(d.ref);
+    dopeAlert('Cleared');
+    document.getElementById('winners-table').querySelector('tbody').innerHTML = '';
+    loadWinnerDates();
+  }
+
+  function initRewardRules() {
+    const container = document.getElementById('reward-rules');
+    addRewardRule();
+  }
+
+  function addRewardRule() {
+    const container = document.getElementById('reward-rules');
+    const rule = document.createElement('div');
+    rule.innerHTML = `
+      Top <input type="number" class="rule-start" value="1" min="1"> -
+      <input type="number" class="rule-end" value="10" min="1">:
+      Cash <input type="number" class="rule-cash" value="5000">,
+      Stars <input type="number" class="rule-stars" value="0">
+    `;
+    container.appendChild(rule);
+  }
+
+  function formatNumber(num) {
+    if (!num || isNaN(num)) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  async function applyRewards() {
+    const date = document.getElementById('reward-winners-date').value;
+    if (!date) return dopeAlert('Select a date', 'Error', 'Warning');
+    const winnersRef = doc(db, 'winners', date);
+    const snap = await getDoc(winnersRef);
+    if (!snap.exists()) return dopeAlert('No winners for this date', 'Error', 'Warning');
+    const winnersDoc = snap.data();
+    const winners = winnersDoc.winners || [];
+    const isBidRoyale = winnersDoc.type?.includes("bid") || date.includes("bid_");
+
+    const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
+      start: parseInt(div.querySelector('.rule-start').value) || 1,
+      end: parseInt(div.querySelector('.rule-end').value) || 999,
+      cash: parseInt(div.querySelector('.rule-cash').value) || 0,
+      stars: parseInt(div.querySelector('.rule-stars').value) || 0
+    }));
+
+    winners.forEach(w => {
+      w.rewards = { cash: 0, stars: 0 };
+      for (let rule of rules) {
+        if (w.rank >= rule.start && w.rank <= rule.end) {
+          w.rewards = { cash: rule.cash, stars: rule.stars };
+          break;
+        }
       }
     });
-    document.getElementById('add-rule').addEventListener('click', addRewardRule);
-    document.getElementById('apply-rewards').addEventListener('click', async () => {
-      showLoader("Applying rewards...");
-      await applyRewards();
-      hideLoader();
-    });
-    document.getElementById('send-notifs').addEventListener('click', async () => {
-      showLoader("Sending notifications...");
-      await sendNotifications();
-      hideLoader();
-    });
-    document.getElementById('save-configs').addEventListener('click', async () => {
-      showLoader("Saving configs...");
-      await saveConfigs();
-      hideLoader();
-    });
-    document.getElementById('export-withdrawals-csv').addEventListener('click', exportWithdrawalsCSV);
-    document.getElementById('export-host-withdrawals-csv').addEventListener('click', exportHostWithdrawalsCSV);
-    function initTabs() {
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-          document.getElementById(tab.dataset.tab).classList.add('active');
-          if (tab.dataset.tab === 'leaderboards') {
-            startLbListener();
-          } else if (tab.dataset.tab === 'winners') {
-            fetchWinnersHistory();
-          } else if (tab.dataset.tab === 'withdrawals') {
+    await updateDoc(winnersRef, { winners });
+
+    // Load ripple percentages from config
+    const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
+    const config = referralSnap.exists() ? referralSnap.data() : {
+      level1_cash_percent: 10,
+      level1_stars_percent: 5,
+      level2_cash_percent: 5,
+      level2_stars_percent: 2,
+      max_levels: 2
+    };
+
+    // Convert % to decimal if stored as whole numbers
+    const l1Cash = config.level1_cash_percent / 100;
+    const l1Stars = config.level1_stars_percent / 100;
+    const l2Cash = config.level2_cash_percent / 100;
+    const l2Stars = config.level2_stars_percent / 100;
+
+    for (let w of winners) {
+      const directCash = w.rewards.cash || 0;
+      const directStars = w.rewards.stars || 0;
+      if (directCash + directStars === 0) continue;
+
+      const winnerRef = doc(db, 'users', w.uid);
+      const winnerSnap = await getDoc(winnerRef);
+      if (!winnerSnap.exists()) continue;
+      const winnerData = winnerSnap.data();
+
+      await runTransaction(db, async (t) => {
+        const snap = await t.get(winnerRef);
+        const u = snap.data();
+        t.update(winnerRef, {
+          cash: (u.cash || 0) + directCash,
+          stars: (u.stars || 0) + directStars
+        });
+      });
+
+      const rewardParts = [];
+      if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
+      if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} stars`);
+      const rankText = w.rank === 1 ? "CHAMPION!" :
+                      w.rank === 2 ? "2ND — WARRIOR!" :
+                      w.rank === 3 ? "3RD — LEGEND!" :
+                      `TOP ${w.rank}`;
+      const title = isBidRoyale ? "BID ROYALE VICTORY!" : "TapMaster Winner!";
+      await addDoc(collection(db, "notifications"), {
+        recipientId: w.uid,
+        title,
+        message: `${rankText}\nYou won ${rewardParts.join(' + ')}`,
+        type: isBidRoyale ? "bid_royale_winner" : "daily_leaderboard",
+        rank: w.rank,
+        cash: directCash,
+        stars: directStars,
+        createdAt: serverTimestamp(),
+        read: false
+      });
+
+      let currentUid = winnerData.invitedBy;
+      let level = 1;
+      while (currentUid && level <= config.max_levels) {
+        const uplineRef = doc(db, 'users', currentUid);
+        const uplineSnap = await getDoc(uplineRef);
+        if (!uplineSnap.exists()) break;
+        const uplineData = uplineSnap.data();
+
+        const cashPercent = level === 1 ? l1Cash : l2Cash;
+        const starsPercent = level === 1 ? l1Stars : l2Stars;
+
+        const rippleCash = Math.floor(directCash * cashPercent);
+        const rippleStars = Math.floor(directStars * starsPercent);
+
+        if (rippleCash + rippleStars > 0) {
+          await runTransaction(db, async (t) => {
+            const snap = await t.get(uplineRef);
+            const u = snap.data();
+            t.update(uplineRef, {
+              cash: (u.cash || 0) + rippleCash,
+              stars: (u.stars || 0) + rippleStars
+            });
+          });
+
+          const rippleParts = [];
+          if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
+          if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} stars`);
+
+          await addDoc(collection(db, "notifications"), {
+            recipientId: currentUid,
+            title: "Ripple Reward!",
+            message: `Your downline won ₦${formatNumber(directCash)}!\nYou earned ${rippleParts.join(' + ')}`,
+            type: `ripple_level${level}`,
+            fromUser: w.uid,
+            amountCash: rippleCash,
+            amountStars: rippleStars,
+            createdAt: serverTimestamp(),
+            read: false
+          });
+        }
+
+        currentUid = uplineData.invitedBy;
+        level++;
+      }
+    }
+
+    dopeAlert("EMPIRE PAID — REWARDS + RIPPLE SENT!", "SUCCESS", "Crown", 8000);
+  }
+
+  async function loadConfigs() {
+    const configRef = doc(db, 'configs', 'game');
+    const snap = await getDoc(configRef);
+    if (snap.exists()) {
+      const d = snap.data();
+      document.getElementById('bid-cost').value = d.BID_COST || '';
+      document.getElementById('pool-increase').value = d.POOL_INCREASE_PER_PLAYER || '';
+      document.getElementById('base-pool').value = d.BASE_PRIZE_POOL || '';
+      document.getElementById('max-pool').value = d.MAX_PRIZE_POOL || 0;
+    }
+
+    // Load ripple percentages
+    const referralRef = doc(db, 'configs', 'referral');
+    const referralSnap = await getDoc(referralRef);
+    if (referralSnap.exists()) {
+      const r = referralSnap.data();
+      if (document.getElementById('l1-cash')) document.getElementById('l1-cash').value = r.level1_cash_percent || 10;
+      if (document.getElementById('l1-stars')) document.getElementById('l1-stars').value = r.level1_stars_percent || 5;
+      if (document.getElementById('l2-cash')) document.getElementById('l2-cash').value = r.level2_cash_percent || 5;
+      if (document.getElementById('l2-stars')) document.getElementById('l2-stars').value = r.level2_stars_percent || 2;
+    } else {
+      // Defaults if no config exists yet
+      if (document.getElementById('l1-cash')) document.getElementById('l1-cash').value = 10;
+      if (document.getElementById('l1-stars')) document.getElementById('l1-stars').value = 5;
+      if (document.getElementById('l2-cash')) document.getElementById('l2-cash').value = 5;
+      if (document.getElementById('l2-stars')) document.getElementById('l2-stars').value = 2;
+    }
+  }
+
+  async function saveConfigs() {
+    const configRef = doc(db, 'configs', 'game');
+    await setDoc(configRef, {
+      BID_COST: parseInt(document.getElementById('bid-cost').value) || 0,
+      POOL_INCREASE_PER_PLAYER: parseInt(document.getElementById('pool-increase').value) || 0,
+      BASE_PRIZE_POOL: parseInt(document.getElementById('base-pool').value) || 0,
+      MAX_PRIZE_POOL: parseInt(document.getElementById('max-pool').value) || null
+    }, { merge: true });
+
+    // Save ripple percentages
+    const referralRef = doc(db, 'configs', 'referral');
+    await setDoc(referralRef, {
+      level1_cash_percent: parseFloat(document.getElementById('l1-cash')?.value) || 10,
+      level1_stars_percent: parseFloat(document.getElementById('l1-stars')?.value) || 5,
+      level2_cash_percent: parseFloat(document.getElementById('l2-cash')?.value) || 5,
+      level2_stars_percent: parseFloat(document.getElementById('l2-stars')?.value) || 2,
+      max_levels: 2
+    }, { merge: true });
+
+    dopeAlert('All configs (game + referral) saved');
+  }
+
+  async function loadWithdrawals() {
+    const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
+    tableBody.innerHTML = '';
+    const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      const w = d.data();
+      let dateStr = "Unknown";
+      if (w.requestedAt?.toDate) {
+        dateStr = w.requestedAt.toDate().toLocaleString();
+      }
+      let displayName = "—";
+      if (w.uid) {
+        const userRef = doc(db, "users", w.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          displayName = userData.fullName || w.username || "—";
+        } else {
+          displayName = w.username || "—";
+        }
+      }
+      const row = document.createElement('tr');
+      row.dataset.id = d.id;
+      row.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${displayName}</td>
+        <td>${(w.uid || "").replace(/_/g, ".")}</td>
+        <td>₦${(w.amount || 0).toLocaleString()}</td>
+        <td>${w.bankName || "—"}</td>
+        <td>${w.bankAccountNumber || "—"}</td>
+        <td>${w.status || "pending"}</td>
+        <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
+      `;
+      const markBtn = row.querySelector('.mark-paid-withdraw');
+      if (markBtn) {
+        markBtn.addEventListener('click', async () => {
+          if (await showConfirm('Mark Paid', `Mark as paid?`)) {
+            showLoader('Marking...');
+            await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+            hideLoader();
             loadWithdrawals();
-          } else if (tab.dataset.tab === 'hostWithdrawals') {
+          }
+        });
+      }
+      tableBody.appendChild(row);
+    }
+  }
+
+  async function loadHostWithdrawals() {
+    const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
+    tableBody.innerHTML = '';
+    const q = query(collection(db, "hostWithdrawal"), orderBy("requestedAt", "desc"));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      const w = d.data();
+      let dateStr = "Unknown";
+      if (w.requestedAt?.toDate) dateStr = w.requestedAt.toDate().toLocaleString();
+
+      let displayName = "—";
+      if (w.uid) {
+        const userRef = doc(db, "users", w.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          displayName = userData.fullName || w.username || "—";
+        } else {
+          displayName = w.username || "—";
+        }
+      }
+
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      const user = userSnap.data() || {};
+      const bankName = user.bankName || "—";
+      const bankAccountNumber = user.bankAccountNumber || "—";
+
+      const row = document.createElement('tr');
+      row.dataset.id = d.id;
+      row.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${displayName}</td>
+        <td>${w.uid}</td>
+        <td>₦${(w.amount || 0).toLocaleString()}</td>
+        <td>${bankName}</td>
+        <td>${bankAccountNumber}</td>
+        <td>${w.status || "pending"}</td>
+        <td>${w.status === "pending" ? '<button class="mark-paid-host">Mark Paid</button>' : 'Done'}</td>
+      `;
+      const markBtn = row.querySelector('.mark-paid-host');
+      if (markBtn) {
+        markBtn.addEventListener('click', async () => {
+          if (await showConfirm('Mark Paid', `Mark as paid?`)) {
+            showLoader('Marking...');
+            await updateDoc(doc(db, 'hostWithdrawal', d.id), { status: 'paid', paidAt: serverTimestamp() });
+            hideLoader();
             loadHostWithdrawals();
           }
-          if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
-            lbUnsub();
-            lbUnsub = null;
-          }
-        });
-      });
-    }
-    async function startLbListener() {
-      if (lbUnsub) lbUnsub();
-      const type = document.getElementById('lb-type').value;
-      const lbLimit = parseInt(document.getElementById('lb-limit').value) || 50;
-      const tableBody = document.getElementById('lb-table').querySelector('tbody');
-      tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-      currentLbData = [];
-      if (type === 'bid') {
-        const roundId = document.getElementById('bid-round').value;
-        const q = query(collection(db, 'taps'), where('roundId', '==', roundId));
-        lbUnsub = onSnapshot(q, (snap) => {
-          const scores = {};
-          snap.forEach(d => {
-            const data = d.data();
-            if (!scores[data.uid]) scores[data.uid] = { uid: data.uid, username: data.username, taps: 0, email: '' };
-            scores[data.uid].taps += data.count;
-          });
-          currentLbData = Object.values(scores).sort((a,b) => b.taps - a.taps).slice(0, lbLimit);
-          renderLbTable();
-        });
-      } else {
-        const q = collection(db, 'users');
-        lbUnsub = onSnapshot(q, (snap) => {
-          const key = getLeaderboardKey(type);
-          const users = snap.docs.map(doc => {
-            const d = doc.data();
-            return { uid: doc.id, username: d.chatId, taps: d[`taps${type.charAt(0).toUpperCase() + type.slice(1)}`]?.[key] || 0, email: d.email };
-          });
-          currentLbData = users.filter(u => u.taps > 0).sort((a,b) => b.taps - a.taps).slice(0, lbLimit);
-          renderLbTable();
         });
       }
-    }
-    function renderLbTable() {
-      const tableBody = document.getElementById('lb-table').querySelector('tbody');
-      tableBody.innerHTML = '';
-      currentLbData.forEach((u, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${i+1}</td><td>${u.username}</td><td>${u.taps}</td><td>${u.email || ''}</td>`;
-        tableBody.appendChild(row);
-      });
-    }
-    function getLeaderboardKey(period) {
-      const now = new Date();
-      if (period === 'daily') return now.toISOString().split('T')[0];
-      if (period === 'weekly') return `${now.getFullYear()}-W${getWeekNumber(now)}`;
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    }
-    function getWeekNumber(date) {
-      const d = new Date(date);
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-      const yearStart = new Date(d.getFullYear(), 0, 1);
-      return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-    }
-    async function saveWinners() {
-      if (currentLbData.length === 0) return dopeAlert('No data');
-      const date = new Date().toISOString().split('T')[0];
-      const winnersRef = doc(db, 'winners', date);
-      await setDoc(winnersRef, {
-        date,
-        type: document.getElementById('lb-type').value,
-        roundId: document.getElementById('lb-type').value === 'bid' ? document.getElementById('bid-round').value : null,
-        winners: currentLbData.map((u, i) => ({ rank: i+1, ...u, rewards: { cash: 0, stars: 0 } })),
-        timestamp: serverTimestamp()
-      });
-      dopeAlert('Saved');
-      loadWinnerDates();
-    }
-    async function loadBidRounds() {
-      const bids = await getDocs(collection(db, 'bids'));
-      const uniqueRounds = [...new Set(bids.docs.map(d => d.data().roundId))].sort((a,b) => b.localeCompare(a));
-      const select = document.getElementById('bid-round');
-      select.innerHTML = uniqueRounds.map(r => `<option value="${r}">${r}</option>`).join('');
-    }
-    async function loadWinnerDates() {
-      const winners = await getDocs(collection(db, 'winners'));
-      const dates = winners.docs.map(d => d.id).sort((a,b) => b.localeCompare(a));
-      const select = document.getElementById('reward-winners-date');
-      select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-    }
-    async function fetchWinnersHistory() {
-      const from = document.getElementById('winners-from').value;
-      const to = document.getElementById('winners-to').value;
-      let q = query(collection(db, 'winners'), orderBy('date', 'desc'));
-      if (from) q = query(q, where('date', '>=', from));
-      if (to) q = query(q, where('date', '<=', to));
-      const snaps = await getDocs(q);
-      const tableBody = document.getElementById('winners-table').querySelector('tbody');
-      tableBody.innerHTML = '';
-      currentWinnersData = [];
-      snaps.docs.forEach(doc => {
-        const data = doc.data();
-        data.winners.forEach(w => {
-          const rewardsStr = `Cash: ${w.rewards.cash}, Stars: ${w.rewards.stars}`;
-          const row = document.createElement('tr');
-          row.innerHTML = `<td>${data.date}</td><td>${w.rank}</td><td>${w.username}</td><td>${w.taps}</td><td>${rewardsStr}</td>`;
-          tableBody.appendChild(row);
-          currentWinnersData.push({ date: data.date, ...w });
-        });
-      });
-    }
-    function exportCSV() {
-      if (currentWinnersData.length === 0) return dopeAlert('Fetch winners first');
-      const headers = ['Date','Rank','User','Taps','Cash','Stars','Email'];
-      const rows = [headers, ...currentWinnersData.map(w => [w.date, w.rank, w.username, w.taps, w.rewards.cash, w.rewards.stars, w.email || ''])];
-      downloadCSV('winners.csv', rows);
-    }
-    async function clearWinners() {
-      const winners = await getDocs(collection(db, 'winners'));
-      for (const d of winners.docs) {
-        await deleteDoc(d.ref);
-      }
-      dopeAlert('Cleared');
-      document.getElementById('winners-table').querySelector('tbody').innerHTML = '';
-      loadWinnerDates();
-    }
-    function initRewardRules() {
-      const container = document.getElementById('reward-rules');
-      addRewardRule(); // Start with one
-    }
-    function addRewardRule() {
-      const container = document.getElementById('reward-rules');
-      const rule = document.createElement('div');
-      rule.innerHTML = `
-        Top <input type="number" class="rule-start" value="1" min="1"> -
-        <input type="number" class="rule-end" value="10" min="1">:
-        Cash <input type="number" class="rule-cash" value="5000">,
-        Stars <input type="number" class="rule-stars" value="0">
-      `;
-      container.appendChild(rule);
-    }
-// REPLACE YOUR ENTIRE applyRewards() WITH THIS FINAL VERSION
-// → Ripple works for BOTH VIP & HOST winners
-// → Level 1 (invitedBy): 10% cash + 5% stars
-// → Level 2 (inviter’s inviter): 5% cash + 2% stars
-// → Custom “Ripple Reward!” notification
-// → Fraud-proof & clean
-    // ADD THIS — fixes the error
-function formatNumber(num) {
-  if (!num || isNaN(num)) return '0';
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-async function applyRewards() {
-  const date = document.getElementById('reward-winners-date').value;
-  if (!date) return dopeAlert('Select a date', 'Error', 'Warning');
-  const winnersRef = doc(db, 'winners', date);
-  const snap = await getDoc(winnersRef);
-  if (!snap.exists()) return dopeAlert('No winners for this date', 'Error', 'Warning');
-  const winnersDoc = snap.data();
-  const winners = winnersDoc.winners || [];
-  const isBidRoyale = winnersDoc.type?.includes("bid") || date.includes("bid_");
-  // Apply rank rules
-  const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
-    start: parseInt(div.querySelector('.rule-start').value) || 1,
-    end: parseInt(div.querySelector('.rule-end').value) || 999,
-    cash: parseInt(div.querySelector('.rule-cash').value) || 0,
-    stars: parseInt(div.querySelector('.rule-stars').value) || 0
-  }));
-  winners.forEach(w => {
-    w.rewards = { cash: 0, stars: 0 };
-    for (let rule of rules) {
-      if (w.rank >= rule.start && w.rank <= rule.end) {
-        w.rewards = { cash: rule.cash, stars: rule.stars };
-        break;
-      }
-    }
-  });
-  await updateDoc(winnersRef, { winners });
-  // PROCESS EACH WINNER + RIPPLE
-  for (let w of winners) {
-    const directCash = w.rewards.cash || 0;
-    const directStars = w.rewards.stars || 0;
-    if (directCash + directStars === 0) continue;
-    const winnerRef = doc(db, 'users', w.uid);
-    const winnerSnap = await getDoc(winnerRef);
-    if (!winnerSnap.exists()) continue;
-    const winnerData = winnerSnap.data();
-    // PAY WINNER
-    await runTransaction(db, async (t) => {
-      const snap = await t.get(winnerRef);
-      const u = snap.data();
-      t.update(winnerRef, {
-        cash: (u.cash || 0) + directCash,
-        stars: (u.stars || 0) + directStars
-      });
-    });
-    // WINNER NOTIFICATION — ONLY SHOW WHAT THEY ACTUALLY WON
-    const rewardParts = [];
-    if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
-    if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} stars`);
-    const rankText = w.rank === 1 ? "CHAMPION!" :
-                    w.rank === 2 ? "2ND — WARRIOR!" :
-                    w.rank === 3 ? "3RD — LEGEND!" :
-                    `TOP ${w.rank}`;
-    const title = isBidRoyale ? "BID ROYALE VICTORY!" : "TapMaster Winner!";
-    const message = `${rankText}\nYou won ${rewardParts.join(' + ')}`;
-    await addDoc(collection(db, "notifications"), {
-      recipientId: w.uid,
-      title,
-      message,
-      type: isBidRoyale ? "bid_royale_winner" : "daily_leaderboard",
-      rank: w.rank,
-      cash: directCash,
-      stars: directStars,
-      createdAt: serverTimestamp(),
-      read: false
-    });
-    // RIPPLE REWARDS — WORKS FOR EVERYONE (VIP & HOST)
-    let currentUid = winnerData.invitedBy; // ← This is now the real doc ID!
-    let level = 1;
-    while (currentUid && level <= 2) {
-      const uplineRef = doc(db, 'users', currentUid);
-      const uplineSnap = await getDoc(uplineRef);
-      if (!uplineSnap.exists()) break;
-      const uplineData = uplineSnap.data();
-      const cashPercent = level === 1 ? 0.10 : 0.05;
-      const starsPercent = level === 1 ? 0.05 : 0.02;
-      const rippleCash = Math.floor(directCash * cashPercent);
-      const rippleStars = Math.floor(directStars * starsPercent);
-      if (rippleCash + rippleStars > 0) {
-        // Pay upline
-        await runTransaction(db, async (t) => {
-          const snap = await t.get(uplineRef);
-          const u = snap.data();
-          t.update(uplineRef, {
-            cash: (u.cash || 0) + rippleCash,
-            stars: (u.stars || 0) + rippleStars
-          });
-        });
-        // UPLINE NOTIFICATION — ONLY SHOW WHAT THEY EARNED
-        const rippleParts = [];
-        if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
-        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} stars`);
-        await addDoc(collection(db, "notifications"), {
-          recipientId: currentUid,
-          title: "Ripple Reward!",
-          message: `Your downline won ₦${formatNumber(directCash)}!\nYou earned ${rippleParts.join(' + ')}`,
-          type: `ripple_level${level}`,
-          fromUser: w.uid,
-          amountCash: rippleCash,
-          amountStars: rippleStars,
-          createdAt: serverTimestamp(),
-          read: false
-        });
-      }
-      currentUid = uplineData.invitedBy;
-      level++;
+      tableBody.appendChild(row);
     }
   }
-  dopeAlert("EMPIRE PAID — REWARDS + RIPPLE SENT!", "SUCCESS", "Crown", 8000);
-}
-    async function loadConfigs() {
-      const configRef = doc(db, 'configs', 'game');
-      const snap = await getDoc(configRef);
-      if (snap.exists()) {
-        const d = snap.data();
-        document.getElementById('bid-cost').value = d.BID_COST;
-        document.getElementById('pool-increase').value = d.POOL_INCREASE_PER_PLAYER;
-        document.getElementById('base-pool').value = d.BASE_PRIZE_POOL;
-        document.getElementById('max-pool').value = d.MAX_PRIZE_POOL || 0;
-      }
+
+  async function exportWithdrawalsCSV() {
+    const headers = [
+      'Transfer Amount',
+      'Transfer Note (Optional)',
+      'Transfer Reference (Optional)',
+      'Recipient Code (This overrides all other details if available)',
+      'Bank Code or Slug',
+      'Account Number',
+      'Account Name (Optional)',
+      'Email Address (Optional)'
+    ];
+    const rows = [headers];
+    const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      const w = d.data();
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      const user = userSnap.data() || {};
+      const amount = w.amount || 0;
+      const note = "PROMOTIONAL CASH GIFT";
+      const ref = `WD-${d.id}`;
+      const recipient = '';
+      const bankValue = user.bankName || user.bankSlug || '';
+      const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
+      const accName = user.fullName || w.username || '';
+      const email = user.email || '';
+      rows.push([amount, note, ref, recipient, bankValue, accNum, accName, email]);
     }
-    async function saveConfigs() {
-      const configRef = doc(db, 'configs', 'game');
-      await setDoc(configRef, {
-        BID_COST: parseInt(document.getElementById('bid-cost').value),
-        POOL_INCREASE_PER_PLAYER: parseInt(document.getElementById('pool-increase').value),
-        BASE_PRIZE_POOL: parseInt(document.getElementById('base-pool').value),
-        MAX_PRIZE_POOL: parseInt(document.getElementById('max-pool').value) || null
-      });
-      dopeAlert('Configs saved');
-    }
- async function loadWithdrawals() {
-  const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
-  tableBody.innerHTML = '';
-
-  const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
-  const snap = await getDocs(q);
-
-  for (const d of snap.docs) {
-    const w = d.data();
-
-    let dateStr = "Unknown";
-    if (w.requestedAt?.toDate) {
-      dateStr = w.requestedAt.toDate().toLocaleString();
-    }
-
-    // Fetch fullName from users collection
-    let displayName = "—";
-    if (w.uid) {
-      const userRef = doc(db, "users", w.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        displayName = userData.fullName || w.username || "—";
-      } else {
-        displayName = w.username || "—";
-      }
-    }
-
-    const row = document.createElement('tr');
-    row.dataset.id = d.id;
-
-    row.innerHTML = `
-      <td>${dateStr}</td>
-      <td>${displayName}</td>
-      <td>${(w.uid || "").replace(/_/g, ".")}</td>
-      <td>₦${(w.amount || 0).toLocaleString()}</td>
-      <td>${w.bankName || "—"}</td>
-      <td>${w.bankAccountNumber || "—"}</td>
-      <td>${w.status || "pending"}</td>
-      <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
-    `;
-
-    const markBtn = row.querySelector('.mark-paid-withdraw');
-    if (markBtn) {
-      markBtn.addEventListener('click', async () => {
-        if (await showConfirm('Mark Paid', `Mark as paid?`)) {
-          showLoader('Marking...');
-          await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
-          hideLoader();
-          loadWithdrawals();
+    const dateStr = getTodayDateString();
+    downloadCSV(`withdrawals_${dateStr}_paystack.csv`, rows);
+    if (rows.length > 1) {
+      const count = rows.length - 1;
+      const ok = await showConfirm('Mark Paid', `Mark all ${count} exported withdrawal${count === 1 ? '' : 's'} as paid?`);
+      if (ok) {
+        showLoader('Marking paid...');
+        for (const d of snap.docs) {
+          await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
         }
-      });
+        hideLoader();
+        loadWithdrawals();
+      }
     }
-
-    tableBody.appendChild(row);
   }
-}
-    async function loadHostWithdrawals() {
-      const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
-      tableBody.innerHTML = '';
-      const q = query(collection(db, "hostWithdrawal"), orderBy("requestedAt", "desc"));
-      const snap = await getDocs(q);
-      for (const d of snap.docs) {
-        const w = d.data();
-        const userSnap = await getDoc(doc(db, 'users', w.uid));
-        const user = userSnap.data() || {};
-        let dateStr = "Unknown";
-        if (w.requestedAt?.toDate) dateStr = w.requestedAt.toDate().toLocaleString();
-        const bankName = user.bankName || "—";
-        const bankAccountNumber = user.bankAccountNumber || "—";
-        const row = document.createElement('tr');
-        row.dataset.id = d.id;
-        row.innerHTML = `
-          <td>${dateStr}</td>
-          <td>${w.username || "—"}</td>
-          <td>${w.uid}</td>
-          <td>₦${(w.amount || 0).toLocaleString()}</td>
-          <td>${bankName}</td>
-          <td>${bankAccountNumber}</td>
-          <td>${w.status || "pending"}</td>
-          <td>${w.status === "pending" ? '<button class="mark-paid-host">Mark Paid</button>' : 'Done'}</td>
-        `;
-        const markBtn = row.querySelector('.mark-paid-host');
-        if (markBtn) {
-          markBtn.addEventListener('click', async () => {
-            if (await showConfirm('Mark Paid', `Mark as paid?`)) {
-              showLoader('Marking...');
-              await updateDoc(doc(db, 'hostWithdrawal', d.id), { status: 'paid', paidAt: serverTimestamp() });
-              hideLoader();
-              loadHostWithdrawals();
-            }
-          });
+
+  async function exportHostWithdrawalsCSV() {
+    const headers = [
+      'Transfer Amount',
+      'Transfer Note (Optional)',
+      'Transfer Reference (Optional)',
+      'Recipient Code (This overrides all other details if available)',
+      'Bank Code or Slug',
+      'Account Number',
+      'Account Name (Optional)',
+      'Email Address (Optional)'
+    ];
+    const rows = [headers];
+    const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+      const w = d.data();
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      const user = userSnap.data() || {};
+      const amount = w.amount || 0;
+      const note = "PROMOTIONAL CASH GIFT";
+      const ref = `HWD-${d.id}`;
+      const recipient = '';
+      const bankValue = user.bankName || user.bankSlug || '';
+      const accNum = user.bankAccountNumber || '';
+      const accName = user.fullName || w.username || '';
+      const email = user.email || '';
+      rows.push([amount, note, ref, recipient, bankValue, accNum, accName, email]);
+    }
+    const dateStr = getTodayDateString();
+    downloadCSV(`host_withdrawals_${dateStr}_paystack.csv`, rows);
+    if (rows.length > 1) {
+      const count = rows.length - 1;
+      const ok = await showConfirm('Mark Paid', `Mark all ${count} exported host withdrawal${count === 1 ? '' : 's'} as paid?`);
+      if (ok) {
+        showLoader('Marking paid...');
+        for (const d of snap.docs) {
+          await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
         }
-        tableBody.appendChild(row);
+        hideLoader();
+        loadHostWithdrawals();
       }
     }
-   async function exportWithdrawalsCSV() {
-  const headers = [
-    'Transfer Amount',
-    'Transfer Note (Optional)',
-    'Transfer Reference (Optional)',
-    'Recipient Code (This overrides all other details if available)',
-    'Bank Code or Slug',
-    'Account Number',
-    'Account Name (Optional)',
-    'Email Address (Optional)'
-  ];
-  const rows = [headers];
-
-  const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
-  const snap = await getDocs(q);
-
-  for (const d of snap.docs) {
-    const w = d.data();
-    const userSnap = await getDoc(doc(db, 'users', w.uid));
-    const user = userSnap.data() || {};
-
-    const amount = w.amount || 0;
-    const note = `Promotional Cash Gift for ${user.fullName || w.username || 'User'}`;
-    const ref = `WD-${d.id}`;
-    const recipient = ''; // leave empty unless you have recipient_code
-    const bankSlug = user.bankSlug || ''; // preferred if you store slug
-    const bankDisplay = user.bankName || ''; // fallback to stored display name
-    const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
-    const accName = user.fullName || w.username || ''; // ← KEY CHANGE: use fullName
-    const email = user.email || '';
-
-   rows.push([
-  amount,                                 // plain number: 50000
-  note,                                   // "Host Withdrawal for NNAMDI ANYA"
-  ref,                                    // "hwd-..." (keep lowercase)
-  recipient || '', 
-  user.bankSlug || user.bankName || 'access-bank',  // prefer slug, fallback to name
-  accNum,
-  accName,
-  email
-]);
   }
 
-  downloadCSV('withdrawals_paystack.csv', rows);
-
-  if (rows.length > 1) {
-    const count = rows.length - 1;
-    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported withdrawal${count === 1 ? '' : 's'} as paid?`);
-    if (ok) {
-      showLoader('Marking paid...');
-      for (const d of snap.docs) {
-        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-      }
-      hideLoader();
-      loadWithdrawals();
+  function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
+    const alertBox = document.getElementById("dopeAlert");
+    const iconEl = document.getElementById("dopeIcon");
+    const titleEl = document.getElementById("dopeTitle");
+    const msgEl = document.getElementById("dopeMessage");
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    iconEl.innerHTML = icon;
+    alertBox.style.display = "flex";
+    setTimeout(() => {
+      alertBox.style.opacity = "1";
+      document.querySelectorAll("#dopeAlert > div > *").forEach((el, i) => {
+        setTimeout(() => {
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0) scale(1)";
+        }, i * 150);
+      });
+    }, 50);
+    const autoClose = setTimeout(() => closeDope(), duration);
+    document.getElementById("dopeClose").onclick = () => {
+      clearTimeout(autoClose);
+      closeDope();
+    };
+    function closeDope() {
+      alertBox.style.opacity = "0";
+      setTimeout(() => alertBox.style.display = "none", 400);
     }
   }
-}
 
-async function exportHostWithdrawalsCSV() {
-  const headers = [
-    'Transfer Amount',
-    'Transfer Note (Optional)',
-    'Transfer Reference (Optional)',
-    'Recipient Code (This overrides all other details if available)',
-    'Bank Code or Slug',
-    'Account Number',
-    'Account Name (Optional)',
-    'Email Address (Optional)'
-  ];
-  const rows = [headers];
-
-  const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
-  const snap = await getDocs(q);
-
-  for (const d of snap.docs) {
-    const w = d.data();
-    const userSnap = await getDoc(doc(db, 'users', w.uid));
-    const user = userSnap.data() || {};
-
-    const amount = w.amount || 0;
-    const note = `Host Cash Reward for ${user.fullName || w.username || 'Host'}`;
-    const ref = `HWD-${d.id}`;
-    const recipient = ''; 
-    const bankSlug = user.bankSlug || ''; 
-    const bankDisplay = user.bankName || ''; 
-    const accNum = user.bankAccountNumber || '';
-    const accName = user.fullName || w.username || ''; // ← KEY CHANGE: fullName
-    const email = user.email || '';
-
-    rows.push([
-      amount,
-      note,
-      ref,
-      recipient,
-      bankSlug || bankDisplay,
-      accNum,
-      accName,
-      email
-    ]);
-  }
-
-  downloadCSV('host_withdrawals_paystack.csv', rows);
-
-  if (rows.length > 1) {
-    const count = rows.length - 1;
-    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported host withdrawal${count === 1 ? '' : 's'} as paid?`);
-    if (ok) {
-      showLoader('Marking paid...');
-      for (const d of snap.docs) {
-        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-      }
-      hideLoader();
-      loadHostWithdrawals();
-    }
-  }
-}
-    // DOPE ALERT — REPLACE ALL alert() CALLS
-function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
-  const alertBox = document.getElementById("dopeAlert");
-  const iconEl = document.getElementById("dopeIcon");
-  const titleEl = document.getElementById("dopeTitle");
-  const msgEl = document.getElementById("dopeMessage");
-  // Set content
-  titleEl.textContent = title;
-  msgEl.textContent = message;
-  iconEl.innerHTML = icon;
-  // Show + animate in
-  alertBox.style.display = "flex";
-  setTimeout(() => {
-    alertBox.style.opacity = "1";
-    document.querySelectorAll("#dopeAlert > div > *").forEach((el, i) => {
-      setTimeout(() => {
-        el.style.opacity = "1";
-        el.style.transform = "translateY(0) scale(1)";
-      }, i * 150);
-    });
-  }, 50);
-  // Auto close
-  const autoClose = setTimeout(() => closeDope(), duration);
-  // Manual close
-  document.getElementById("dopeClose").onclick = () => {
-    clearTimeout(autoClose);
-    closeDope();
+  window.alert = function(message) {
+    dopeAlert(message, "Alert", "Warning", 7000);
   };
-  function closeDope() {
-    alertBox.style.opacity = "0";
-    setTimeout(() => alertBox.style.display = "none", 400);
-  }
-}
-// OVERRIDE NATIVE alert() — NOW IT'S DOPE
-window.alert = function(message) {
-  dopeAlert(message, "Alert", "Warning", 7000);
-};
-  </script>
+</script>
 </body>
 </html>
