@@ -750,9 +750,6 @@
         <td>${w.bankAccountNumber || "—"}</td>
         <td>${w.status || "pending"}</td>
         <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
-        <td>
-  ${w.status === "fast_track" ? '<span style="color:#ff6b6b;font-weight:bold;">Fast Track</span>' : w.status || "pending"}
-</td>
       `;
       const markBtn = row.querySelector('.mark-paid-withdraw');
       if (markBtn) {
@@ -889,7 +886,7 @@
       const note = "PROMOTIONAL CASH GIFT";
       const ref = `HWD-${d.id}`;
       const recipient = '';
-      const bankValue = user.bankName || user.bankSlug || '';
+     const bankValue = user.bankSlug || user.bankName || '';  // slug first = more reliable
       const accNum = user.bankAccountNumber || '';
       const accName = user.fullName || w.username || '';
       const email = user.email || '';
