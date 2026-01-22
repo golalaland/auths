@@ -842,7 +842,7 @@
       const note = "PROMOTIONAL CASH GIFT";
       const ref = `WD-${d.id}`;
       const recipient = '';
-      const bankValue = user.bankName || user.bankSlug || '';
+  const bankValue = user.bankSlug || user.bankName || '';  // slug first = more reliable
       const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
       const accName = user.fullName || w.username || '';
       const email = user.email || '';
