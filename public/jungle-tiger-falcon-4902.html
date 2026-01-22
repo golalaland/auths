@@ -840,7 +840,7 @@
       const user = userSnap.data() || {};
       const amount = w.amount || 0;
       const note = "PROMOTIONAL CASH GIFT";
-      const ref = `WD-${d.id}`;
+      const ref = `PR-${d.id}`;
       const recipient = '';
   const bankValue = user.bankSlug || user.bankName || '';  // slug first = more reliable
       const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
@@ -883,8 +883,8 @@
       const userSnap = await getDoc(doc(db, 'users', w.uid));
       const user = userSnap.data() || {};
       const amount = w.amount || 0;
-      const note = "PROMOTIONAL CASH GIFT";
-      const ref = `HWD-${d.id}`;
+      const note = "HOSTS PROMOTIONAL CASH GIFT";
+      const ref = `HPR-${d.id}`;
       const recipient = '';
      const bankValue = user.bankSlug || user.bankName || '';  // slug first = more reliable
       const accNum = user.bankAccountNumber || '';
