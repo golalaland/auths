@@ -665,15 +665,15 @@ async function applyRewards() {
         let message = "";
         if (level === 1) {
           // Direct inviter (Alice) knows HD
-          message = `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
+          message = `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's  ${rippleParts.join(' + ')} your share of the win for inviting them.`;
         } else {
           // Level 2+ (Bob) knows Alice, not HD → refer to Alice's circle
-          message = `Someone from ${chainPersonName}'s circle won ${rewardParts.join(' + ')}!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
+          message = `Someone from ${chainPersonName}'s circle won ${rewardParts.join(' + ')}!\nHere's  ${rippleParts.join(' + ')} your share of the win for inviting them.`;
         }
 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
-          title: "Ripple Reward!",
+          title: "TapMaster Ripple Reward!",
           message,
           type: `ripple_level${level}`,
           fromUser: w.uid,
