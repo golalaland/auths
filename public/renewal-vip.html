@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=no">
+<title>CUBE VIP Renewal</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon: #c3f60c;
+    --neon-dark: #a0d00a;
+    --deep: #0a1400;
+    --glow: rgba(195, 246, 12, 0.6);
+    --input-bg: rgba(10, 25, 0, 0.65);
+    --input-border: rgba(195, 246, 12, 0.5);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--deep);
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+  .hero-video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: -3;
+    opacity: 0.35;
+    filter: brightness(0.6) contrast(1.3);
+  }
+  .hero-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, transparent 0%, #000 90%);
+    z-index: -2;
+  }
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .particle {
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--neon);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--neon);
+    animation: float 15s infinite linear;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) translateX(120px); opacity: 0; }
+  }
+  .logo-container {
+    margin: 2rem 0 2.8rem;
+    text-align: center;
+    width: 100%;
+  }
+  .logo {
+    height: 300px;
+    width: auto;
+    max-width: 96vw;
+    object-fit: contain;
+    filter: drop-shadow(0 0 45px #c3f60c) drop-shadow(0 0 90px rgba(195,246,12,0.7));
+    animation: logoPulse 4s infinite alternate;
+  }
+  @keyframes logoPulse {
+    0% { filter: drop-shadow(0 0 45px #c3f60c) drop-shadow(0 0 90px rgba(195,246,12,0.7)); }
+    100% { filter: drop-shadow(0 0 60px #c3f60c) drop-shadow(0 0 120px rgba(195,246,12,1)); }
+  }
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4.5rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--neon), #e0ff4a, var(--neon));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 50px var(--neon);
+    letter-spacing: 8px;
+    margin: 0.5rem 0;
+    text-transform: uppercase;
+  }
+  .tagline {
+    font-size: 1.1rem;
+    color: #e0ff80;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px var(--neon);
+  }
+  .form-group input {
+    width: 320px;
+    max-width: 90vw;
+    padding: 1rem 1.4rem;
+    margin: 0.8rem 0;
+    border-radius: 50px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    backdrop-filter: blur(15px);
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(195,246,12,0.3);
+    transition: all 0.4s;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--neon);
+    box-shadow: 0 0 35px var(--glow);
+    transform: scale(1.03);
+  }
+  #message {
+    margin: 1.5rem 0;
+    font-size: 1.1rem;
+    min-height: 1.5em;
+    color: #c3f60c;
+    text-align: center;
+  }
+  #payBtn {
+    margin: 2rem auto;
+    padding: 1.1rem 3rem;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--neon), var(--neon-dark));
+    color: #000;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 10px 40px var(--glow);
+    transition: all 0.4s;
+  }
+  #payBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px var(--glow);
+  }
+  #payBtn.loading::after {
+    content: " •••";
+  }
+  #payBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+</style>
+</head>
+<body>
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="https://cdn.shopify.com/videos/c/o/v/8d1f9e76b0374ef49c9ad0f335437a1f.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="particles">
+    <div class="particle" style="left:10%;animation-delay:0s;"></div>
+    <div class="particle" style="left:25%;animation-delay:2s;"></div>
+    <div class="particle" style="left:40%;animation-delay:4s;"></div>
+    <div class="particle" style="left:60%;animation-delay:1s;"></div>
+    <div class="particle" style="left:80%;animation-delay:3s;"></div>
+    <div class="particle" style="left:90%;animation-delay:5s;"></div>
+  </div>
+
+  <div class="logo-container">
+    <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962"
+         alt="CUBE Logo" class="logo">
+  </div>
+
+  <h1>VIP RENEWAL</h1>
+  <div class="tagline">Renew your elite access • #UYE™</div>
+
+  <div class="form-group"><input type="text" placeholder="@username" id="chatId"></div>
+  <div class="form-group"><input type="email" placeholder="Email Address" id="email"></div>
+  <div class="form-group"><input type="tel" placeholder="Phone Number" id="phone"></div>
+
+  <div id="message"></div>
+  <button id="payBtn">RENEW VIP ACCESS</button>
+
+<script src="https://js.paystack.co/v2/inline.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+  authDomain: "dettyverse.firebaseapp.com",
+  projectId: "dettyverse",
+  storageBucket: "dettyverse.firebasestorage.app",
+  messagingSenderId: "1036459652488",
+  appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+  measurementId: "G-NX2KWZW85V"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const messageEl = document.getElementById('message');
+const payBtn = document.getElementById('payBtn');
+const chatIdInput = document.getElementById('chatId');
+const emailInput = document.getElementById('email');
+const phoneInput = document.getElementById('phone');
+
+const sanitizeKey = email => email.trim().toLowerCase().replace(/[@.]/g, '_').replace(/[,\\/*[\]]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+
+function showMessage(text, isError = false) {
+  messageEl.textContent = text;
+  messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
+}
+
+payBtn.onclick = async () => {
+  const chatId = chatIdInput.value.trim().replace(/^@+/, '');
+  const email = emailInput.value.trim().toLowerCase();
+  const phone = phoneInput.value.trim();
+
+  if (!chatId || !email || !phone) {
+    showMessage('Please fill all fields', true);
+    return;
+  }
+  if (!email.includes('@')) {
+    showMessage('Invalid email format', true);
+    return;
+  }
+
+  payBtn.disabled = true;
+  payBtn.classList.add('loading');
+  showMessage('Verifying your account...');
+
+  const docId = sanitizeKey(email);
+  const userRef = doc(db, "users", docId);
+
+  try {
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) {
+      showMessage('Account not found', true);
+      resetButton();
+      return;
+    }
+
+    const userData = snap.data();
+
+    if (userData.chatIdLower !== chatId.toLowerCase() || userData.phone !== phone) {
+      showMessage('Details do not match our records', true);
+      resetButton();
+      return;
+    }
+
+    if (!userData.isVIP) {
+      showMessage('This account is not VIP — please upgrade first', true);
+      resetButton();
+      return;
+    }
+
+    showMessage('Verified! Opening payment...');
+
+    const handler = PaystackPop.setup({
+      key: 'pk_live_b1f53de46eded7175f91c345548365902b4b6d67',
+      email: email,
+      amount: 999900, // ₦9,999
+      currency: 'NGN',
+      ref: 'VIP_RENEW_' + Date.now(),
+      metadata: {
+        chatId: chatId,
+        type: 'renewal'
+      },
+      callback: async function(response) {
+        showMessage('Processing renewal...');
+        try {
+          await updateDoc(userRef, {
+            hasPaid: true,
+            renewalCount: increment(1),
+            vipRenewedAt: serverTimestamp(),
+            lastUpdated: serverTimestamp()
+          });
+          showMessage('VIP Renewed Successfully! Welcome back 🪩');
+          setTimeout(() => {
+            window.location.href = "shop.html"; // or your dashboard
+          }, 2200);
+        } catch (err) {
+          console.error('Firestore update failed:', err);
+          showMessage('Renewal recorded but sync issue — contact support', true);
+          setTimeout(() => window.location.href = "shop.html", 3000);
+        }
+      },
+      onClose: function() {
+        showMessage('Payment cancelled');
+        resetButton();
+      }
+    });
+    handler.openIframe();
+  } catch (err) {
+    console.error(err);
+    showMessage('Something went wrong. Try again.', true);
+    resetButton();
+  }
+};
+
+function resetButton() {
+  payBtn.disabled = false;
+  payBtn.classList.remove('loading');
+}
+</script>
+</body>
+</html>
