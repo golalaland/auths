@@ -626,10 +626,12 @@ async function applyRewards() {
       read: false
     });
 
-    // Ripple rewards to inviters
-    let currentUid = winnerData.invitedBy;
+    // ─────────────────────────────────────────────
+    // RIPPLE REWARDS – proper chain naming
+    // ─────────────────────────────────────────────
+    let currentUid = winnerData.invitedBy;           // starts with direct inviter (Alice)
     let level = 1;
-    let downlineName = winnerData.chatId || winnerData.fullName || "a player";
+    let chainPersonName = winnerData.chatId || winnerData.fullName || "a player"; // starts with winner (HD)
 
     while (currentUid && level <= config.max_levels) {
       const uplineRef = doc(db, 'users', currentUid);
@@ -645,33 +647,37 @@ async function applyRewards() {
       const rippleStars = Math.floor(directStars * starsPercent);
 
       if (rippleCash + rippleStars > 0) {
+        // Atomic update
         await runTransaction(db, async (t) => {
           const snap = await t.get(uplineRef);
-          const u = snap.data();
+          if (!snap.exists()) return;
           t.update(uplineRef, {
             cash: increment(rippleCash),
             stars: increment(rippleStars)
           });
         });
 
+        // Build reward strings
         const rippleParts = [];
         if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
         if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} stars`);
 
         let message = "";
         if (level === 1) {
-          message = `${downlineName} won ${rewardParts.join(' + ')} from your circle!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
+          // Direct inviter (Alice) knows HD
+          message = `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
         } else {
-          message = `${downlineName} won ${rewardParts.join(' + ')} from her circle!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
+          // Level 2+ (Bob) knows Alice, not HD → refer to Alice's circle
+          message = `Someone from ${chainPersonName}'s circle won ${rewardParts.join(' + ')}!\nHere's your share: ${rippleParts.join(' + ')} for inviting them to Cube.`;
         }
 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
-          title: "TapMaster Ripple Reward!",
-          message: message,
+          title: "Ripple Reward!",
+          message,
           type: `ripple_level${level}`,
           fromUser: w.uid,
-          fromName: downlineName,
+          fromName: chainPersonName,
           amountCash: rippleCash,
           amountStars: rippleStars,
           createdAt: serverTimestamp(),
@@ -679,7 +685,8 @@ async function applyRewards() {
         });
       }
 
-      // Move up one level
+      // Move up: for next level, the "chain person" becomes the current upline (Alice becomes the reference for Bob)
+      chainPersonName = uplineData.chatId || uplineData.fullName || "a player";
       currentUid = uplineData.invitedBy;
       level++;
     }
