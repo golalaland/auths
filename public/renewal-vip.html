@@ -174,7 +174,7 @@
          alt="CUBE Logo" class="logo">
   </div>
 
-  <h1>VIP RENEWAL</h1>
+  <h1></h1>
   <div class="tagline">Renew your elite access • #UYE™</div>
 
   <div class="form-group"><input type="text" placeholder="@username" id="chatId"></div>
@@ -182,12 +182,21 @@
   <div class="form-group"><input type="tel" placeholder="Phone Number" id="phone"></div>
 
   <div id="message"></div>
-  <button id="payBtn">RENEW VIP ACCESS</button>
+  <button id="payBtn">Let's Go</button>
 
 <script src="https://js.paystack.co/v2/inline.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  serverTimestamp, 
+  increment,
+  addDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
@@ -208,7 +217,11 @@ const chatIdInput = document.getElementById('chatId');
 const emailInput = document.getElementById('email');
 const phoneInput = document.getElementById('phone');
 
-const sanitizeKey = email => email.trim().toLowerCase().replace(/[@.]/g, '_').replace(/[,\\/*[\]]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+const sanitizeKey = email => email.trim().toLowerCase()
+  .replace(/[@.]/g, '_')
+  .replace(/[,\\/*[\]]/g, '_')
+  .replace(/_+/g, '_')
+  .replace(/^_|_$/g, '');
 
 function showMessage(text, isError = false) {
   messageEl.textContent = text;
@@ -261,7 +274,7 @@ payBtn.onclick = async () => {
     showMessage('Verified! Opening payment...');
 
     const handler = PaystackPop.setup({
-      key: 'pk_live_b1f53de46eded7175f91c345548365902b4b6d67',
+      key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
       email: email,
       amount: 999900, // ₦9,999
       currency: 'NGN',
@@ -272,21 +285,65 @@ payBtn.onclick = async () => {
       },
       callback: async function(response) {
         showMessage('Processing renewal...');
+
         try {
+          // 1. Re-fetch latest user data (in case anything changed)
+          const freshSnap = await getDoc(userRef);
+          if (!freshSnap.exists()) throw new Error("User record disappeared");
+          const freshUserData = freshSnap.data();
+
+          const inviterId = freshUserData?.invitedBy;
+
+          // 2. Update the renewing user
           await updateDoc(userRef, {
             hasPaid: true,
             renewalCount: increment(1),
             vipRenewedAt: serverTimestamp(),
             lastUpdated: serverTimestamp()
           });
+
+          // 3. Reward + notify inviter (if exists)
+          if (inviterId) {
+            const inviterRef = doc(db, "users", inviterId);
+
+            await updateDoc(inviterRef, {
+              stars: increment(300),                // ← adjust this value
+              renewalReferrals: increment(1),       // optional: track renewal referrals
+              lastUpdated: serverTimestamp()
+            });
+
+            // Notification to inviter
+            await addDoc(collection(db, "notifications"), {
+              recipientId: inviterId,
+              type: "renewal_reward",
+              title: "VIP Renewal in your Cube! 🔥",
+              message: `@${freshUserData.chatId || "someone"} just renewed VIP!\n+300 STRZ added to your balance`,
+              relatedUserId: docId,
+              relatedUserName: freshUserData.chatId || chatId,
+              read: false,
+              createdAt: serverTimestamp()
+            });
+          }
+
+          // 4. Welcome back notification to the renewing user
+          await addDoc(collection(db, "notifications"), {
+            recipientId: docId,
+            type: "renewal_success",
+            title: "VIP Renewed – Welcome Back! 🪩",
+            message: "Your elite access has been extended. Enjoy the privileges!",
+            read: false,
+            createdAt: serverTimestamp()
+          });
+
           showMessage('VIP Renewed Successfully! Welcome back 🪩');
           setTimeout(() => {
-            window.location.href = "shop.html"; // or your dashboard
+            window.location.href = "chat.html"; // or "shop.html" — your choice
           }, 2200);
+
         } catch (err) {
-          console.error('Firestore update failed:', err);
-          showMessage('Renewal recorded but sync issue — contact support', true);
-          setTimeout(() => window.location.href = "shop.html", 3000);
+          console.error('Processing failed:', err);
+          showMessage('Payment successful but sync failed – contact support', true);
+          setTimeout(() => window.location.href = "chat.html", 4000);
         }
       },
       onClose: function() {
@@ -294,7 +351,9 @@ payBtn.onclick = async () => {
         resetButton();
       }
     });
+
     handler.openIframe();
+
   } catch (err) {
     console.error(err);
     showMessage('Something went wrong. Try again.', true);
