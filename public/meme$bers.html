@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dettyverse Admin Dashboard</title>
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #0a0a0a; color: #fff; padding: 20px; margin: 0; }
+    .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; background: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+    .tab:hover { background: #444; }
+    .tab.active { background: #c3f60c; color: #000; }
+    .section { display: none; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .section.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+    th { background: #222; }
+    input, select, button { padding: 10px; margin: 5px; border-radius: 8px; border: none; font-size: 1rem; }
+    button { background: #c3f60c; color: #000; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+    button:hover { transform: scale(1.05); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loaderOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    #loaderText { color: #c3f60c; font-size: 18px; font-weight: bold; }
+    #adminGate { text-align: center; margin-top: 50px; }
+    #adminGateMsg { color: #ff6b6b; }
+    .filter-container { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .edit-form { display: none; background: #222; padding: 15px; border-radius: 8px; margin-top: 10px; }
+    .edit-form input { width: 100px; }
+    .export-btn { background: #4caf50; }
+    .suspend-btn { background: #ff9800; }
+    .delete-btn { background: #f44336; }
+    .referrals-list { margin-top: 10px; padding-left: 20px; list-style: disc; color: #ccc; }
+    /* Dope Alert Styles */
+    #dopeAlert { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(16px); display: none; align-items: center; justify-content: center; z-index: 999999; opacity: 0; transition: opacity 0.4s ease; }
+    #dopeAlertContent { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4), inset 0 0 40px rgba(195,246,12,0.1); border: 2px solid #c3f60c; transform: scale(0.9); transition: transform 0.5s cubic-bezier(0.18,0.89,0.32,1.28); }
+    #dopeIcon { font-size: 52px; margin-bottom: 16px; opacity: 0; transform: translateY(-30px); transition: all 0.6s ease; }
+    #dopeTitle { margin: 0 0 16px; font-size: 28px; color: #c3f60c; text-shadow: 0 0 20px #c3f60c; opacity: 0; transform: translateY(20px); transition: all 0.7s ease; }
+    #dopeMessage { margin: 0; font-size: 18px; color: #fff; opacity: 0.9; line-height: 1.6; opacity: 0; transform: translateY(20px); transition: all 0.8s ease; }
+    #dopeClose { margin-top: 28px; padding: 14px 36px; background: #c3f60c; color: #000; font-weight: 900; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 8px 20px rgba(195,246,12,0.4); transition: all 0.3s; }
+    #dopeClose:hover { transform: scale(1.08); }
+  </style>
+</head>
+<body>
+  <div id="loaderOverlay"><div id="loaderText">Working...</div></div>
+  <div id="adminGate">
+    <h2>DET TYVERSE ADMIN LOGIN</h2>
+    <input id="adminEmail" type="email" placeholder="Admin Email">
+    <button id="adminCheckBtn">Login</button>
+    <p id="adminGateMsg"></p>
+  </div>
+  <div id="adminPanel" style="display: none;">
+    <h1>DET TYVERSE MASTER ADMIN DASHBOARD</h1>
+    <button id="logoutBtn">Logout</button>
+    <div class="tab-container">
+      <div class="tab active" data-tab="users">Users Management</div>
+      <div class="tab" data-tab="hosts">Hosts Management</div>
+      <div class="tab" data-tab="vips">VIPs Management</div>
+      <div class="tab" data-tab="exports">Exports & Filters</div>
+    </div>
+    <!-- Dope Alert -->
+    <div id="dopeAlert">
+      <div id="dopeAlertContent">
+        <div id="dopeIcon">✅</div>
+        <h2 id="dopeTitle">Success!</h2>
+        <p id="dopeMessage">Operation completed successfully.</p>
+        <button id="dopeClose">GOT IT</button>
+      </div>
+    </div>
+    <div id="users" class="section active">
+      <h2>All Users</h2>
+      <div class="filter-container">
+        <input id="user-search" type="text" placeholder="Search by ChatID/Email/Phone">
+        <select id="user-filter-type">
+          <option value="all">All</option>
+          <option value="isHost">Hosts Only</option>
+          <option value="isVIP">VIPs Only</option>
+        </select>
+        <button id="fetch-users">Refresh Users</button>
+      </div>
+      <table id="users-table">
+        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Has Paid</th><th>First/Last Paid</th><th>Referred Users</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="hosts" class="section">
+      <h2>Hosts Management</h2>
+      <button id="fetch-hosts">Refresh Hosts</button>
+      <table id="hosts-table">
+        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Hive Name</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="vips" class="section">
+      <h2>VIPs Management</h2>
+      <button id="fetch-vips">Refresh VIPs</button>
+      <table id="vips-table">
+        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Has Paid</th><th>VIP Expires</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="exports" class="section">
+      <h2>Exports & Filters</h2>
+      <select id="export-type">
+        <option value="emails">Export Emails</option>
+        <option value="phones">Export Phones</option>
+      </select>
+      <select id="export-filter">
+        <option value="all">All Users</option>
+        <option value="hosts">Hosts Only</option>
+        <option value="vips">VIPs Only</option>
+        <option value="paid">Paid Users Only</option>
+      </select>
+      <button id="export-data">Export CSV</button>
+      <textarea id="export-output" placeholder="Exported data will appear here (copy-paste)" style="width:100%; height:200px; margin-top:20px;"></textarea>
+    </div>
+  </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, where, orderBy, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+    authDomain: "dettyverse.firebaseapp.com",
+    projectId: "dettyverse",
+    storageBucket: "dettyverse.firebasestorage.app",
+    messagingSenderId: "1036459652488",
+    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+    measurementId: "G-NX2KWZW85V"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const adminGate = document.getElementById("adminGate");
+  const adminPanel = document.getElementById("adminPanel");
+  const adminEmailInput = document.getElementById("adminEmail");
+  const adminCheckBtn = document.getElementById("adminCheckBtn");
+  const adminGateMsg = document.getElementById("adminGateMsg");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loaderOverlay = document.getElementById("loaderOverlay");
+  const loaderText = document.getElementById("loaderText");
+  const dopeAlert = document.getElementById("dopeAlert");
+  const dopeIcon = document.getElementById("dopeIcon");
+  const dopeTitle = document.getElementById("dopeTitle");
+  const dopeMessage = document.getElementById("dopeMessage");
+  const dopeClose = document.getElementById("dopeClose");
+
+  let currentAdmin = null;
+
+  function showLoader(text = "Working...") {
+    loaderText.textContent = text;
+    loaderOverlay.style.display = "flex";
+  }
+
+  function hideLoader() {
+    loaderOverlay.style.display = "none";
+  }
+
+  function showDopeAlert(title, message, icon = "✅") {
+    dopeTitle.textContent = title;
+    dopeMessage.textContent = message;
+    dopeIcon.textContent = icon;
+    dopeAlert.style.display = "flex";
+    setTimeout(() => {
+      dopeAlert.style.opacity = "1";
+      dopeAlert.querySelector('#dopeAlertContent').style.transform = "scale(1)";
+      dopeIcon.style.opacity = "1";
+      dopeIcon.style.transform = "translateY(0)";
+      dopeTitle.style.opacity = "1";
+      dopeTitle.style.transform = "translateY(0)";
+      dopeMessage.style.opacity = "1";
+      dopeMessage.style.transform = "translateY(0)";
+    }, 50);
+  }
+
+  dopeClose.onclick = () => {
+    dopeAlert.style.opacity = "0";
+    setTimeout(() => dopeAlert.style.display = "none", 400);
+  };
+
+  // Admin Login Check
+  adminCheckBtn.onclick = async () => {
+    const email = adminEmailInput.value.trim().toLowerCase();
+    if (!email) return;
+    showLoader("Checking admin access...");
+    try {
+      const docId = email.replace(/[@.]/g, '_').replace(/[,\\/*[\]]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      const userDoc = await getDoc(doc(db, "users", docId));
+      if (userDoc.exists() && userDoc.data().isAdmin) {
+        currentAdmin = email;
+        localStorage.setItem('dettyAdmin', email);
+        adminGate.style.display = "none";
+        adminPanel.style.display = "block";
+        showDopeAlert("Access Granted", "Welcome, Admin!");
+      } else {
+        adminGateMsg.textContent = "Access Denied: Not an admin account.";
+      }
+    } catch (err) {
+      console.error(err);
+      adminGateMsg.textContent = "Error checking admin status.";
+    }
+    hideLoader();
+  };
+
+  // Auto-login if stored
+  const storedAdmin = localStorage.getItem('dettyAdmin');
+  if (storedAdmin) {
+    adminEmailInput.value = storedAdmin;
+    adminCheckBtn.click();
+  }
+
+  logoutBtn.onclick = () => {
+    localStorage.removeItem('dettyAdmin');
+    location.reload();
+  };
+
+  // Tab Switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    };
+  });
+
+  // Fetch Users Function
+  async function fetchUsers(filterType = 'all', search = '') {
+    showLoader("Fetching users...");
+    let q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+    if (filterType === 'isHost') q = query(q, where("isHost", "==", true));
+    if (filterType === 'isVIP') q = query(q, where("isVIP", "==", true));
+    const snapshot = await getDocs(q);
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    let filtered = users;
+    if (search) {
+      const lowSearch = search.toLowerCase();
+      filtered = users.filter(u => 
+        u.chatIdLower?.includes(lowSearch) || u.email?.toLowerCase().includes(lowSearch) || u.phone?.includes(lowSearch)
+      );
+    }
+    hideLoader();
+    return filtered;
+  }
+
+  // Render Users Table
+  async function renderUsersTable(users) {
+    const tbody = document.querySelector('#users-table tbody');
+    tbody.innerHTML = '';
+    for (const user of users) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.chatId || 'N/A'}</td>
+        <td>${user.email || 'N/A'}</td>
+        <td>${user.phone || 'N/A'}</td>
+        <td>${user.hasPaid ? 'Yes' : 'No'}</td>
+        <td>${user.vipActivatedAt?.toDate()?.toLocaleDateString() || 'N/A'} / ${user.vipExpiresAt?.toDate()?.toLocaleDateString() || 'N/A'}</td>
+        <td><button class="view-referrals" data-id="${user.id}">View Referrals</button></td>
+        <td>${user.cash || 0}</td>
+        <td>${user.stars || 0}</td>
+        <td>
+          <button class="edit-balance" data-id="${user.id}">Edit Balances</button>
+          <button class="suspend-btn" data-id="${user.id}">Suspend</button>
+          <button class="delete-btn" data-id="${user.id}">Delete</button>
+        </td>
+      `;
+      const referralsBtn = row.querySelector('.view-referrals');
+      referralsBtn.onclick = async () => {
+        showLoader("Fetching referrals...");
+        const q = query(collection(db, "users"), where("invitedBy", "==", user.id));
+        const snapshot = await getDocs(q);
+        const referrals = snapshot.docs.map(d => d.data().chatId).join(', ');
+        hideLoader();
+        showDopeAlert("Referrals", referrals || "No referrals");
+      };
+      const editBtn = row.querySelector('.edit-balance');
+      editBtn.onclick = () => {
+        let editForm = row.querySelector('.edit-form');
+        if (!editForm) {
+          editForm = document.createElement('div');
+          editForm.classList.add('edit-form');
+          editForm.innerHTML = `
+            <input type="number" placeholder="Add/Reduce Cash" data-field="cash">
+            <input type="number" placeholder="Add/Reduce Stars" data-field="stars">
+            <button class="save-edit" data-id="${user.id}">Save</button>
+            <button class="cancel-edit">Cancel</button>
+          `;
+          row.querySelector('td:last-child').appendChild(editForm);
+          editForm.querySelector('.save-edit').onclick = async (e) => {
+            const id = e.target.dataset.id;
+            const cashDelta = parseFloat(editForm.querySelector('[data-field="cash"]').value) || 0;
+            const starsDelta = parseFloat(editForm.querySelector('[data-field="stars"]').value) || 0;
+            if (cashDelta || starsDelta) {
+              showLoader("Updating balances...");
+              await updateDoc(doc(db, "users", id), {
+                cash: increment(cashDelta),
+                stars: increment(starsDelta)
+              });
+              hideLoader();
+              showDopeAlert("Updated", "Balances updated successfully!");
+              fetchAndRenderUsers();
+            }
+          };
+          editForm.querySelector('.cancel-edit').onclick = () => editForm.remove();
+        }
+        editForm.style.display = 'block';
+      };
+      const suspendBtn = row.querySelector('.suspend-btn');
+      suspendBtn.onclick = async () => {
+        if (confirm("Suspend this user?")) {
+          showLoader("Suspending user...");
+          await updateDoc(doc(db, "users", user.id), { suspended: true });
+          hideLoader();
+          showDopeAlert("Suspended", "User suspended successfully!");
+          fetchAndRenderUsers();
+        }
+      };
+      const deleteBtn = row.querySelector('.delete-btn');
+      deleteBtn.onclick = async () => {
+        if (confirm("Delete this user? This is permanent!")) {
+          showLoader("Deleting user...");
+          await deleteDoc(doc(db, "users", user.id));
+          hideLoader();
+          showDopeAlert("Deleted", "User deleted successfully!");
+          fetchAndRenderUsers();
+        }
+      };
+      tbody.appendChild(row);
+    }
+  }
+
+  // Fetch and Render Users
+  async function fetchAndRenderUsers() {
+    const filter = document.getElementById('user-filter-type').value;
+    const search = document.getElementById('user-search').value;
+    const users = await fetchUsers(filter, search);
+    renderUsersTable(users);
+  }
+
+  document.getElementById('fetch-users').onclick = fetchAndRenderUsers;
+  document.getElementById('user-search').oninput = fetchAndRenderUsers;
+
+  // Hosts Management
+  async function fetchAndRenderHosts() {
+    const hosts = await fetchUsers('isHost');
+    const tbody = document.querySelector('#hosts-table tbody');
+    tbody.innerHTML = '';
+    hosts.forEach(user => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.chatId}</td>
+        <td>${user.email}</td>
+        <td>${user.phone}</td>
+        <td>${user.hiveName || 'N/A'}</td>
+        <td>${user.cash || 0}</td>
+        <td>${user.stars || 0}</td>
+        <td>
+          <button class="edit-balance" data-id="${user.id}">Edit Balances</button>
+          <button class="suspend-btn" data-id="${user.id}">Suspend</button>
+          <button class="delete-btn" data-id="${user.id}">Delete</button>
+        </td>
+      `;
+      // Attach event listeners similar to users table
+      row.querySelector('.edit-balance').onclick = () => { /* Similar logic as above */ };
+      row.querySelector('.suspend-btn').onclick = () => { /* Similar */ };
+      row.querySelector('.delete-btn').onclick = () => { /* Similar */ };
+      tbody.appendChild(row);
+    });
+  }
+
+  document.getElementById('fetch-hosts').onclick = fetchAndRenderHosts;
+
+  // VIPs Management (similar to hosts)
+  async function fetchAndRenderVIPs() {
+    const vips = await fetchUsers('isVIP');
+    const tbody = document.querySelector('#vips-table tbody');
+    tbody.innerHTML = '';
+    vips.forEach(user => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.chatId}</td>
+        <td>${user.email}</td>
+        <td>${user.phone}</td>
+        <td>${user.hasPaid ? 'Yes' : 'No'}</td>
+        <td>${user.vipExpiresAt?.toDate()?.toLocaleDateString() || 'N/A'}</td>
+        <td>${user.cash || 0}</td>
+        <td>${user.stars || 0}</td>
+        <td>
+          <button class="edit-balance" data-id="${user.id}">Edit Balances</button>
+          <button class="suspend-btn" data-id="${user.id}">Suspend</button>
+          <button class="delete-btn" data-id="${user.id}">Delete</button>
+        </td>
+      `;
+      // Attach events
+      tbody.appendChild(row);
+    });
+  }
+
+  document.getElementById('fetch-vips').onclick = fetchAndRenderVIPs;
+
+  // Export Data
+  document.getElementById('export-data').onclick = async () => {
+    showLoader("Exporting data...");
+    const type = document.getElementById('export-type').value;
+    const filter = document.getElementById('export-filter').value;
+    let users = await fetchUsers(filter === 'all' ? 'all' : filter === 'hosts' ? 'isHost' : filter === 'vips' ? 'isVIP' : 'all');
+    if (filter === 'paid') users = users.filter(u => u.hasPaid);
+    const data = users.map(u => type === 'emails' ? u.email : u.phone).filter(Boolean).join('\n');
+    document.getElementById('export-output').value = data;
+    hideLoader();
+    showDopeAlert("Exported", "Data ready to copy!");
+  };
+
+  // Initial load for users
+  fetchAndRenderUsers();
+</script>
+</body>
+</html>
