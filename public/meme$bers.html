@@ -38,6 +38,24 @@
     #dopeMessage { margin: 0; font-size: 18px; color: #fff; opacity: 0.9; line-height: 1.6; opacity: 0; transform: translateY(20px); transition: all 0.8s ease; }
     #dopeClose { margin-top: 28px; padding: 14px 36px; background: #c3f60c; color: #000; font-weight: 900; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 8px 20px rgba(195,246,12,0.4); transition: all 0.3s; }
     #dopeClose:hover { transform: scale(1.08); }
+    .edit-event-form input,
+.edit-event-form textarea {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+  font-size: 1rem;
+}
+.event-card-preview {
+  background: #111;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid #333;
+}
+.event-card-preview h4 { margin: 0 0 8px; color: #c3f60c; }
+.event-actions button { margin-right: 8px; font-size: 0.9rem; padding: 6px 12px; }
   </style>
 </head>
 <body>
@@ -55,6 +73,7 @@
       <div class="tab active" data-tab="users">Users Management</div>
       <div class="tab" data-tab="hosts">Hosts Management</div>
       <div class="tab" data-tab="vips">VIPs Management</div>
+      <div class="tab" data-tab="upcoming">Upcoming Events</div>
       <div class="tab" data-tab="exports">Exports & Filters</div>
     </div>
     <!-- Dope Alert -->
@@ -98,6 +117,28 @@
         <tbody></tbody>
       </table>
     </div>
+    <div id="upcoming" class="section">
+  <h2>Manage Upcoming Events / Shows</h2>
+  <p>Changes here will appear in the live modal / homepage posters.</p>
+
+  <button id="fetch-upcoming">Refresh List</button>
+  <button id="add-new-event">+ Add New Event</button>
+
+  <div id="events-container" style="margin-top: 20px;"></div>
+
+  <!-- Hidden template for new/edit form -->
+  <template id="event-form-template">
+    <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
+      <input type="text"     placeholder="Title"          class="event-title"   style="width:100%; margin-bottom:8px;">
+      <input type="text"     placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time"    style="width:100%; margin-bottom:8px;">
+      <textarea              placeholder="Description"     class="event-desc"    style="width:100%; height:80px; margin-bottom:8px;"></textarea>
+      <input type="url"      placeholder="Image URL (128×128 or square)" class="event-image"  style="width:100%; margin-bottom:8px;">
+      <input type="url"      placeholder="Link (optional – Telegram, external...)" class="event-link"   style="width:100%; margin-bottom:12px;">
+      <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
+      <button class="cancel-event-btn">Cancel</button>
+    </div>
+  </template>
+</div>
     <div id="exports" class="section">
       <h2>Exports & Filters</h2>
       <select id="export-type">
@@ -425,6 +466,150 @@
 
   // Initial load for users
   fetchAndRenderUsers();
+  // ── Upcoming Events Management ──────────────────────────────────────
+
+const upcomingSection = document.getElementById('upcoming');
+const eventsContainer = document.getElementById('events-container');
+const addNewEventBtn = document.getElementById('add-new-event');
+const fetchUpcomingBtn = document.getElementById('fetch-upcoming');
+const formTemplate = document.getElementById('event-form-template');
+
+async function getUpcomingEvents() {
+  showLoader("Loading upcoming events...");
+  const docRef = doc(db, "settings", "live");
+  const snap = await getDoc(docRef);
+  hideLoader();
+  if (snap.exists()) {
+    return snap.data().upcomingEvents || [];
+  }
+  return [];
+}
+
+function renderEvents(events) {
+  eventsContainer.innerHTML = '';
+  if (events.length === 0) {
+    eventsContainer.innerHTML = '<p style="color:#888;">No upcoming events yet. Add one!</p>';
+    return;
+  }
+
+  events.forEach((event, index) => {
+    const card = document.createElement('div');
+    card.className = 'event-card-preview';
+    card.innerHTML = `
+      <h4>${event.title || 'No title'}</h4>
+      <p><strong>Time:</strong> ${event.time || '-'}</p>
+      <p><strong>Desc:</strong> ${event.desc?.substring(0,80)}${event.desc?.length > 80 ? '...' : ''}</p>
+      <p><strong>Image:</strong> <a href="${event.imageUrl}" target="_blank">view</a></p>
+      ${event.link ? `<p><strong>Link:</strong> <a href="${event.link}" target="_blank">open</a></p>` : ''}
+      <div class="event-actions">
+        <button class="edit-event" data-index="${index}">Edit</button>
+        <button class="delete-event" data-index="${index}">Delete</button>
+      </div>
+    `;
+
+    // Edit
+    card.querySelector('.edit-event').onclick = () => {
+      // Remove any open forms first
+      document.querySelectorAll('.edit-event-form').forEach(f => f.remove());
+
+      const form = formTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+      form.querySelector('.event-title').value   = event.title || '';
+      form.querySelector('.event-time').value    = event.time || '';
+      form.querySelector('.event-desc').value    = event.desc || '';
+      form.querySelector('.event-image').value   = event.imageUrl || '';
+      form.querySelector('.event-link').value    = event.link || '';
+
+      const saveBtn = form.querySelector('.save-event-btn');
+      const cancelBtn = form.querySelector('.cancel-event-btn');
+
+      saveBtn.textContent = "Update Event";
+      saveBtn.onclick = async () => {
+        const updated = {
+          title:   form.querySelector('.event-title').value.trim(),
+          time:    form.querySelector('.event-time').value.trim(),
+          desc:    form.querySelector('.event-desc').value.trim(),
+          imageUrl:form.querySelector('.event-image').value.trim(),
+          link:    form.querySelector('.event-link').value.trim(),
+        };
+
+        if (!updated.title || !updated.time || !updated.desc || !updated.imageUrl) {
+          alert("Please fill title, time, description and image URL.");
+          return;
+        }
+
+        showLoader("Saving event...");
+        const current = await getUpcomingEvents();
+        current[index] = updated;
+        await updateDoc(doc(db, "settings", "live"), { upcomingEvents: current });
+        hideLoader();
+        showDopeAlert("Updated", "Event updated!");
+        loadAndRenderEvents();
+      };
+
+      cancelBtn.onclick = () => form.remove();
+      card.after(form);
+    };
+
+    // Delete
+    card.querySelector('.delete-event').onclick = async () => {
+      if (!confirm("Delete this event?")) return;
+      showLoader("Deleting...");
+      const current = await getUpcomingEvents();
+      current.splice(index, 1);
+      await updateDoc(doc(db, "settings", "live"), { upcomingEvents: current });
+      hideLoader();
+      showDopeAlert("Deleted", "Event removed.");
+      loadAndRenderEvents();
+    };
+
+    eventsContainer.appendChild(card);
+  });
+}
+
+async function loadAndRenderEvents() {
+  const events = await getUpcomingEvents();
+  renderEvents(events);
+}
+
+// Add new
+addNewEventBtn.onclick = () => {
+  document.querySelectorAll('.edit-event-form').forEach(f => f.remove());
+  const form = formTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+  form.querySelector('.save-event-btn').textContent = "Create Event";
+
+  form.querySelector('.save-event-btn').onclick = async () => {
+    const newEvent = {
+      title:   form.querySelector('.event-title').value.trim(),
+      time:    form.querySelector('.event-time').value.trim(),
+      desc:    form.querySelector('.event-desc').value.trim(),
+      imageUrl:form.querySelector('.event-image').value.trim(),
+      link:    form.querySelector('.event-link').value.trim(),
+    };
+
+    if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
+      alert("Title, time, description and image URL are required.");
+      return;
+    }
+
+    showLoader("Adding event...");
+    const current = await getUpcomingEvents();
+    current.push(newEvent);
+    await updateDoc(doc(db, "settings", "live"), { upcomingEvents: current });
+    hideLoader();
+    showDopeAlert("Added", "New event created!");
+    loadAndRenderEvents();
+  };
+
+  eventsContainer.prepend(form);
+};
+
+fetchUpcomingBtn.onclick = loadAndRenderEvents;
+
+// Tab switch – auto load when tab is clicked
+document.querySelector('[data-tab="upcoming"]').onclick = (e) => {
+  // existing tab logic...
+  loadAndRenderEvents();
+};
 </script>
 </body>
 </html>
