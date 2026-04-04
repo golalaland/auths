@@ -168,31 +168,27 @@
     <div class="particle" style="left:80%;animation-delay:3s;"></div>
     <div class="particle" style="left:90%;animation-delay:5s;"></div>
   </div>
-
   <div class="logo-container">
     <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962"
          alt="CUBE Logo" class="logo">
   </div>
-
   <h1></h1>
-  <div class="tagline">BOOST YOUR HOST'S TAB & LEVEL UP • #UYE™</div>
-
+  <div class="tagline">BOOST YOUR HOST'S TAB & LEVEL UP YOUR MEMBERSHIP PERKS</div>
   <div class="form-group"><input type="text" placeholder="@username" id="chatId"></div>
   <div class="form-group"><input type="email" placeholder="Email Address" id="email"></div>
   <div class="form-group"><input type="tel" placeholder="Phone Number" id="phone"></div>
-
   <div id="message"></div>
   <button id="payBtn">BOOST</button>
 
 <script src="https://js.paystack.co/v2/inline.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  serverTimestamp, 
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
   increment,
   addDoc,
   collection
@@ -258,13 +254,11 @@ payBtn.onclick = async () => {
     }
 
     const userData = snap.data();
-
     if (userData.chatIdLower !== chatId.toLowerCase() || userData.phone !== phone) {
       showMessage('Details do not match our records', true);
       resetButton();
       return;
     }
-
     if (!userData.isVIP) {
       showMessage('This account is not VIP — please upgrade first', true);
       resetButton();
@@ -276,43 +270,42 @@ payBtn.onclick = async () => {
     const handler = PaystackPop.setup({
       key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
       email: email,
-      amount: 999900, // ₦9,999
+      amount: 10749 * 100,          // ₦9,999 + ₦750 VAT = ₦10,749
       currency: 'NGN',
       ref: 'VIP_RENEW_' + Date.now(),
       metadata: {
         chatId: chatId,
         type: 'renewal'
       },
+
       callback: async function(response) {
         showMessage('Processing renewal...');
 
         try {
-          // 1. Re-fetch latest user data (in case anything changed)
           const freshSnap = await getDoc(userRef);
           if (!freshSnap.exists()) throw new Error("User record disappeared");
-          const freshUserData = freshSnap.data();
 
+          const freshUserData = freshSnap.data();
           const inviterId = freshUserData?.invitedBy;
 
-          // 2. Update the renewing user
+          // Update the renewing user
           await updateDoc(userRef, {
             hasPaid: true,
-            renewalCount: increment(1),
+            membershipLevel: increment(1),        // Tracks renewal count
             vipRenewedAt: serverTimestamp(),
+            vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
             lastUpdated: serverTimestamp()
           });
 
-          // 3. Reward + notify inviter (if exists)
+          // Reward + notify inviter (if exists)
           if (inviterId) {
             const inviterRef = doc(db, "users", inviterId);
-
             await updateDoc(inviterRef, {
-              stars: increment(300),                // ← adjust this value
-              renewalReferrals: increment(1),       // optional: track renewal referrals
+              stars: increment(300),
+              renewalReferrals: increment(1),
               lastUpdated: serverTimestamp()
             });
 
-            // Notification to inviter
             await addDoc(collection(db, "notifications"), {
               recipientId: inviterId,
               type: "renewal_reward",
@@ -325,7 +318,7 @@ payBtn.onclick = async () => {
             });
           }
 
-          // 4. Welcome back notification to the renewing user
+          // Welcome back notification
           await addDoc(collection(db, "notifications"), {
             recipientId: docId,
             type: "renewal_success",
@@ -336,16 +329,18 @@ payBtn.onclick = async () => {
           });
 
           showMessage('VIP Renewed Successfully! Welcome back 🪩');
+
           setTimeout(() => {
-            window.location.href = "https://visitcube.xyz"; 
+            window.location.href = "https://visitcube.xyz";
           }, 2200);
 
         } catch (err) {
           console.error('Processing failed:', err);
           showMessage('Payment successful but sync failed – contact support', true);
-          setTimeout(() => window.location.href = "chat.html", 4000);
+          setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
         }
       },
+
       onClose: function() {
         showMessage('Payment cancelled');
         resetButton();
@@ -353,7 +348,6 @@ payBtn.onclick = async () => {
     });
 
     handler.openIframe();
-
   } catch (err) {
     console.error(err);
     showMessage('Something went wrong. Try again.', true);
