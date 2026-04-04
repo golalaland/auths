@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/0fe4a760-df02-4801-badd-889b8caf3643", "destination": "/for$got.html" },
       { "source": "/cQBwqUwWxJHMqltVB4a3wNxwCTgZlrRF", "destination": "/private$read.html" },
+      { "source": "/f3593d3f-8b87-4381-99b2-567372d93537", "destination": "/renewal-vip.html" },
     
     { "source": "/g12730", "destination": "/bravo-quark-bravo-7507.html" },
 
