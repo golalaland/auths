@@ -270,7 +270,7 @@ payBtn.onclick = async () => {
     const handler = PaystackPop.setup({
       key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
       email: email,
-      amount: 10749 * 100,          // ₦9,999 + ₦750 VAT = ₦10,749
+      amount: 10749 * 100,           // ₦9,999 + ₦750 VAT = ₦10,749
       currency: 'NGN',
       ref: 'VIP_RENEW_' + Date.now(),
       metadata: {
@@ -291,26 +291,26 @@ payBtn.onclick = async () => {
           // Update the renewing user
           await updateDoc(userRef, {
             hasPaid: true,
-            membershipLevel: increment(1),        // Tracks renewal count
+            membershipLevel: increment(1),
             vipRenewedAt: serverTimestamp(),
             vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
             lastUpdated: serverTimestamp()
           });
 
-          // Reward + notify inviter (if exists)
+          // Reward host with cash on renewal (same as signup)
           if (inviterId) {
             const inviterRef = doc(db, "users", inviterId);
             await updateDoc(inviterRef, {
-              stars: increment(300),
-              renewalReferrals: increment(1),
+              cash: increment(2512),           // Same cash reward as signup
+              cashReward: increment(2512),
               lastUpdated: serverTimestamp()
             });
 
             await addDoc(collection(db, "notifications"), {
               recipientId: inviterId,
               type: "renewal_reward",
-              title: "VIP Renewal in your Cube! 🔥",
-              message: `@${freshUserData.chatId || "someone"} just renewed VIP!\n+300 STRZ added to your balance`,
+              title: "₦2,512 Cash Reward Earned!",
+              message: `@${freshUserData.chatId || "someone"} just renewed VIP!\n₦2,512 added to your cash balance`,
               relatedUserId: docId,
               relatedUserName: freshUserData.chatId || chatId,
               read: false,
