@@ -690,16 +690,18 @@ async function applyRewards() {
   const date = document.getElementById('reward-winners-date').value;
   if (!date) return dopeAlert('Please select a date', 'Error');
 
-  // Determine if we're rewarding Hosts or General players
-  const isHosts = document.querySelector('input[name="rewardType"]:checked')?.value === 'hosts';
+  // Check which type of rewards we are applying
+  const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
+  const isHosts = rewardType === 'hosts';
 
+  // Choose correct collection
   const winnersRef = isHosts 
-    ? doc(db, 'hostWinners', date)      // Separate collection for host winners
+    ? doc(db, 'hostWinners', date) 
     : doc(db, 'winners', date);
 
   const snap = await getDoc(winnersRef);
   if (!snap.exists()) {
-    return dopeAlert(`No ${isHosts ? 'Host' : ''} winners found for this date`, 'Error');
+    return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for this date`, 'Error');
   }
 
   const winnersDoc = snap.data();
@@ -724,10 +726,10 @@ async function applyRewards() {
     }
   });
 
-  // Save the assigned rewards
+  // Save assigned rewards back
   await updateDoc(winnersRef, { winners });
 
-  // Load ripple configuration
+  // Load ripple config
   const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
   const config = referralSnap.exists() ? referralSnap.data() : {
     level1_cash_percent: 10,
@@ -750,7 +752,7 @@ async function applyRewards() {
 
     const winnerRef = doc(db, 'users', w.uid);
 
-    // Give direct reward
+    // Direct reward
     await runTransaction(db, async (t) => {
       const userSnap = await t.get(winnerRef);
       if (!userSnap.exists()) return;
@@ -760,7 +762,7 @@ async function applyRewards() {
       });
     });
 
-    // Notification for the winner
+    // Winner Notification
     const rewardParts = [];
     if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
@@ -783,10 +785,10 @@ async function applyRewards() {
       read: false
     });
 
-    // ==================== RIPPLE REWARDS (Works for both General & Hosts) ====================
-    let currentUid = winnerData?.invitedBy;   // Note: You'll need to load winnerData if not already available
+    // ==================== RIPPLE REWARDS (Works for Hosts too) ====================
+    let currentUid = w.invitedBy || null;   // Use invitedBy if available from winner data
     let level = 1;
-    let chainPersonName = w.username || "a Host";
+    let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
 
     while (currentUid && level <= config.max_levels) {
       const uplineRef = doc(db, 'users', currentUid);
@@ -1132,33 +1134,136 @@ document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLead
   document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
   document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
 
-  // ==================== NEW FUNCTION: Export TM Host Withdrawals ====================
-// ==================== TM HOST WITHDRAWALS (tmhostswithdrawals) ====================
+// Global variable to store current hosts leaderboard data
+let currentHostLbData = [];
 
-async function loadTmHostWithdrawals() {
-  const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
+// ==================== HOSTS LEADERBOARD ====================
+async function loadHostsLeaderboard() {
+  const type = document.getElementById('host-lb-type')?.value || 'daily';
+  const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
+  const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
+
   if (!tableBody) return;
 
-  tableBody.innerHTML = '<tr><td colspan="9">Loading TM Host Withdrawals...</td></tr>';
+  tableBody.innerHTML = '<tr><td colspan="4">Loading Hosts Leaderboard...</td></tr>';
 
   try {
-    const q = query(collection(db, "tmhostswithdrawals"), orderBy("requestedAt", "desc"));
+    const key = getLeaderboardKey(type);
+    const fieldPath = type === "daily" ? `hostTapsDaily.${key}` :
+                     type === "weekly" ? `hostTapsWeekly.${key}` :
+                                         `hostTapsMonthly.${key}`;
+
+    const q = query(
+      collection(db, "users"),
+      orderBy(fieldPath, "desc"),
+      limit(Math.min(limitInput, 100))
+    );
+
     const snap = await getDocs(q);
 
     tableBody.innerHTML = '';
+    currentHostLbData = [];   // Reset
 
+    if (snap.empty) {
+      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;">No host activity recorded yet.</td></tr>';
+      return;
+    }
+
+    let rank = 1;
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const taps = data.hostTapsDaily?.[key] ??
+                   data.hostTapsWeekly?.[key] ??
+                   data.hostTapsMonthly?.[key] ?? 0;
+
+      if (taps <= 0) return;
+
+      const entry = {
+        uid: docSnap.id,
+        username: data.chatId || data.username || 'Host',
+        taps: taps,
+        email: data.email || data.chatId || '—'
+      };
+
+      currentHostLbData.push(entry);
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${rank}</td>
+        <td>${entry.username}</td>
+        <td><strong>${taps.toLocaleString()}</strong></td>
+        <td>${entry.email}</td>
+      `;
+      tableBody.appendChild(row);
+      rank++;
+    });
+
+  } catch (err) {
+    console.error("Error loading hosts leaderboard:", err);
+    tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error: ${err.message}</td></tr>`;
+  }
+}
+
+// ====================== SAVE HOSTS LEADERBOARD AS WINNERS ======================
+async function saveHostWinners() {
+  if (!currentHostLbData || currentHostLbData.length === 0) {
+    return dopeAlert("No hosts leaderboard data. Please refresh the Hosts Leaderboard first.", "Error");
+  }
+
+  const date = new Date().toISOString().split('T')[0];
+  const hostWinnersRef = doc(db, 'hostWinners', date);
+
+  try {
+    showLoader("Saving Hosts Winners...");
+
+    const winnersToSave = currentHostLbData.map((u, i) => ({
+      rank: i + 1,
+      uid: u.uid,
+      username: u.username,
+      taps: u.taps,
+      rewards: { cash: 0, stars: 0 }
+    }));
+
+    await setDoc(hostWinnersRef, {
+      date,
+      type: "hosts",
+      isHosts: true,
+      winners: winnersToSave,
+      timestamp: serverTimestamp()
+    });
+
+    dopeAlert(`Hosts leaderboard saved successfully for ${date}!`, "Success");
+    loadWinnerDates();   // Refresh date selector in Rewards tab
+
+  } catch (error) {
+    console.error("Failed to save host winners:", error);
+    dopeAlert("Failed to save hosts winners. Check console.", "Error");
+  } finally {
+    hideLoader();
+  }
+}
+
+// Event listeners for Hosts Leaderboard
+document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
+document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
+
+// TM Host Withdrawals (unchanged - kept for completeness)
+async function loadTmHostWithdrawals() {
+  const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
+  if (!tableBody) return;
+  tableBody.innerHTML = '<tr><td colspan="9">Loading TM Host Withdrawals...</td></tr>';
+  try {
+    const q = query(collection(db, "tmhostswithdrawals"), orderBy("requestedAt", "desc"));
+    const snap = await getDocs(q);
+    tableBody.innerHTML = '';
     if (snap.empty) {
       tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#aaa;">No TM Host withdrawals yet.</td></tr>';
       return;
     }
-
     for (const d of snap.docs) {
       const w = d.data();
       let dateStr = "Unknown";
-      if (w.requestedAt?.toDate) {
-        dateStr = w.requestedAt.toDate().toLocaleString();
-      }
-
+      if (w.requestedAt?.toDate) dateStr = w.requestedAt.toDate().toLocaleString();
       let displayName = w.username || "—";
       if (w.uid) {
         const userSnap = await getDoc(doc(db, "users", w.uid));
@@ -1167,7 +1272,6 @@ async function loadTmHostWithdrawals() {
           displayName = userData.fullName || userData.chatId || w.username || "—";
         }
       }
-
       const row = document.createElement('tr');
       row.dataset.id = d.id;
       row.innerHTML = `
@@ -1179,18 +1283,17 @@ async function loadTmHostWithdrawals() {
         <td>${w.bankAccountNumber || "—"}</td>
         <td>${w.status || "pending"}</td>
         <td>${w.isFastTrack ? '<span style="color:#0f9">Fast Track</span>' : 'Standard'}</td>
-        <td>${(w.status === "pending" || w.status === "fast_track") ? 
+        <td>${(w.status === "pending" || w.status === "fast_track") ?
           '<button class="mark-paid-tmhost">Mark Paid</button>' : 'Done'}</td>
       `;
-
       const markBtn = row.querySelector('.mark-paid-tmhost');
       if (markBtn) {
         markBtn.addEventListener('click', async () => {
           if (await showConfirm('Mark Paid', `Mark this TM Host withdrawal as paid?`)) {
             showLoader('Marking as paid...');
-            await updateDoc(doc(db, 'tmhostswithdrawals', d.id), { 
-              status: 'paid', 
-              paidAt: serverTimestamp() 
+            await updateDoc(doc(db, 'tmhostswithdrawals', d.id), {
+              status: 'paid',
+              paidAt: serverTimestamp()
             });
             hideLoader();
             loadTmHostWithdrawals();
@@ -1207,16 +1310,10 @@ async function loadTmHostWithdrawals() {
 
 async function exportTmHostWithdrawalsCSV() {
   const headers = [
-    'Transfer Amount',
-    'Transfer Note (Optional)',
-    'Transfer Reference (Optional)',
+    'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
     'Recipient Code (This overrides all other details if available)',
-    'Bank Code or Slug',
-    'Account Number',
-    'Account Name (Optional)',
-    'Email Address (Optional)'
+    'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
   ];
-
   const rows = [headers];
   const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
   const snap = await getDocs(q);
@@ -1225,11 +1322,8 @@ async function exportTmHostWithdrawalsCSV() {
     const w = d.data();
     const userSnap = await getDoc(doc(db, 'users', w.uid));
     const user = userSnap.data() || {};
-
     const amount = w.amount || 0;
-    const note = w.isFastTrack 
-      ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" 
-      : "TM HOST WITHDRAWAL";
+    const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" : "TM HOST WITHDRAWAL";
     const ref = `TMH-${d.id}`;
 
     rows.push([
@@ -1260,72 +1354,6 @@ async function exportTmHostWithdrawalsCSV() {
     }
   } else {
     dopeAlert("No pending TM Host withdrawals to export.");
-  }
-}
-  
-async function loadHostsLeaderboard() {
-  const type = document.getElementById('host-lb-type')?.value || 'daily';
-  const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
-  const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
-
-  if (!tableBody) return;
-
-  tableBody.innerHTML = '<tr><td colspan="4">Loading Hosts Leaderboard...</td></tr>';
-
-  try {
-    const key = getLeaderboardKey(type);
-    const fieldPath = type === "daily" ? `hostTapsDaily.${key}` :
-                     type === "weekly" ? `hostTapsWeekly.${key}` :
-                                         `hostTapsMonthly.${key}`;
-
-    const q = query(
-      collection(db, "users"),
-      orderBy(fieldPath, "desc"),
-      limit(Math.min(limitInput, 100))
-    );
-
-    const snap = await getDocs(q);
-
-    tableBody.innerHTML = '';
-    currentHostLbData = [];
-
-    if (snap.empty) {
-      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;">No host activity recorded yet.</td></tr>';
-      return;
-    }
-
-    let rank = 1;
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      const taps = data.hostTapsDaily?.[key] ?? 
-                   data.hostTapsWeekly?.[key] ?? 
-                   data.hostTapsMonthly?.[key] ?? 0;
-
-      if (taps <= 0) return;
-
-      const entry = {
-        uid: docSnap.id,
-        username: data.chatId || data.username || 'Host',
-        taps: taps,
-        email: data.email || data.chatId || '—'
-      };
-
-      currentHostLbData.push(entry);
-
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${rank}</td>
-        <td>${entry.username}</td>
-        <td><strong>${taps.toLocaleString()}</strong></td>
-        <td>${entry.email}</td>
-      `;
-      tableBody.appendChild(row);
-      rank++;
-    });
-
-  } catch (err) {
-    console.error("Error loading hosts leaderboard:", err);
-    tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error: ${err.message}</td></tr>`;
   }
 }
 </script>
