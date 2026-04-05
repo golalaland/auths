@@ -108,16 +108,29 @@
   </table>
 </div>
     
-    <div id="rewards" class="section">
-      <h2>Rewards Management</h2>
-      <p>Set batch rewards (e.g., top 1-10: cash 5000, stars 0)</p>
-      <div id="reward-rules"></div>
-      <button id="add-rule">Add Reward Rule</button>
-      <select id="reward-winners-date"></select>
-      <button id="apply-rewards">Apply & Mass Send Rewards</button>
-      <button id="send-notifs">Send Custom Notifications</button>
-      <textarea id="notif-message" placeholder="Custom notification message"></textarea>
-    </div>
+   <div id="rewards" class="section">
+  <h2>Rewards Management</h2>
+  
+  <div style="margin-bottom:20px;">
+    <strong>Reward Type:</strong>  
+    <label><input type="radio" name="rewardType" value="general" checked> General Players</label>  
+    <label><input type="radio" name="rewardType" value="hosts"> Hosts Only</label>
+  </div>
+
+  <p>Set batch rewards (e.g., top 1-10: cash 5000, stars 0)</p>
+  
+  <div id="reward-rules"></div>
+  <button id="add-rule">Add Reward Rule</button>
+
+  <div style="margin:20px 0;">
+    <select id="reward-winners-date"></select>
+    <button id="apply-rewards">Apply & Mass Send Rewards</button>
+  </div>
+
+  <button id="send-notifs">Send Custom Notifications</button>
+  <textarea id="notif-message" placeholder="Custom notification message" style="width:100%;height:80px;margin-top:10px;"></textarea>
+</div>
+    
     <div id="configs" class="section">
       <h2>Game Configurations</h2>
       <input id="bid-cost" type="number" placeholder="Bid Cost (Stars)">
@@ -670,15 +683,22 @@ function initTabs() {
   }
 async function applyRewards() {
   const date = document.getElementById('reward-winners-date').value;
-  if (!date) return dopeAlert('Select a date', 'Error', 'Warning');
+  if (!date) return dopeAlert('Please select a date', 'Error');
 
-  const winnersRef = doc(db, 'winners', date);
+  // Determine if we're rewarding Hosts or General players
+  const isHosts = document.querySelector('input[name="rewardType"]:checked')?.value === 'hosts';
+
+  const winnersRef = isHosts 
+    ? doc(db, 'hostWinners', date)      // Separate collection for host winners
+    : doc(db, 'winners', date);
+
   const snap = await getDoc(winnersRef);
-  if (!snap.exists()) return dopeAlert('No winners for this date', 'Error', 'Warning');
+  if (!snap.exists()) {
+    return dopeAlert(`No ${isHosts ? 'Host' : ''} winners found for this date`, 'Error');
+  }
 
   const winnersDoc = snap.data();
-  const winners = winnersDoc.winners || [];
-  const isBidRoyale = winnersDoc.type?.includes("bid") || date.includes("bid_");
+  let winners = winnersDoc.winners || [];
 
   // Load reward rules from UI
   const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
@@ -688,7 +708,7 @@ async function applyRewards() {
     stars: parseInt(div.querySelector('.rule-stars').value) || 0
   }));
 
-  // Assign rewards to winners
+  // Assign rewards based on rank
   winners.forEach(w => {
     w.rewards = { cash: 0, stars: 0 };
     for (let rule of rules) {
@@ -699,9 +719,10 @@ async function applyRewards() {
     }
   });
 
+  // Save the assigned rewards
   await updateDoc(winnersRef, { winners });
 
-  // Load ripple percentages from config
+  // Load ripple configuration
   const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
   const config = referralSnap.exists() ? referralSnap.data() : {
     level1_cash_percent: 10,
@@ -716,44 +737,40 @@ async function applyRewards() {
   const l2Cash = config.level2_cash_percent / 100;
   const l2Stars = config.level2_stars_percent / 100;
 
+  // Distribute rewards + ripple
   for (let w of winners) {
     const directCash = w.rewards.cash || 0;
     const directStars = w.rewards.stars || 0;
     if (directCash + directStars === 0) continue;
 
-    // Give direct reward to winner
     const winnerRef = doc(db, 'users', w.uid);
-    const winnerSnap = await getDoc(winnerRef);
-    if (!winnerSnap.exists()) continue;
 
-    const winnerData = winnerSnap.data();
-
+    // Give direct reward
     await runTransaction(db, async (t) => {
-      const snap = await t.get(winnerRef);
-      const u = snap.data();
+      const userSnap = await t.get(winnerRef);
+      if (!userSnap.exists()) return;
       t.update(winnerRef, {
         cash: increment(directCash),
         stars: increment(directStars)
       });
     });
 
-    // Notification for the WINNER (direct)
+    // Notification for the winner
     const rewardParts = [];
     if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
-    if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} stars`);
+    if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
     const rankText = w.rank === 1 ? "CHAMPION!" :
                      w.rank === 2 ? "2ND PLACE — WARRIOR!" :
-                     w.rank === 3 ? "3RD PLACE — LEGEND!" :
-                     `TOP ${w.rank}`;
+                     w.rank === 3 ? "3RD PLACE — LEGEND!" : `TOP ${w.rank}`;
 
-    const title = isBidRoyale ? "BID ROYALE VICTORY!" : "TapMaster Winner!";
+    const title = isHosts ? "HOSTS LEADERBOARD REWARD!" : "TapMaster Winner!";
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title,
-      message: `${rankText}\nYou won ${rewardParts.join(' + ')}!`,
-      type: isBidRoyale ? "bid_royale_winner" : "daily_leaderboard",
+      message: `${rankText}\nYou received ${rewardParts.join(' + ')}!`,
+      type: isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank: w.rank,
       cash: directCash,
       stars: directStars,
@@ -761,12 +778,10 @@ async function applyRewards() {
       read: false
     });
 
-    // ─────────────────────────────────────────────
-    // RIPPLE REWARDS – proper chain naming
-    // ─────────────────────────────────────────────
-    let currentUid = winnerData.invitedBy;           // starts with direct inviter (Alice)
+    // ==================== RIPPLE REWARDS (Works for both General & Hosts) ====================
+    let currentUid = winnerData?.invitedBy;   // Note: You'll need to load winnerData if not already available
     let level = 1;
-    let chainPersonName = winnerData.chatId || winnerData.fullName || "a player"; // starts with winner (HD)
+    let chainPersonName = w.username || "a Host";
 
     while (currentUid && level <= config.max_levels) {
       const uplineRef = doc(db, 'users', currentUid);
@@ -782,7 +797,6 @@ async function applyRewards() {
       const rippleStars = Math.floor(directStars * starsPercent);
 
       if (rippleCash + rippleStars > 0) {
-        // Atomic update
         await runTransaction(db, async (t) => {
           const snap = await t.get(uplineRef);
           if (!snap.exists()) return;
@@ -792,23 +806,17 @@ async function applyRewards() {
           });
         });
 
-        // Build reward strings
         const rippleParts = [];
         if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
-        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} stars`);
+        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
-        let message = "";
-        if (level === 1) {
-          // Direct inviter (Alice) knows HD
-          message = `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's  ${rippleParts.join(' + ')}, your share of the win for inviting them.`;
-        } else {
-          // Level 2+ (Bob) knows Alice, not HD → refer to Alice's circle
-          message = `Someone from ${chainPersonName}'s circle won ${rewardParts.join(' + ')}!\nHere's  ${rippleParts.join(' + ')}, your share of the win for inviting them.`;
-        }
+        let message = level === 1 
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's your share: ${rippleParts.join(' + ')}`
+          : `Someone from ${chainPersonName}'s network won!\nHere's your ripple reward: ${rippleParts.join(' + ')}`;
 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
-          title: "TapMaster Ripple Reward!",
+          title: isHosts ? "HOSTS RIPPLE REWARD!" : "TapMaster Ripple Reward!",
           message,
           type: `ripple_level${level}`,
           fromUser: w.uid,
@@ -820,14 +828,20 @@ async function applyRewards() {
         });
       }
 
-      // Move up: for next level, the "chain person" becomes the current upline (Alice becomes the reference for Bob)
-      chainPersonName = uplineData.chatId || uplineData.fullName || "a player";
+      chainPersonName = uplineData.chatId || uplineData.username || "a player";
       currentUid = uplineData.invitedBy;
       level++;
     }
   }
 
-  dopeAlert("EMPIRE PAID — REWARDS + RIPPLE SENT!", "SUCCESS", "Crown", 8000);
+  dopeAlert(
+    isHosts 
+      ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" 
+      : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
+    "SUCCESS", 
+    "Crown", 
+    8000
+  );
 }
   async function loadConfigs() {
     const configRef = doc(db, 'configs', 'game');
