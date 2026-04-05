@@ -327,6 +327,7 @@
     await loadWithdrawals();
     await loadHostWithdrawals();
     await startLbListener();
+    await loadTmHostWithdrawals();
   });
 
   logoutBtn.addEventListener("click", () => {
@@ -379,24 +380,40 @@
   document.getElementById('export-withdrawals-csv').addEventListener('click', exportWithdrawalsCSV);
   document.getElementById('export-host-withdrawals-csv').addEventListener('click', exportHostWithdrawalsCSV);
 
-  function initTabs() {
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(tab.dataset.tab).classList.add('active');
-        if (tab.dataset.tab === 'leaderboards') startLbListener();
-        else if (tab.dataset.tab === 'winners') fetchWinnersHistory();
-        else if (tab.dataset.tab === 'withdrawals') loadWithdrawals();
-        else if (tab.dataset.tab === 'hostWithdrawals') loadHostWithdrawals();
-        if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
-          lbUnsub();
-          lbUnsub = null;
-        }
-      });
+ function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(tab.dataset.tab).classList.add('active');
+
+      // Handle different tabs
+      if (tab.dataset.tab === 'leaderboards') {
+        startLbListener();
+      } 
+      else if (tab.dataset.tab === 'winners') {
+        fetchWinnersHistory();
+      } 
+      else if (tab.dataset.tab === 'withdrawals') {
+        loadWithdrawals();
+      } 
+      else if (tab.dataset.tab === 'hostWithdrawals') {
+        loadHostWithdrawals();
+      } 
+      else if (tab.dataset.tab === 'tmhostWithdrawals') {   // ← NEW
+        loadTmHostWithdrawals();
+      }
+
+      // Clean up leaderboard listener when leaving leaderboards tab
+      if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
+        lbUnsub();
+        lbUnsub = null;
+      }
     });
-  }
+  });
+}
 
   async function startLbListener() {
     if (lbUnsub) lbUnsub();
@@ -979,6 +996,8 @@ async function applyRewards() {
   window.alert = function(message) {
     dopeAlert(message, "Alert", "Warning", 7000);
   };
+
+  document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
 
   // ==================== NEW FUNCTION: Export TM Host Withdrawals ====================
   async function exportTmHostWithdrawalsCSV() {
