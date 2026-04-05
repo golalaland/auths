@@ -1050,11 +1050,11 @@ async function applyRewards() {
     }
   }
 
-  // ==================== TM HOST WITHDRAWALS (tmhostswithdrawals) ====================
+ // ==================== TM HOST WITHDRAWALS (tmhostswithdrawals) ====================
 
 async function loadTmHostWithdrawals() {
   const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
-  if (!tableBody) return; // safety
+  if (!tableBody) return;
 
   tableBody.innerHTML = '<tr><td colspan="9">Loading TM Host Withdrawals...</td></tr>';
 
@@ -1071,10 +1071,7 @@ async function loadTmHostWithdrawals() {
 
     for (const d of snap.docs) {
       const w = d.data();
-      let dateStr = "Unknown";
-      if (w.requestedAt?.toDate) {
-        dateStr = w.requestedAt.toDate().toLocaleString();
-      }
+      let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
 
       let displayName = w.username || "—";
       if (w.uid) {
@@ -1110,7 +1107,7 @@ async function loadTmHostWithdrawals() {
               paidAt: serverTimestamp() 
             });
             hideLoader();
-            loadTmHostWithdrawals(); // refresh table
+            loadTmHostWithdrawals();
           }
         });
       }
@@ -1118,20 +1115,16 @@ async function loadTmHostWithdrawals() {
     }
   } catch (error) {
     console.error("Error loading TM Host withdrawals:", error);
-    tableBody.innerHTML = '<tr><td colspan="9" style="color:#ff6b6b">Error loading data. Check console.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="9" style="color:#ff6b6b">Error loading data.</td></tr>';
   }
 }
 
+// Keep only ONE of these export functions — delete any older version
 async function exportTmHostWithdrawalsCSV() {
   const headers = [
-    'Transfer Amount',
-    'Transfer Note (Optional)',
-    'Transfer Reference (Optional)',
+    'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
     'Recipient Code (This overrides all other details if available)',
-    'Bank Code or Slug',
-    'Account Number',
-    'Account Name (Optional)',
-    'Email Address (Optional)'
+    'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
   ];
 
   const rows = [headers];
@@ -1144,17 +1137,19 @@ async function exportTmHostWithdrawalsCSV() {
     const user = userSnap.data() || {};
 
     const amount = w.amount || 0;
-    const note = w.isFastTrack 
-      ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" 
-      : "TM HOST WITHDRAWAL";
+    const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" : "TM HOST WITHDRAWAL";
     const ref = `TMH-${d.id}`;
-    const recipient = '';
-    const bankValue = user.bankSlug || user.bankName || w.bankName || '';
-    const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
-    const accName = user.fullName || w.username || '';
-    const email = user.email || '';
 
-    rows.push([amount, note, ref, recipient, bankValue, accNum, accName, email]);
+    rows.push([
+      amount,
+      note,
+      ref,
+      '',
+      user.bankSlug || user.bankName || w.bankName || '',
+      user.bankAccountNumber || w.bankAccountNumber || '',
+      user.fullName || w.username || '',
+      user.email || ''
+    ]);
   }
 
   const dateStr = getTodayDateString();
@@ -1162,7 +1157,7 @@ async function exportTmHostWithdrawalsCSV() {
 
   if (rows.length > 1) {
     const count = rows.length - 1;
-    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported TM Host withdrawal${count === 1 ? '' : 's'} as paid?`);
+    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported TM Host withdrawal${count > 1 ? 's' : ''} as paid?`);
     if (ok) {
       showLoader('Marking paid...');
       for (const d of snap.docs) {
