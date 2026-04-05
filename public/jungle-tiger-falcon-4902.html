@@ -91,6 +91,11 @@
     <option value="weekly">Weekly Hosts</option>
     <option value="monthly">Monthly Hosts</option>
   </select>
+
+  <!-- Inside <div id="hostsLeaderboard" class="section">, after the table -->
+<button id="save-host-winners" style="margin-top:15px; background:#ff00aa; color:#fff;">
+  Save Current Hosts Leaderboard as Winners
+</button>
   
   <input id="host-lb-limit" type="number" placeholder="Top N" value="50">
   <button id="fetch-host-lb">Refresh Hosts Leaderboard</button>
@@ -1182,6 +1187,7 @@ async function loadHostsLeaderboard() {
 document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
 
   document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
+  document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
 
   // ==================== NEW FUNCTION: Export TM Host Withdrawals ====================
 // ==================== TM HOST WITHDRAWALS (tmhostswithdrawals) ====================
@@ -1311,6 +1317,71 @@ async function exportTmHostWithdrawalsCSV() {
     }
   } else {
     dopeAlert("No pending TM Host withdrawals to export.");
+  }
+}
+async function loadHostsLeaderboard() {
+  const type = document.getElementById('host-lb-type')?.value || 'daily';
+  const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
+  const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML = '<tr><td colspan="4">Loading Hosts Leaderboard...</td></tr>';
+
+  try {
+    const key = getLeaderboardKey(type);
+    const fieldPath = type === "daily" ? `hostTapsDaily.${key}` :
+                     type === "weekly" ? `hostTapsWeekly.${key}` :
+                                         `hostTapsMonthly.${key}`;
+
+    const q = query(
+      collection(db, "users"),
+      orderBy(fieldPath, "desc"),
+      limit(Math.min(limitInput, 100))
+    );
+
+    const snap = await getDocs(q);
+
+    tableBody.innerHTML = '';
+    currentHostLbData = [];
+
+    if (snap.empty) {
+      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;">No host activity recorded yet.</td></tr>';
+      return;
+    }
+
+    let rank = 1;
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const taps = data.hostTapsDaily?.[key] ?? 
+                   data.hostTapsWeekly?.[key] ?? 
+                   data.hostTapsMonthly?.[key] ?? 0;
+
+      if (taps <= 0) return;
+
+      const entry = {
+        uid: docSnap.id,
+        username: data.chatId || data.username || 'Host',
+        taps: taps,
+        email: data.email || data.chatId || '—'
+      };
+
+      currentHostLbData.push(entry);
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${rank}</td>
+        <td>${entry.username}</td>
+        <td><strong>${taps.toLocaleString()}</strong></td>
+        <td>${entry.email}</td>
+      `;
+      tableBody.appendChild(row);
+      rank++;
+    });
+
+  } catch (err) {
+    console.error("Error loading hosts leaderboard:", err);
+    tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error: ${err.message}</td></tr>`;
   }
 }
 </script>
