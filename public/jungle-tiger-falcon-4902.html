@@ -1125,64 +1125,7 @@ async function applyRewards() {
 
   // ==================== HOSTS LEADERBOARD ====================
 
-// ==================== HOSTS LEADERBOARD (Fixed) ====================
-async function loadHostsLeaderboard() {
-  const type = document.getElementById('host-lb-type')?.value || 'daily';
-  const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
-  const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
 
-  if (!tableBody) return;
-
-  tableBody.innerHTML = '<tr><td colspan="4">Loading Hosts Leaderboard...</td></tr>';
-
-  try {
-    const key = getLeaderboardKey(type);
-
-    const fieldPath = type === "daily" ? `hostTapsDaily.${key}` :
-                     type === "weekly" ? `hostTapsWeekly.${key}` :
-                                         `hostTapsMonthly.${key}`;
-
-    const q = query(
-      collection(db, "users"),
-      orderBy(fieldPath, "desc"),
-      limit(Math.min(limitInput, 100))   // Safety cap at 100
-    );
-
-    const snap = await getDocs(q);
-
-    tableBody.innerHTML = '';
-
-    if (snap.empty) {
-      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;">No host activity recorded yet.</td></tr>';
-      return;
-    }
-
-    let rank = 1;
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      const taps = data.hostTapsDaily?.[key] ?? 
-                   data.hostTapsWeekly?.[key] ?? 
-                   data.hostTapsMonthly?.[key] ?? 0;
-
-      if (taps <= 0) return;
-
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${rank}</td>
-        <td>${data.chatId || data.username || 'Host'}</td>
-        <td><strong>${taps.toLocaleString()}</strong></td>
-        <td>${data.email || data.chatId || '—'}</td>
-      `;
-      tableBody.appendChild(row);
-      rank++;
-    });
-
-  } catch (err) {
-    console.error("Error loading hosts leaderboard:", err);
-    tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error: ${err.message}</td></tr>`;
-  }
-}
-  
 // Add this near your other event listeners (inside adminCheckBtn success block)
 document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
 
@@ -1319,6 +1262,7 @@ async function exportTmHostWithdrawalsCSV() {
     dopeAlert("No pending TM Host withdrawals to export.");
   }
 }
+  
 async function loadHostsLeaderboard() {
   const type = document.getElementById('host-lb-type')?.value || 'daily';
   const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
