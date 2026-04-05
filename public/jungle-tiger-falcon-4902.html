@@ -1049,6 +1049,132 @@ async function applyRewards() {
       }
     }
   }
+
+  // ==================== TM HOST WITHDRAWALS (tmhostswithdrawals) ====================
+
+async function loadTmHostWithdrawals() {
+  const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
+  if (!tableBody) return; // safety
+
+  tableBody.innerHTML = '<tr><td colspan="9">Loading TM Host Withdrawals...</td></tr>';
+
+  try {
+    const q = query(collection(db, "tmhostswithdrawals"), orderBy("requestedAt", "desc"));
+    const snap = await getDocs(q);
+
+    tableBody.innerHTML = '';
+
+    if (snap.empty) {
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#aaa;">No TM Host withdrawals yet.</td></tr>';
+      return;
+    }
+
+    for (const d of snap.docs) {
+      const w = d.data();
+      let dateStr = "Unknown";
+      if (w.requestedAt?.toDate) {
+        dateStr = w.requestedAt.toDate().toLocaleString();
+      }
+
+      let displayName = w.username || "—";
+      if (w.uid) {
+        const userSnap = await getDoc(doc(db, "users", w.uid));
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          displayName = userData.fullName || userData.chatId || w.username || "—";
+        }
+      }
+
+      const row = document.createElement('tr');
+      row.dataset.id = d.id;
+      row.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${displayName}</td>
+        <td>${(w.uid || "").replace(/_/g, ".")}</td>
+        <td>₦${(w.amount || 0).toLocaleString()}</td>
+        <td>${w.bankName || "—"}</td>
+        <td>${w.bankAccountNumber || "—"}</td>
+        <td>${w.status || "pending"}</td>
+        <td>${w.isFastTrack ? '<span style="color:#0f9">Fast Track</span>' : 'Standard'}</td>
+        <td>${(w.status === "pending" || w.status === "fast_track") ? 
+          '<button class="mark-paid-tmhost">Mark Paid</button>' : 'Done'}</td>
+      `;
+
+      const markBtn = row.querySelector('.mark-paid-tmhost');
+      if (markBtn) {
+        markBtn.addEventListener('click', async () => {
+          if (await showConfirm('Mark Paid', `Mark this TM Host withdrawal as paid?`)) {
+            showLoader('Marking as paid...');
+            await updateDoc(doc(db, 'tmhostswithdrawals', d.id), { 
+              status: 'paid', 
+              paidAt: serverTimestamp() 
+            });
+            hideLoader();
+            loadTmHostWithdrawals(); // refresh table
+          }
+        });
+      }
+      tableBody.appendChild(row);
+    }
+  } catch (error) {
+    console.error("Error loading TM Host withdrawals:", error);
+    tableBody.innerHTML = '<tr><td colspan="9" style="color:#ff6b6b">Error loading data. Check console.</td></tr>';
+  }
+}
+
+async function exportTmHostWithdrawalsCSV() {
+  const headers = [
+    'Transfer Amount',
+    'Transfer Note (Optional)',
+    'Transfer Reference (Optional)',
+    'Recipient Code (This overrides all other details if available)',
+    'Bank Code or Slug',
+    'Account Number',
+    'Account Name (Optional)',
+    'Email Address (Optional)'
+  ];
+
+  const rows = [headers];
+  const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+  const snap = await getDocs(q);
+
+  for (const d of snap.docs) {
+    const w = d.data();
+    const userSnap = await getDoc(doc(db, 'users', w.uid));
+    const user = userSnap.data() || {};
+
+    const amount = w.amount || 0;
+    const note = w.isFastTrack 
+      ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" 
+      : "TM HOST WITHDRAWAL";
+    const ref = `TMH-${d.id}`;
+    const recipient = '';
+    const bankValue = user.bankSlug || user.bankName || w.bankName || '';
+    const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
+    const accName = user.fullName || w.username || '';
+    const email = user.email || '';
+
+    rows.push([amount, note, ref, recipient, bankValue, accNum, accName, email]);
+  }
+
+  const dateStr = getTodayDateString();
+  downloadCSV(`tmhost_withdrawals_${dateStr}_paystack.csv`, rows);
+
+  if (rows.length > 1) {
+    const count = rows.length - 1;
+    const ok = await showConfirm('Mark Paid', `Mark all ${count} exported TM Host withdrawal${count === 1 ? '' : 's'} as paid?`);
+    if (ok) {
+      showLoader('Marking paid...');
+      for (const d of snap.docs) {
+        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+      }
+      hideLoader();
+      loadTmHostWithdrawals();
+    }
+  } else {
+    dopeAlert("No pending TM Host withdrawals to export.");
+  }
+}
 </script>
 </body>
 </html>
