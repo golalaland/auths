@@ -686,26 +686,31 @@ function initTabs() {
     if (!num || isNaN(num)) return '0';
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
+  
 async function applyRewards() {
   const date = document.getElementById('reward-winners-date').value;
   if (!date) return dopeAlert('Please select a date', 'Error');
 
-  // Check which type of rewards we are applying
   const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
   const isHosts = rewardType === 'hosts';
 
-  // Choose correct collection
-  const winnersRef = isHosts 
-    ? doc(db, 'hostWinners', date) 
-    : doc(db, 'winners', date);
+  const winnersRef = doc(db, 'winners', date);
 
   const snap = await getDoc(winnersRef);
   if (!snap.exists()) {
-    return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for this date`, 'Error');
+    return dopeAlert(`No winners found for this date`, 'Error');
   }
 
   const winnersDoc = snap.data();
   let winners = winnersDoc.winners || [];
+
+  // Safety check: If user selected Hosts but this is not a hosts snapshot
+  if (isHosts && !winnersDoc.isHosts) {
+    return dopeAlert("This date contains General winners, not Hosts.", "Warning");
+  }
+  if (!isHosts && winnersDoc.isHosts) {
+    return dopeAlert("This date contains Hosts winners, not General.", "Warning");
+  }
 
   // Load reward rules from UI
   const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
@@ -715,7 +720,7 @@ async function applyRewards() {
     stars: parseInt(div.querySelector('.rule-stars').value) || 0
   }));
 
-  // Assign rewards based on rank
+  // Assign rewards
   winners.forEach(w => {
     w.rewards = { cash: 0, stars: 0 };
     for (let rule of rules) {
@@ -726,16 +731,13 @@ async function applyRewards() {
     }
   });
 
-  // Save assigned rewards back
   await updateDoc(winnersRef, { winners });
 
   // Load ripple config
   const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
   const config = referralSnap.exists() ? referralSnap.data() : {
-    level1_cash_percent: 10,
-    level1_stars_percent: 5,
-    level2_cash_percent: 5,
-    level2_stars_percent: 2,
+    level1_cash_percent: 10, level1_stars_percent: 5,
+    level2_cash_percent: 5, level2_stars_percent: 2,
     max_levels: 2
   };
 
@@ -752,7 +754,6 @@ async function applyRewards() {
 
     const winnerRef = doc(db, 'users', w.uid);
 
-    // Direct reward
     await runTransaction(db, async (t) => {
       const userSnap = await t.get(winnerRef);
       if (!userSnap.exists()) return;
@@ -785,8 +786,8 @@ async function applyRewards() {
       read: false
     });
 
-    // ==================== RIPPLE REWARDS (Works for Hosts too) ====================
-    let currentUid = w.invitedBy || null;   // Use invitedBy if available from winner data
+    // Ripple Rewards
+    let currentUid = w.invitedBy || null;
     let level = 1;
     let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
 
@@ -842,14 +843,11 @@ async function applyRewards() {
   }
 
   dopeAlert(
-    isHosts 
-      ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" 
-      : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
-    "SUCCESS", 
-    "Crown", 
-    8000
+    isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
+    "SUCCESS", "Crown", 8000
   );
 }
+  
   async function loadConfigs() {
     const configRef = doc(db, 'configs', 'game');
     const snap = await getDoc(configRef);
@@ -1205,16 +1203,17 @@ async function loadHostsLeaderboard() {
 }
 
 // ====================== SAVE HOSTS LEADERBOARD AS WINNERS ======================
+// ====================== SAVE HOSTS LEADERBOARD AS WINNERS ======================
 async function saveHostWinners() {
   if (!currentHostLbData || currentHostLbData.length === 0) {
     return dopeAlert("No hosts leaderboard data. Please refresh the Hosts Leaderboard first.", "Error");
   }
 
   const date = new Date().toISOString().split('T')[0];
-  const hostWinnersRef = doc(db, 'hostWinners', date);
+  const winnersRef = doc(db, 'winners', date);   // Using same collection as general
 
   try {
-    showLoader("Saving Hosts Winners...");
+    showLoader("Saving Hosts as Winners...");
 
     const winnersToSave = currentHostLbData.map((u, i) => ({
       rank: i + 1,
@@ -1224,16 +1223,16 @@ async function saveHostWinners() {
       rewards: { cash: 0, stars: 0 }
     }));
 
-    await setDoc(hostWinnersRef, {
+    await setDoc(winnersRef, {
       date,
-      type: "hosts",
-      isHosts: true,
+      type: "hosts",           // Important flag
+      isHosts: true,           // This tells applyRewards it's for hosts
       winners: winnersToSave,
       timestamp: serverTimestamp()
     });
 
     dopeAlert(`Hosts leaderboard saved successfully for ${date}!`, "Success");
-    loadWinnerDates();   // Refresh date selector in Rewards tab
+    loadWinnerDates();   // Refresh date selector
 
   } catch (error) {
     console.error("Failed to save host winners:", error);
