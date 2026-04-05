@@ -33,15 +33,16 @@
   <div id="adminPanel" style="display: none;">
     <h1>ᗰᗩᔕTEᖇ ᗩᗪᗰIᑎ ᗪᗩᔕᕼᗷOᗩᖇᗪ</h1>
     <button id="logoutBtn">Logout</button>
-    <div class="tab-container">
-      <div class="tab active" data-tab="leaderboards">Leaderboards</div>
-      <div class="tab" data-tab="winners">Winners History</div>
-      <div class="tab" data-tab="rewards">Rewards Management</div>
-      <div class="tab" data-tab="configs">Game Configs</div>
-      <div class="tab" data-tab="withdrawals">Withdrawals</div>
-      <div class="tab" data-tab="hostWithdrawals">Host Withdrawals</div>
-      <div class="tab" data-tab="tmhostWithdrawals">TM Host Withdrawals</div>
-    </div>
+   <div class="tab-container">
+  <div class="tab active" data-tab="leaderboards">⌬ Leaderboards</div>
+  <div class="tab" data-tab="hostsLeaderboard">Hosts Leaderboard</div>
+  <div class="tab" data-tab="winners">Winners History</div>
+  <div class="tab" data-tab="rewards">Rewards Management</div>
+  <div class="tab" data-tab="configs">Game Configs</div>
+  <div class="tab" data-tab="withdrawals">Withdrawals</div>
+  <div class="tab" data-tab="hostWithdrawals">Host Withdrawals</div>
+  <div class="tab" data-tab="tmhostWithdrawals">TM Host Withdrawals</div>
+</div>
     <!-- CUSTOM DOPE ALERT — REPLACES ALL browser alert() -->
 <div id="dopeAlert" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;z-index:999999;opacity:0;transition:opacity 0.4s ease;">
   <div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:40px 30px;border-radius:24px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 80px rgba(0,255,150,0.4),inset 0 0 40px rgba(0,255,150,0.1);border:2px solid #0f9;transform:scale(0.9);transition:transform 0.5s cubic-bezier(0.18,0.89,0.32,1.28);">
@@ -80,6 +81,33 @@
         <tbody></tbody>
       </table>
     </div>
+
+    <!-- NEW: HOSTS LEADERBOARD SECTION -->
+<div id="hostsLeaderboard" class="section">
+  <h2>Hosts Leaderboard (Separate Scores)</h2>
+  
+  <select id="host-lb-type">
+    <option value="daily">Daily Hosts</option>
+    <option value="weekly">Weekly Hosts</option>
+    <option value="monthly">Monthly Hosts</option>
+  </select>
+  
+  <input id="host-lb-limit" type="number" placeholder="Top N" value="50">
+  <button id="fetch-host-lb">Refresh Hosts Leaderboard</button>
+
+  <table id="host-lb-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Host Name</th>
+        <th>Taps</th>
+        <th>Email / ChatID</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+    
     <div id="rewards" class="section">
       <h2>Rewards Management</h2>
       <p>Set batch rewards (e.g., top 1-10: cash 5000, stars 0)</p>
@@ -996,6 +1024,92 @@ async function applyRewards() {
   window.alert = function(message) {
     dopeAlert(message, "Alert", "Warning", 7000);
   };
+
+  // ==================== HOSTS LEADERBOARD ====================
+
+async function loadHostsLeaderboard() {
+  const type = document.getElementById('host-lb-type').value;
+  const limit = parseInt(document.getElementById('host-lb-limit').value) || 50;
+  const tableBody = document.getElementById('host-lb-table').querySelector('tbody');
+
+  tableBody.innerHTML = '<tr><td colspan="4">Loading Hosts Leaderboard...</td></tr>';
+
+  try {
+    const key = getLeaderboardKey(type);   // Reuse your existing function
+
+    const fieldPath = type === "daily" ? `hostTapsDaily.${key}` :
+                     type === "weekly" ? `hostTapsWeekly.${key}` :
+                                         `hostTapsMonthly.${key}`;
+
+    const q = query(
+      collection(db, "users"),
+      orderBy(fieldPath, "desc"),
+      limit(limit)
+    );
+
+    const snap = await getDocs(q);
+
+    tableBody.innerHTML = '';
+
+    if (snap.empty) {
+      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;">No host taps recorded yet.</td></tr>';
+      return;
+    }
+
+    let rank = 1;
+    snap.forEach(doc => {
+      const data = doc.data();
+      const taps = data.hostTapsDaily?.[key] ?? 
+                   data.hostTapsWeekly?.[key] ?? 
+                   data.hostTapsMonthly?.[key] ?? 0;
+
+      if (taps <= 0) return;
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${rank}</td>
+        <td>${data.chatId || data.username || 'Host'}</td>
+        <td><strong>${taps.toLocaleString()}</strong></td>
+        <td>${data.email || data.chatId || '—'}</td>
+      `;
+      tableBody.appendChild(row);
+      rank++;
+    });
+
+  } catch (err) {
+    console.error("Error loading hosts leaderboard:", err);
+    tableBody.innerHTML = '<tr><td colspan="4" style="color:#ff6b6b">Error loading hosts leaderboard</td></tr>';
+  }
+}
+
+// Add this near your other event listeners (inside adminCheckBtn success block)
+document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
+
+// Also call it when switching to the Hosts Leaderboard tab
+// Update your initTabs() function:
+
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(tab.dataset.tab).classList.add('active');
+
+      if (tab.dataset.tab === 'leaderboards') {
+        startLbListener();
+      }
+      else if (tab.dataset.tab === 'hostsLeaderboard') {     // ← NEW
+        loadHostsLeaderboard();
+      }
+      else if (tab.dataset.tab === 'winners') {
+        fetchWinnersHistory();
+      }
+      // ... other tabs
+    });
+  });
+}
 
   document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
 
