@@ -333,108 +333,187 @@
     a.download = filename;
     a.click();
   }
+// ====================== ADMIN LOGIN & INITIALIZATION ======================
+adminCheckBtn.addEventListener("click", async () => {
+  const email = adminEmailInput.value.trim().toLowerCase();
+  
+  if (!email) {
+    adminGateMsg.textContent = "Please enter an email";
+    return;
+  }
 
-  adminCheckBtn.addEventListener("click", async () => {
-    const email = adminEmailInput.value.trim().toLowerCase();
-    if (!email) return adminGateMsg.textContent = "Enter email";
-    showLoader("Checking...");
+  showLoader("Verifying admin access...");
+
+  try {
     const q = query(collection(db, "users"), where("email", "==", email));
     const snap = await getDocs(q);
+
     hideLoader();
-    if (snap.empty) return adminGateMsg.textContent = "Not found";
+
+    if (snap.empty) {
+      adminGateMsg.textContent = "User not found";
+      return;
+    }
+
     const data = snap.docs[0].data();
-    if (!data.isAdmin) return adminGateMsg.textContent = "Not admin";
-    currentAdmin = { id: snap.docs[0].id, email };
+
+    if (!data.isAdmin) {
+      adminGateMsg.textContent = "Access denied: Not an admin";
+      return;
+    }
+
+    // Successful admin login
+    currentAdmin = { 
+      id: snap.docs[0].id, 
+      email: data.email || email 
+    };
+
     adminGate.style.display = "none";
     adminPanel.style.display = "block";
+
+    // Initialize everything in proper order
     initTabs();
-    await loadBidRounds();
-    await loadWinnerDates();
-    await loadConfigs();
+
+    // Load supporting data
+    await Promise.all([
+      loadBidRounds(),
+      loadWinnerDates(),
+      loadConfigs()
+    ]);
+
     initRewardRules();
+
+    // Load all tables and leaderboards
     await loadWithdrawals();
     await loadHostWithdrawals();
-    await startLbListener();
     await loadTmHostWithdrawals();
-  });
+    
+    // Default leaderboards
+    await startLbListener();           // General Leaderboard
+    await loadHostsLeaderboard();      // Hosts Leaderboard (NEW)
 
-  logoutBtn.addEventListener("click", () => {
-    if (lbUnsub) lbUnsub();
-    currentAdmin = null;
-    adminPanel.style.display = "none";
-    adminGate.style.display = "block";
-    adminEmailInput.value = "";
-    adminGateMsg.textContent = "";
-  });
+  } catch (error) {
+    hideLoader();
+    console.error("Admin login failed:", error);
+    adminGateMsg.textContent = "Login error. Check console for details.";
+  }
+});
 
-  document.getElementById('lb-type').addEventListener('change', startLbListener);
-  document.getElementById('lb-limit').addEventListener('change', startLbListener);
-  document.getElementById('bid-round').addEventListener('change', startLbListener);
-  document.getElementById('fetch-lb').addEventListener('click', startLbListener);
-  document.getElementById('save-winners').addEventListener('click', async () => {
-    showLoader("Saving winners...");
-    await saveWinners();
+// ====================== LOGOUT ======================
+logoutBtn.addEventListener("click", () => {
+  if (lbUnsub) {
+    lbUnsub();
+    lbUnsub = null;
+  }
+  
+  currentAdmin = null;
+  adminPanel.style.display = "none";
+  adminGate.style.display = "block";
+  adminEmailInput.value = "";
+  adminGateMsg.textContent = "";
+});
+
+// ====================== EVENT LISTENERS ======================
+
+// General Leaderboard controls
+document.getElementById('lb-type').addEventListener('change', startLbListener);
+document.getElementById('lb-limit').addEventListener('change', startLbListener);
+document.getElementById('bid-round').addEventListener('change', startLbListener);
+document.getElementById('fetch-lb').addEventListener('click', startLbListener);
+
+// Winners management
+document.getElementById('save-winners').addEventListener('click', async () => {
+  showLoader("Saving winners...");
+  await saveWinners();
+  hideLoader();
+});
+
+document.getElementById('fetch-winners').addEventListener('click', async () => {
+  showLoader("Fetching winners history...");
+  await fetchWinnersHistory();
+  hideLoader();
+});
+
+document.getElementById('export-csv').addEventListener('click', exportCSV);
+
+document.getElementById('clear-winners').addEventListener('click', async () => {
+  if (await showConfirm("Clear Winners", "Are you sure you want to clear all winners?")) {
+    showLoader("Clearing winners...");
+    await clearWinners();
     hideLoader();
-  });
-  document.getElementById('fetch-winners').addEventListener('click', async () => {
-    showLoader("Fetching history...");
-    await fetchWinnersHistory();
-    hideLoader();
-  });
-  document.getElementById('export-csv').addEventListener('click', exportCSV);
-  document.getElementById('clear-winners').addEventListener('click', async () => {
-    if (await showConfirm("Clear", "Clear all winners?")) {
-      showLoader("Clearing...");
-      await clearWinners();
-      hideLoader();
-    }
-  });
-  document.getElementById('add-rule').addEventListener('click', addRewardRule);
-  document.getElementById('apply-rewards').addEventListener('click', async () => {
-    showLoader("Applying rewards...");
-    await applyRewards();
-    hideLoader();
-  });
-  document.getElementById('send-notifs').addEventListener('click', async () => {
-    showLoader("Sending notifications...");
-    await sendNotifications();
-    hideLoader();
-  });
-  document.getElementById('save-configs').addEventListener('click', async () => {
-    showLoader("Saving configs...");
-    await saveConfigs();
-    hideLoader();
-  });
+  }
+});
+
+// Rewards
+document.getElementById('add-rule').addEventListener('click', addRewardRule);
+
+document.getElementById('apply-rewards').addEventListener('click', async () => {
+  showLoader("Applying rewards...");
+  await applyRewards();
+  hideLoader();
+});
+
+document.getElementById('send-notifs').addEventListener('click', async () => {
+  showLoader("Sending notifications...");
+  await sendNotifications();
+  hideLoader();
+});
+
+// Configs
+document.getElementById('save-configs').addEventListener('click', async () => {
+  showLoader("Saving configurations...");
+  await saveConfigs();
+  hideLoader();
+});
   document.getElementById('export-withdrawals-csv').addEventListener('click', exportWithdrawalsCSV);
   document.getElementById('export-host-withdrawals-csv').addEventListener('click', exportHostWithdrawalsCSV);
 
- function initTabs() {
+function initTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
+      // Remove active from all tabs
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
 
+      // Hide all sections and show the selected one
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tab.dataset.tab).classList.add('active');
-
-      // Handle different tabs
-      if (tab.dataset.tab === 'leaderboards') {
-        startLbListener();
-      } 
-      else if (tab.dataset.tab === 'winners') {
-        fetchWinnersHistory();
-      } 
-      else if (tab.dataset.tab === 'withdrawals') {
-        loadWithdrawals();
-      } 
-      else if (tab.dataset.tab === 'hostWithdrawals') {
-        loadHostWithdrawals();
-      } 
-      else if (tab.dataset.tab === 'tmhostWithdrawals') {   // ← NEW
-        loadTmHostWithdrawals();
+      const targetSection = document.getElementById(tab.dataset.tab);
+      if (targetSection) {
+        targetSection.classList.add('active');
       }
 
-      // Clean up leaderboard listener when leaving leaderboards tab
+      // Handle specific tab actions
+      switch (tab.dataset.tab) {
+        case 'leaderboards':
+          startLbListener();
+          break;
+
+        case 'hostsLeaderboard':           // ← NEW: Hosts Leaderboard
+          loadHostsLeaderboard();
+          break;
+
+        case 'winners':
+          fetchWinnersHistory();
+          break;
+
+        case 'withdrawals':
+          loadWithdrawals();
+          break;
+
+        case 'hostWithdrawals':
+          loadHostWithdrawals();
+          break;
+
+        case 'tmhostWithdrawals':
+          loadTmHostWithdrawals();
+          break;
+
+        // Add more cases here in future if needed
+        default:
+          break;
+      }
+
+      // Clean up general leaderboard listener when leaving that tab
       if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
         lbUnsub();
         lbUnsub = null;
@@ -1084,32 +1163,6 @@ async function loadHostsLeaderboard() {
 
 // Add this near your other event listeners (inside adminCheckBtn success block)
 document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
-
-// Also call it when switching to the Hosts Leaderboard tab
-// Update your initTabs() function:
-
-function initTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tab.dataset.tab).classList.add('active');
-
-      if (tab.dataset.tab === 'leaderboards') {
-        startLbListener();
-      }
-      else if (tab.dataset.tab === 'hostsLeaderboard') {     // ← NEW
-        loadHostsLeaderboard();
-      }
-      else if (tab.dataset.tab === 'winners') {
-        fetchWinnersHistory();
-      }
-      // ... other tabs
-    });
-  });
-}
 
   document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
 
