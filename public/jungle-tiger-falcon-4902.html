@@ -124,6 +124,16 @@
       <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
     </div>
   </div>
+  <!-- NEW SECTION -->
+    <div id="tmhostWithdrawals" class="section">
+      <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
+      <table id="tmhost-withdrawals-table">
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Type</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack Format)</button>
+    </div>
+  </div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import {
@@ -968,6 +978,57 @@ async function applyRewards() {
   window.alert = function(message) {
     dopeAlert(message, "Alert", "Warning", 7000);
   };
+
+  // ==================== NEW FUNCTION: Export TM Host Withdrawals ====================
+  async function exportTmHostWithdrawalsCSV() {
+    const headers = [
+      'Transfer Amount',
+      'Transfer Note (Optional)',
+      'Transfer Reference (Optional)',
+      'Recipient Code (This overrides all other details if available)',
+      'Bank Code or Slug',
+      'Account Number',
+      'Account Name (Optional)',
+      'Email Address (Optional)'
+    ];
+
+    const rows = [headers];
+    const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+    const snap = await getDocs(q);
+
+    for (const d of snap.docs) {
+      const w = d.data();
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      const user = userSnap.data() || {};
+
+      const amount = w.amount || 0;
+      const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL (500 STRZ paid)" : "TM HOST WITHDRAWAL";
+      const ref = `TMH-${d.id}`;
+      const recipient = '';
+      const bankValue = user.bankSlug || user.bankName || w.bankName || '';
+      const accNum = user.bankAccountNumber || w.bankAccountNumber || '';
+      const accName = user.fullName || w.username || '';
+      const email = user.email || '';
+
+      rows.push([amount, note, ref, recipient, bankValue, accNum, accName, email]);
+    }
+
+    const dateStr = getTodayDateString();
+    downloadCSV(`tmhost_withdrawals_${dateStr}_paystack.csv`, rows);
+
+    if (rows.length > 1) {
+      const count = rows.length - 1;
+      const ok = await showConfirm('Mark Paid', `Mark all ${count} exported TM Host withdrawal${count === 1 ? '' : 's'} as paid?`);
+      if (ok) {
+        showLoader('Marking paid...');
+        for (const d of snap.docs) {
+          await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+        }
+        hideLoader();
+        loadTmHostWithdrawals();
+      }
+    }
+  }
 </script>
 </body>
 </html>
