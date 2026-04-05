@@ -621,12 +621,28 @@ function initTabs() {
     select.innerHTML = uniqueRounds.map(r => `<option value="${r}">${r}</option>`).join('');
   }
 
-  async function loadWinnerDates() {
-    const winners = await getDocs(collection(db, 'winners'));
-    const dates = winners.docs.map(d => d.id).sort((a,b) => b.localeCompare(a));
-    const select = document.getElementById('reward-winners-date');
-    select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-  }
+ async function loadWinnerDates() {
+  const winnersSnap = await getDocs(collection(db, 'winners'));
+  const hostWinnersSnap = await getDocs(collection(db, 'hostWinners'));
+
+  const dates = [];
+
+  winnersSnap.docs.forEach(d => {
+    dates.push({ date: d.id, type: 'general' });
+  });
+  hostWinnersSnap.docs.forEach(d => {
+    dates.push({ date: d.id, type: 'hosts' });
+  });
+
+  // Sort by date descending
+  dates.sort((a, b) => b.date.localeCompare(a.date));
+
+  const select = document.getElementById('reward-winners-date');
+  select.innerHTML = dates.map(item => {
+    const label = item.type === 'hosts' ? `Hosts - ${item.date}` : item.date;
+    return `<option value="${item.date}" data-type="${item.type}">${label}</option>`;
+  }).join('');
+}
 
   async function fetchWinnersHistory() {
     const from = document.getElementById('winners-from').value;
@@ -694,23 +710,18 @@ async function applyRewards() {
   const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
   const isHosts = rewardType === 'hosts';
 
-  const winnersRef = doc(db, 'winners', date);
+  // Choose correct collection
+  const winnersRef = isHosts 
+    ? doc(db, 'hostWinners', date) 
+    : doc(db, 'winners', date);
 
   const snap = await getDoc(winnersRef);
   if (!snap.exists()) {
-    return dopeAlert(`No winners found for this date`, 'Error');
+    return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for this date`, 'Error');
   }
 
   const winnersDoc = snap.data();
   let winners = winnersDoc.winners || [];
-
-  // Safety check: If user selected Hosts but this is not a hosts snapshot
-  if (isHosts && !winnersDoc.isHosts) {
-    return dopeAlert("This date contains General winners, not Hosts.", "Warning");
-  }
-  if (!isHosts && winnersDoc.isHosts) {
-    return dopeAlert("This date contains Hosts winners, not General.", "Warning");
-  }
 
   // Load reward rules from UI
   const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
@@ -786,7 +797,7 @@ async function applyRewards() {
       read: false
     });
 
-    // Ripple Rewards
+    // Ripple Rewards (works for both)
     let currentUid = w.invitedBy || null;
     let level = 1;
     let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
@@ -844,7 +855,9 @@ async function applyRewards() {
 
   dopeAlert(
     isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
-    "SUCCESS", "Crown", 8000
+    "SUCCESS", 
+    "Crown", 
+    8000
   );
 }
   
@@ -1210,7 +1223,7 @@ async function saveHostWinners() {
   }
 
   const date = new Date().toISOString().split('T')[0];
-  const winnersRef = doc(db, 'winners', date);   // Using same collection as general
+  const hostWinnersRef = doc(db, 'hostWinners', date);   // Separate collection
 
   try {
     showLoader("Saving Hosts as Winners...");
@@ -1223,10 +1236,10 @@ async function saveHostWinners() {
       rewards: { cash: 0, stars: 0 }
     }));
 
-    await setDoc(winnersRef, {
+    await setDoc(hostWinnersRef, {
       date,
-      type: "hosts",           // Important flag
-      isHosts: true,           // This tells applyRewards it's for hosts
+      type: "hosts",
+      isHosts: true,
       winners: winnersToSave,
       timestamp: serverTimestamp()
     });
