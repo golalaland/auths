@@ -34,7 +34,7 @@
     <h1>ᗰᗩᔕTEᖇ ᗩᗪᗰIᑎ ᗪᗩᔕᕼᗷOᗩᖇᗪ</h1>
     <button id="logoutBtn">Logout</button>
    <div class="tab-container">
-  <div class="tab active" data-tab="leaderboards">⌬ Leaderboards</div>
+  <div class="tab active" data-tab="leaderboards">🔳 Leaderboards</div>
   <div class="tab" data-tab="hostsLeaderboard">Hosts Leaderboard</div>
   <div class="tab" data-tab="winners">Winners History</div>
   <div class="tab" data-tab="rewards">Rewards Management</div>
@@ -667,19 +667,21 @@ async function fetchWinnersHistory() {
   const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
 
   const tableBody = document.getElementById('winners-table').querySelector('tbody');
-  tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+  tableBody.innerHTML = '<tr><td colspan="6">Loading winners history...</td></tr>';
 
   currentWinnersData = [];
 
   try {
     let q;
 
+    // Choose correct collection
     if (historyType === 'hosts') {
       q = query(collection(db, 'hostWinners'), orderBy('date', 'desc'));
     } else {
       q = query(collection(db, 'winners'), orderBy('date', 'desc'));
     }
 
+    // Apply date filters if provided
     if (from) q = query(q, where('date', '>=', from));
     if (to) q = query(q, where('date', '<=', to));
 
@@ -688,13 +690,13 @@ async function fetchWinnersHistory() {
     tableBody.innerHTML = '';
 
     if (snaps.empty) {
-      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;">No ${historyType} winners found.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;">No ${historyType === 'hosts' ? 'Host' : 'General'} winners found in this date range.</td></tr>`;
       return;
     }
 
     snaps.docs.forEach(doc => {
       const data = doc.data();
-      const isHosts = data.isHosts === true;
+      const isHosts = data.isHosts === true || historyType === 'hosts';
 
       data.winners.forEach(w => {
         const rewardsStr = `Cash: ₦${(w.rewards?.cash || 0).toLocaleString()}, Stars: ${w.rewards?.stars || 0}`;
@@ -704,33 +706,74 @@ async function fetchWinnersHistory() {
           <td>${data.date}</td>
           <td><strong>${isHosts ? 'HOSTS' : 'GENERAL'}</strong></td>
           <td>${w.rank}</td>
-          <td>${w.username}</td>
-          <td>${w.taps.toLocaleString()}</td>
+          <td>${w.username || '—'}</td>
+          <td>${(w.taps || 0).toLocaleString()}</td>
           <td>${rewardsStr}</td>
         `;
         tableBody.appendChild(row);
 
-        currentWinnersData.push({ 
-          date: data.date, 
+        // Store for export
+        currentWinnersData.push({
+          date: data.date,
           type: isHosts ? 'hosts' : 'general',
-          ...w 
+          rank: w.rank,
+          username: w.username,
+          taps: w.taps || 0,
+          rewards: w.rewards || { cash: 0, stars: 0 },
+          uid: w.uid,
+          email: w.email || ''   // Will be enriched in export if needed
         });
       });
     });
 
   } catch (error) {
     console.error("Error fetching winners history:", error);
-    tableBody.innerHTML = '<tr><td colspan="6" style="color:#ff6b6b">Error loading winners history.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="6" style="color:#ff6b6b">Error loading winners history. Check console.</td></tr>';
   }
 }
   
- function exportCSV() {
-    if (currentWinnersData.length === 0) return dopeAlert('Fetch winners first');
-    const headers = ['Date','Rank','User','Taps','Cash','Stars','Email'];
-    const rows = [headers, ...currentWinnersData.map(w => [w.date, w.rank, w.username, w.taps, w.rewards.cash, w.rewards.stars, w.email || ''])];
-    downloadCSV(`winners_${getTodayDateString()}.csv`, rows);
+async function exportCSV() {
+  if (currentWinnersData.length === 0) {
+    return dopeAlert('Please fetch winners first', 'Error');
   }
 
+  const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
+  const prefix = historyType === 'hosts' ? 'hosts_winners' : 'winners';
+
+  const headers = ['Date', 'Type', 'Rank', 'User', 'Taps', 'Cash', 'Stars', 'Email'];
+
+  const rows = [headers];
+
+  for (const w of currentWinnersData) {
+    let email = w.email || '';
+
+    // Try to fetch email if missing
+    if (!email && w.uid) {
+      try {
+        const userSnap = await getDoc(doc(db, 'users', w.uid));
+        if (userSnap.exists()) {
+          email = userSnap.data().email || userSnap.data().chatId || '';
+        }
+      } catch (e) {}
+    }
+
+    rows.push([
+      w.date,
+      w.type.toUpperCase(),
+      w.rank,
+      w.username || '—',
+      w.taps || 0,
+      w.rewards?.cash || 0,
+      w.rewards?.stars || 0,
+      email
+    ]);
+  }
+
+  const dateStr = getTodayDateString();
+  downloadCSV(`${prefix}_${dateStr}.csv`, rows);
+
+  dopeAlert(`Exported ${rows.length - 1} ${historyType} winners`, "Success");
+}
   async function clearWinners() {
     const winners = await getDocs(collection(db, 'winners'));
     for (const d of winners.docs) await deleteDoc(d.ref);
