@@ -69,18 +69,35 @@
       </table>
       <button id="save-winners">Save Current as Today's Winners</button>
     </div>
-    <div id="winners" class="section">
-      <h2>Winners History</h2>
-      <input id="winners-from" type="date" placeholder="From Date">
-      <input id="winners-to" type="date" placeholder="To Date">
-      <button id="fetch-winners">Fetch Winners</button>
-      <button id="export-csv">Export as CSV</button>
-      <button id="clear-winners">Clear All Winners</button>
-      <table id="winners-table">
-        <thead><tr><th>Date</th><th>Rank</th><th>User</th><th>Taps</th><th>Rewards</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
+   <div id="winners" class="section">
+  <h2>Winners History</h2>
+  
+  <div style="margin-bottom:15px;">
+    <strong>Show:</strong>  
+    <label><input type="radio" name="historyType" value="general" checked> General Winners</label>  
+    <label><input type="radio" name="historyType" value="hosts"> Hosts Winners</label>
+  </div>
+
+  <input id="winners-from" type="date" placeholder="From Date">
+  <input id="winners-to" type="date" placeholder="To Date">
+  <button id="fetch-winners">Fetch Winners</button>
+  <button id="export-csv">Export as CSV</button>
+  <button id="clear-winners">Clear All Winners</button>
+
+  <table id="winners-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Rank</th>
+        <th>User</th>
+        <th>Taps</th>
+        <th>Rewards</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
     <!-- NEW: HOSTS LEADERBOARD SECTION -->
 <div id="hostsLeaderboard" class="section">
@@ -644,28 +661,69 @@ function initTabs() {
   }).join('');
 }
 
-  async function fetchWinnersHistory() {
-    const from = document.getElementById('winners-from').value;
-    const to = document.getElementById('winners-to').value;
-    let q = query(collection(db, 'winners'), orderBy('date', 'desc'));
+async function fetchWinnersHistory() {
+  const from = document.getElementById('winners-from').value;
+  const to = document.getElementById('winners-to').value;
+  const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
+
+  const tableBody = document.getElementById('winners-table').querySelector('tbody');
+  tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+
+  currentWinnersData = [];
+
+  try {
+    let q;
+
+    if (historyType === 'hosts') {
+      q = query(collection(db, 'hostWinners'), orderBy('date', 'desc'));
+    } else {
+      q = query(collection(db, 'winners'), orderBy('date', 'desc'));
+    }
+
     if (from) q = query(q, where('date', '>=', from));
     if (to) q = query(q, where('date', '<=', to));
+
     const snaps = await getDocs(q);
-    const tableBody = document.getElementById('winners-table').querySelector('tbody');
+
     tableBody.innerHTML = '';
-    currentWinnersData = [];
+
+    if (snaps.empty) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;">No ${historyType} winners found.</td></tr>`;
+      return;
+    }
+
     snaps.docs.forEach(doc => {
       const data = doc.data();
+      const isHosts = data.isHosts === true;
+
       data.winners.forEach(w => {
-        const rewardsStr = `Cash: ${w.rewards.cash}, Stars: ${w.rewards.stars}`;
+        const rewardsStr = `Cash: ₦${(w.rewards?.cash || 0).toLocaleString()}, Stars: ${w.rewards?.stars || 0}`;
+
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${data.date}</td><td>${w.rank}</td><td>${w.username}</td><td>${w.taps}</td><td>${rewardsStr}</td>`;
+        row.innerHTML = `
+          <td>${data.date}</td>
+          <td><strong>${isHosts ? 'HOSTS' : 'GENERAL'}</strong></td>
+          <td>${w.rank}</td>
+          <td>${w.username}</td>
+          <td>${w.taps.toLocaleString()}</td>
+          <td>${rewardsStr}</td>
+        `;
         tableBody.appendChild(row);
-        currentWinnersData.push({ date: data.date, ...w });
+
+        currentWinnersData.push({ 
+          date: data.date, 
+          type: isHosts ? 'hosts' : 'general',
+          ...w 
+        });
       });
     });
-  }
 
+  } catch (error) {
+    console.error("Error fetching winners history:", error);
+    tableBody.innerHTML = '<tr><td colspan="6" style="color:#ff6b6b">Error loading winners history.</td></tr>';
+  }
+}
+  
  function exportCSV() {
     if (currentWinnersData.length === 0) return dopeAlert('Fetch winners first');
     const headers = ['Date','Rank','User','Taps','Cash','Stars','Email'];
@@ -1258,6 +1316,13 @@ async function saveHostWinners() {
 // Event listeners for Hosts Leaderboard
 document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
 document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
+
+// Add this near your other event listeners
+document.querySelectorAll('input[name="historyType"]').forEach(radio => {
+  radio.addEventListener('change', fetchWinnersHistory);
+});
+
+document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
 
 // TM Host Withdrawals (unchanged - kept for completeness)
 async function loadTmHostWithdrawals() {
