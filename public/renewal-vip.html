@@ -1,144 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=no">
-  <title>CUBE BOOST</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --neon: #c3f60c;
-      --deep: #0a1400;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0a1400, #111900, #000000);
-      font-family: 'Poppins', sans-serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-      overflow-x: hidden;
-      position: relative;
-    }
-    .hero-video {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -3;
-      opacity: 0.35;
-      filter: brightness(0.65);
-    }
-    .hero-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: linear-gradient(180deg, transparent 30%, #000 85%);
-      z-index: -2;
-    }
-    h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 3.8rem;
-      background: linear-gradient(90deg, var(--neon), #e0ff4a, var(--neon));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 40px var(--neon);
-      margin-bottom: 0.5rem;
-      letter-spacing: 2px;
-    }
-    .subtitle {
-      font-size: 1.1rem;
-      color: #aaa;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .form-group input {
-      width: 320px;
-      max-width: 90vw;
-      padding: 1.1rem 1.4rem;
-      margin: 0.7rem 0;
-      border-radius: 50px;
-      border: 1px solid rgba(195,246,12,0.5);
-      background: rgba(10,25,0,0.75);
-      backdrop-filter: blur(12px);
-      color: white;
-      font-size: 1.05rem;
-      text-align: center;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--neon);
-      box-shadow: 0 0 25px rgba(195,246,12,0.6);
-    }
-    #payBtn {
-      margin-top: 1.5rem;
-      padding: 1.1rem 4rem;
-      font-size: 1.3rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #c3f60c, #a0d00a);
-      color: #000;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 0 30px rgba(195,246,12,0.7);
-      transition: all 0.3s;
-    }
-    #payBtn:hover { transform: scale(1.05); }
-    #payBtn.loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    #message {
-      margin-top: 1.2rem;
-      font-size: 1.05rem;
-      min-height: 1.4em;
-      text-align: center;
-    }
-    .logo {
-      position: absolute;
-      top: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 140px;
-      filter: drop-shadow(0 0 20px #c3f60c);
-      animation: logoPulse 4s infinite alternate ease-in-out;
-    }
-    @keyframes logoPulse {
-      from { filter: drop-shadow(0 0 15px #c3f60c); }
-      to { filter: drop-shadow(0 0 35px #c3f60c); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=no">
+<title>CUBE • BOOST</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon: #c3f60c;
+    --neon-dark: #a0d00a;
+    --deep: #0a1400;
+    --glow: rgba(195, 246, 12, 0.6);
+    --input-bg: rgba(10, 25, 0, 0.65);
+    --input-border: rgba(195, 246, 12, 0.5);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--deep);
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+  .hero-video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: -3;
+    opacity: 0.35;
+    filter: brightness(0.6) contrast(1.3);
+  }
+  .hero-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, transparent 0%, #000 90%);
+    z-index: -2;
+  }
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .particle {
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--neon);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--neon);
+    animation: float 15s infinite linear;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) translateX(120px); opacity: 0; }
+  }
+  .logo-container {
+    margin: 2rem 0 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+  .logo {
+    height: 280px;
+    width: auto;
+    max-width: 96vw;
+    object-fit: contain;
+    filter: drop-shadow(0 0 45px #c3f60c) drop-shadow(0 0 90px rgba(195,246,12,0.7));
+    animation: logoPulse 4s infinite alternate;
+  }
+  @keyframes logoPulse {
+    0% { filter: drop-shadow(0 0 45px #c3f60c) drop-shadow(0 0 90px rgba(195,246,12,0.7)); }
+    100% { filter: drop-shadow(0 0 60px #c3f60c) drop-shadow(0 0 120px rgba(195,246,12,1)); }
+  }
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4.8rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--neon), #e0ff4a, var(--neon));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 50px var(--neon);
+    letter-spacing: 8px;
+    margin: 0.5rem 0 0.8rem;
+    text-transform: uppercase;
+  }
+  .tagline {
+    font-size: 1.15rem;
+    color: #e0ff80;
+    margin-bottom: 2.2rem;
+    text-shadow: 0 0 15px var(--neon);
+    text-align: center;
+    max-width: 85%;
+  }
+  .form-group input {
+    width: 320px;
+    max-width: 90vw;
+    padding: 1rem 1.4rem;
+    margin: 0.8rem 0;
+    border-radius: 50px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    backdrop-filter: blur(15px);
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(195,246,12,0.3);
+    transition: all 0.4s;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--neon);
+    box-shadow: 0 0 35px var(--glow);
+    transform: scale(1.03);
+  }
+  #message {
+    margin: 1.5rem 0;
+    font-size: 1.1rem;
+    min-height: 1.5em;
+    color: #c3f60c;
+    text-align: center;
+  }
+  #payBtn {
+    margin: 2rem auto;
+    padding: 1.2rem 3.5rem;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--neon), var(--neon-dark));
+    color: #000;
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 2.5px;
+    cursor: pointer;
+    box-shadow: 0 10px 40px var(--glow);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  #payBtn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 20px 60px var(--glow);
+  }
+  #payBtn.loading::after {
+    content: " •••";
+  }
+  #payBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
-
   <video class="hero-video" autoplay muted loop playsinline>
-    <source src="https://your-video-url.mp4" type="video/mp4"> <!-- Replace with your actual video -->
+    <source src="https://cdn.shopify.com/videos/c/o/v/8d1f9e76b0374ef49c9ad0f335437a1f.mp4" type="video/mp4">
   </video>
   <div class="hero-overlay"></div>
-
-  <img src="https://cdn.shopify.com/s/files/1/0850/XXXXX/files/HABA_HOUSE.png" alt="CUBE Logo" class="logo">
-
-  <h1>BOOST</h1>
-  <p class="subtitle">Renew your VIP status • Support your host</p>
-
-  <div class="form-group">
-    <input type="text" id="chatId" placeholder="@yourchatid" required>
-    <input type="email" id="email" placeholder="your@email.com" required>
-    <input type="tel" id="phone" placeholder="Phone number" required>
+  <div class="particles">
+    <div class="particle" style="left:10%;animation-delay:0s;"></div>
+    <div class="particle" style="left:25%;animation-delay:2s;"></div>
+    <div class="particle" style="left:40%;animation-delay:4s;"></div>
+    <div class="particle" style="left:60%;animation-delay:1s;"></div>
+    <div class="particle" style="left:80%;animation-delay:3s;"></div>
+    <div class="particle" style="left:90%;animation-delay:5s;"></div>
   </div>
-
-  <button id="payBtn">BOOST NOW - ₦10,749</button>
+  <div class="logo-container">
+    <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962"
+         alt="CUBE Logo" class="logo">
+  </div>
+  <h1>BOOST</h1>
+  <div class="tagline">BOOST YOUR HOST'S TAB & LEVEL UP YOUR MEMBERSHIP PERKS</div>
+  <div class="form-group"><input type="text" placeholder="@username" id="chatId"></div>
+  <div class="form-group"><input type="email" placeholder="Email Address" id="email"></div>
+  <div class="form-group"><input type="tel" placeholder="Phone Number" id="phone"></div>
   <div id="message"></div>
+  <button id="payBtn">BOOST NOW</button>
 
+<script src="https://js.paystack.co/v2/inline.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  increment,
+  addDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
@@ -146,11 +204,12 @@ const firebaseConfig = {
   projectId: "dettyverse",
   storageBucket: "dettyverse.firebasestorage.app",
   messagingSenderId: "1036459652488",
-  appId: "1:1036459652488:web:f4284cbc49c8074bc9b63d",
+  appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+  measurementId: "G-NX2KWZW85V"
 };
 
 const app = initializeApp(firebaseConfig);
-const functions = getFunctions(app, "us-central1");
+const db = getFirestore(app);
 
 const messageEl = document.getElementById('message');
 const payBtn = document.getElementById('payBtn');
@@ -158,57 +217,74 @@ const chatIdInput = document.getElementById('chatId');
 const emailInput = document.getElementById('email');
 const phoneInput = document.getElementById('phone');
 
-const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
-boostSound.volume = 0.8;
-
-// Explosive neon effect (good for men's eyes)
-function createExplosion() {
-  // Background flash
-  const flash = document.createElement('div');
-  flash.style.cssText = `position:fixed;inset:0;background:rgba(195,246,12,0.4);z-index:9998;pointer-events:none;`;
-  document.body.appendChild(flash);
-  flash.animate([{opacity: 0}, {opacity: 0.75}, {opacity: 0}], {duration: 280});
-
-  // Neon particles
-  for (let i = 0; i < 90; i++) {
-    const p = document.createElement('div');
-    p.style.cssText = `
-      position:fixed; top:50%; left:50%; width:${Math.random()*8 + 4}px; height:${Math.random()*8 + 4}px;
-      background:#c3f60c; border-radius:50%; box-shadow:0 0 20px #c3f60c; pointer-events:none; z-index:9999;
-    `;
-    document.body.appendChild(p);
-
-    const angle = Math.random() * Math.PI * 2;
-    const vel = Math.random() * 520 + 180;
-    const tx = Math.cos(angle) * vel;
-    const ty = Math.sin(angle) * vel - 100;
-
-    p.animate([
-      { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-      { transform: `translate(${tx}px, ${ty}px) scale(0.1)`, opacity: 0 }
-    ], {
-      duration: Math.random() * 900 + 1100,
-      easing: 'cubic-bezier(0.22, 0.1, 0.35, 1)'
-    });
-
-    setTimeout(() => p.remove(), 2200);
-  }
-
-  // Screen shake
-  document.body.style.transition = 'transform 60ms';
-  document.body.style.transform = 'translate(6px, -3px)';
-  setTimeout(() => document.body.style.transform = 'translate(-5px, 4px)', 60);
-  setTimeout(() => document.body.style.transform = '', 220);
-}
+const sanitizeKey = email => email.trim().toLowerCase()
+  .replace(/[@.]/g, '_')
+  .replace(/[,\\/*[\]]/g, '_')
+  .replace(/_+/g, '_')
+  .replace(/^_|_$/g, '');
 
 function showMessage(text, isError = false) {
   messageEl.textContent = text;
   messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
 }
 
-function resetButton() {
-  payBtn.disabled = false;
-  payBtn.classList.remove('loading');
+// Powerful boost sound
+const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
+boostSound.volume = 0.75;
+
+// Explosive effect
+function createExplosion() {
+  // Screen flash
+  const flash = document.createElement('div');
+  flash.style.position = 'fixed';
+  flash.style.top = '0';
+  flash.style.left = '0';
+  flash.style.width = '100%';
+  flash.style.height = '100%';
+  flash.style.background = 'rgba(195, 246, 12, 0.25)';
+  flash.style.pointerEvents = 'none';
+  flash.style.zIndex = '9998';
+  document.body.appendChild(flash);
+  flash.animate([{ opacity: 0 }, { opacity: 0.6 }, { opacity: 0 }], { duration: 280, easing: 'ease-out' });
+  setTimeout(() => flash.remove(), 400);
+
+  // Neon particles
+  const colors = ['#c3f60c', '#e0ff4a', '#a0d00a', '#ffffff'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.style.position = 'fixed';
+    p.style.top = '50%';
+    p.style.left = '50%';
+    p.style.transform = 'translate(-50%, -50%)';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.width = p.style.height = Math.random() * 9 + 4 + 'px';
+    p.style.borderRadius = '50%';
+    p.style.boxShadow = '0 0 20px currentColor';
+    p.style.pointerEvents = 'none';
+    p.style.zIndex = '9999';
+    document.body.appendChild(p);
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = Math.random() * 380 + 120;
+    const tx = Math.cos(angle) * velocity;
+    const ty = Math.sin(angle) * velocity - 80;
+
+    p.animate([
+      { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+      { transform: `translate(${tx}px, ${ty}px) scale(0.2)`, opacity: 0 }
+    ], {
+      duration: Math.random() * 900 + 700,
+      easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+    });
+    setTimeout(() => p.remove(), 1600);
+  }
+
+  // Screen shake
+  document.body.style.transition = 'transform 80ms';
+  document.body.style.transform = 'translateX(4px)';
+  setTimeout(() => document.body.style.transform = 'translateX(-4px)', 80);
+  setTimeout(() => document.body.style.transform = 'translateX(3px)', 160);
+  setTimeout(() => document.body.style.transform = 'translateX(0)', 240);
 }
 
 payBtn.onclick = async () => {
@@ -216,50 +292,127 @@ payBtn.onclick = async () => {
   const email = emailInput.value.trim().toLowerCase();
   const phone = phoneInput.value.trim();
 
-  // Validation first
+  // Validation first → then play sound + explosion
   if (!chatId || !email || !phone) {
     showMessage('Please fill all fields', true);
     return;
   }
   if (!email.includes('@')) {
-    showMessage('Please enter a valid email', true);
+    showMessage('Invalid email format', true);
     return;
   }
 
-  // === TRIGGER BOOST EFFECT ONLY WHEN FIELDS ARE VALID ===
+  // === EFFECT ONLY WHEN FIELDS ARE FILLED ===
   boostSound.currentTime = 0;
   boostSound.play().catch(() => {});
   createExplosion();
 
   payBtn.disabled = true;
   payBtn.classList.add('loading');
-  showMessage('Processing your BOOST...');
+  showMessage('Verifying your account...');
+
+  const docId = sanitizeKey(email);
+  const userRef = doc(db, "users", docId);
 
   try {
-    const verifyRenewal = httpsCallable(functions, 'verifyRenewal');
-
-    const result = await verifyRenewal({
-      chatId,
-      email,
-      phone,
-      type: 'renewal'
-    });
-
-    if (result.data.success) {
-      showMessage('BOOST Activated Successfully! 🔥', false);
-      setTimeout(() => {
-        window.location.href = "https://visitcube.xyz";
-      }, 1600);
-    } else {
-      showMessage(result.data.message || 'Boost failed', true);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) {
+      showMessage('Account not found', true);
       resetButton();
+      return;
     }
+
+    const userData = snap.data();
+    if (userData.chatIdLower !== chatId.toLowerCase() || userData.phone !== phone) {
+      showMessage('The provided details do not match our records', true);
+      resetButton();
+      return;
+    }
+    if (!userData.isVIP) {
+      showMessage('This account is not VIP — please upgrade first', true);
+      resetButton();
+      return;
+    }
+
+    showMessage('Verified! Opening payment...');
+
+    const handler = PaystackPop.setup({
+      key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd', // ← change to live key when ready
+      email: email,
+      amount: 10749 * 100,
+      currency: 'NGN',
+      ref: 'BOOST_' + Date.now(),
+      metadata: { chatId: chatId, type: 'renewal' },   // marked as renewal
+      callback: async function(response) {
+        showMessage('Processing boost...');
+        try {
+          const freshSnap = await getDoc(userRef);
+          const freshUserData = freshSnap.data();
+          const inviterId = freshUserData?.invitedBy;
+
+          await updateDoc(userRef, {
+            hasPaid: true,
+            membershipLevel: increment(1),
+            vipRenewedAt: serverTimestamp(),
+            vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
+            stars: increment(2500),
+            lastUpdated: serverTimestamp()
+          });
+
+          if (inviterId) {
+            const inviterRef = doc(db, "users", inviterId);
+            await updateDoc(inviterRef, {
+              cash: increment(2512),
+              cashReward: increment(2512),
+              lastUpdated: serverTimestamp()
+            });
+
+            await addDoc(collection(db, "notifications"), {
+              recipientId: inviterId,
+              type: "renewal_reward",
+              title: "Cash Reward Earned!",
+              message: `@${freshUserData.chatId || "someone"} just boosted!\n₦2,512 added to your balance`,
+              relatedUserId: docId,
+              relatedUserName: freshUserData.chatId || chatId,
+              read: false,
+              createdAt: serverTimestamp()
+            });
+          }
+
+          await addDoc(collection(db, "notifications"), {
+            recipientId: docId,
+            type: "renewal_success",
+            title: "Boost Activated! 🔥",
+            message: "You just boosted your host's tab. Enjoy the new perks!",
+            read: false,
+            createdAt: serverTimestamp()
+          });
+
+          showMessage('Boosted Successfully! 🔥');
+          setTimeout(() => window.location.href = "https://visitcube.xyz", 1800);
+        } catch (err) {
+          console.error('Processing failed:', err);
+          showMessage('Payment successful but sync failed – contact support', true);
+          setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
+        }
+      },
+      onClose: function() {
+        showMessage('Payment cancelled');
+        resetButton();
+      }
+    });
+    handler.openIframe();
   } catch (err) {
     console.error(err);
-    showMessage('Something went wrong. Please contact support.', true);
+    showMessage('Something went wrong. Try again.', true);
     resetButton();
   }
 };
+
+function resetButton() {
+  payBtn.disabled = false;
+  payBtn.classList.remove('loading');
+}
 </script>
 </body>
 </html>
