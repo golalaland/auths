@@ -347,7 +347,7 @@ payBtn.onclick = async () => {
   showMessage('Processing boost on server...');
   try {
     // Call your Render server to handle renewal
-    const verifyRes = await fetch('https://YOUR-RENDER-SERVICE.onrender.com/api/verify-vip-payment', {
+    const verifyRes = await fetch('https://cube-payment-server.onrender.com/api/verify-vip-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
