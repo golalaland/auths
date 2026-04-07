@@ -343,59 +343,36 @@ payBtn.onclick = async () => {
       currency: 'NGN',
       ref: 'BOOST_' + Date.now(),
       metadata: { chatId: chatId, type: 'renewal' },   // marked as renewal
-      callback: async function(response) {
-        showMessage('Processing boost...');
-        try {
-          const freshSnap = await getDoc(userRef);
-          const freshUserData = freshSnap.data();
-          const inviterId = freshUserData?.invitedBy;
+     callback: async function(response) {
+  showMessage('Processing boost on server...');
+  try {
+    // Call your Render server to handle renewal
+    const verifyRes = await fetch('https://YOUR-RENDER-SERVICE.onrender.com/api/verify-vip-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reference: response.reference,
+        email: email,
+        type: 'renewal'
+      })
+    });
 
-          await updateDoc(userRef, {
-            hasPaid: true,
-            membershipLevel: increment(1),
-            vipRenewedAt: serverTimestamp(),
-            vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
-            stars: increment(2500),
-            lastUpdated: serverTimestamp()
-          });
+    const result = await verifyRes.json();
 
-          if (inviterId) {
-            const inviterRef = doc(db, "users", inviterId);
-            await updateDoc(inviterRef, {
-              cash: increment(2512),
-              cashReward: increment(2512),
-              lastUpdated: serverTimestamp()
-            });
-
-            await addDoc(collection(db, "notifications"), {
-              recipientId: inviterId,
-              type: "renewal_reward",
-              title: "Cash Reward Earned!",
-              message: `@${freshUserData.chatId || "someone"} just boosted!\n₦2,512 added to your balance`,
-              relatedUserId: docId,
-              relatedUserName: freshUserData.chatId || chatId,
-              read: false,
-              createdAt: serverTimestamp()
-            });
-          }
-
-          await addDoc(collection(db, "notifications"), {
-            recipientId: docId,
-            type: "renewal_success",
-            title: "Boost Activated! 🔥",
-            message: "You just boosted your host's tab. Enjoy the new perks!",
-            read: false,
-            createdAt: serverTimestamp()
-          });
-
-          showMessage('Boosted Successfully! 🔥');
-          setTimeout(() => window.location.href = "https://visitcube.xyz", 1800);
-        } catch (err) {
-          console.error('Processing failed:', err);
-          showMessage('Payment successful but sync failed – contact support', true);
-          setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
-        }
-      },
+    if (result.success) {
+      showMessage('Boosted Successfully! 🔥');
+      setTimeout(() => {
+        window.location.href = "https://visitcube.xyz";
+      }, 1800);
+    } else {
+      showMessage(result.message || 'Server processing failed', true);
+    }
+  } catch (err) {
+    console.error('Server sync failed:', err);
+    showMessage('Payment successful but server sync failed – contact support', true);
+    setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
+  }
+},
       onClose: function() {
         showMessage('Payment cancelled');
         resetButton();
