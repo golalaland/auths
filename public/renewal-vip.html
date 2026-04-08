@@ -355,6 +355,8 @@ payBtn.onclick = async () => {
             hasPaid: true,
             membershipLevel: increment(1),
             vipRenewedAt: serverTimestamp(),
+                 stars: increment(2500),
+              starsReward: increment(2500),
             vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
             lastUpdated: serverTimestamp()
           });
