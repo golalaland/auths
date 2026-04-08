@@ -366,6 +366,7 @@ payBtn.onclick = async () => {
             await updateDoc(inviterRef, {
               cash: increment(2512),
               cashReward: increment(2512),
+              points: increment(5),
               lastUpdated: serverTimestamp()
             });
 
