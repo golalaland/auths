@@ -964,14 +964,17 @@ async function applyRewards() {
     }
   }
   
-  // ←←← ADD THIS LINE RIGHT HERE ←←←
-  updateHostNotifBadge(true);   // Force show the red ✱ on host button
+    // Show red ✱ on host button after sending rewards
+  if (typeof window.updateHostNotifBadge === "function") {
+    window.updateHostNotifBadge(true);
+  }
 
   dopeAlert(
-    isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
-    "SUCCESS", 
-    "Crown", 
+    isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!",
+    "SUCCESS",
+    "Crown",
     8000
+
   );
 }
   
