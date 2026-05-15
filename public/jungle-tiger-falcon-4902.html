@@ -963,6 +963,9 @@ async function applyRewards() {
       level++;
     }
   }
+  
+  // ←←← ADD THIS LINE RIGHT HERE ←←←
+  updateHostNotifBadge(true);   // Force show the red ✱ on host button
 
   dopeAlert(
     isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!", 
