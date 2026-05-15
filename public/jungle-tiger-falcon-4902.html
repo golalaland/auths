@@ -964,9 +964,10 @@ async function applyRewards() {
     }
   }
   
-    // Show red ✱ on host button after sending rewards
-  if (typeof window.updateHostNotifBadge === "function") {
-    window.updateHostNotifBadge(true);
+    // FORCE SHOW RED ASTERISK ON HOST BUTTON
+  const badge = document.getElementById("hostNotifBadge");
+  if (badge) {
+    badge.style.display = "flex";
   }
 
   dopeAlert(
