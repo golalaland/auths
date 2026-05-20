@@ -116,8 +116,8 @@
             0% { transform: rotate(-2deg); }
             100% { transform: rotate(2deg); }
         }
-
-        .tagline {
+        
+       .tagline {
             font-size: 1.25rem;
             color: #e0ff80;
             margin-bottom: 2.5rem;
@@ -133,18 +133,18 @@
             align-items: center;
             gap: 1rem;
             width: 100%;
-            max-width: 340px;
+            max-width: 400px;           /* Increased width */
         }
 
         .form-group input {
             width: 100%;
-            padding: 1.15rem 1.6rem;
+            padding: 1.2rem 1.8rem;     /* Slightly more horizontal padding */
             border-radius: 50px;
             border: 2px solid var(--input-border);
             background: var(--input-bg);
             backdrop-filter: blur(15px);
             color: white;
-            font-size: 1.05rem;
+            font-size: 1.08rem;
             text-align: center;
             box-shadow: 0 0 25px rgba(195,246,12,0.25);
             transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
@@ -233,7 +233,7 @@
     </div>
 
     <div id="message"></div>
-    <button id="payBtn">BOOST NOW</button>
+    <button id="payBtn">BOOST</button>
 
     <script src="https://js.paystack.co/v2/inline.js"></script>
     <script type="module">
@@ -410,15 +410,15 @@
                                 vipRenewedAt: serverTimestamp(),
                                 stars: increment(2500),
                                 starsReward: increment(2500),
-                                vipExpiresAt: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
+                               vipExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // ← Changed to 7 days
                                 lastUpdated: serverTimestamp()
                             });
 
                             if (inviterId) {
                                 const inviterRef = doc(db, "users", inviterId);
                                 await updateDoc(inviterRef, {
-                                    cash: increment(2512),
-                                    cashReward: increment(2512),
+                                    cash: increment(2500),
+                                    cashReward: increment(2500),
                                     points: increment(5),
                                     lastUpdated: serverTimestamp()
                                 });
@@ -426,8 +426,8 @@
                                 await addDoc(collection(db, "notifications"), {
                                     recipientId: inviterId,
                                     type: "renewal_reward",
-                                    title: "₦2,512 Cash Reward Earned!",
-                                    message: `@${freshUserData.chatId || "someone"} just boosted!`,
+                                    title: "₦2,500 Cash Reward Earned!",
+                                    message: `@${freshUserData.chatId || "someone"} just boosted your tab!`,
                                     relatedUserId: docId,
                                     relatedUserName: freshUserData.chatId || chatId,
                                     read: false,
@@ -439,7 +439,7 @@
                                 recipientId: docId,
                                 type: "renewal_success",
                                 title: "Boost Activated! 🔥",
-                                message: "Your host tab has been boosted. Enjoy the new perks!",
+                                message: "Your host tab has been boosted. Enjoy your new perks!",
                                 read: false,
                                 createdAt: serverTimestamp()
                             });
