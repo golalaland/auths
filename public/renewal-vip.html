@@ -244,203 +244,239 @@ body {
 
 <script src="https://js.paystack.co/v2/inline.js"></script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc,
-    serverTimestamp,
-    increment,
-    addDoc,
-    collection
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // ====================== IMPORTS & INITIALIZATION ======================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc,
+        serverTimestamp,
+        increment,
+        addDoc,
+        collection
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
-    authDomain: "dettyverse.firebaseapp.com",
-    projectId: "dettyverse",
-    storageBucket: "dettyverse.firebasestorage.app",
-    messagingSenderId: "1036459652488",
-    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
-    measurementId: "G-NX2KWZW85V"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+        authDomain: "dettyverse.firebaseapp.com",
+        projectId: "dettyverse",
+        storageBucket: "dettyverse.firebasestorage.app",
+        messagingSenderId: "1036459652488",
+        appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+        measurementId: "G-NX2KWZW85V"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-const messageEl = document.getElementById('message');
-const payBtn = document.getElementById('payBtn');
-const chatIdInput = document.getElementById('chatId');
-const emailInput = document.getElementById('email');
+    // ====================== DOM ELEMENTS ======================
+    const payBtn = document.getElementById('payBtn');
+    const chatIdInput = document.getElementById('chatId');
+    const emailInput = document.getElementById('email');
+    const messageEl = document.getElementById('message');
 
-const sanitizeKey = email => email.trim().toLowerCase()
-    .replace(/[@.]/g, '_')
-    .replace(/[,\\/*[\]]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
+    // ====================== UTILITIES ======================
+    const sanitizeKey = (email) => 
+        email.trim().toLowerCase()
+            .replace(/[@.]/g, '_')
+            .replace(/[,\\/*[\]]/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '');
 
-function showMessage(text, isError = false) {
-    messageEl.textContent = text;
-    messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
-}
-
-const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
-boostSound.volume = 0.8;
-
-function createExplosion() {
-    const flash = document.createElement('div');
-    flash.style.position = 'fixed'; flash.style.inset = '0';
-    flash.style.background = 'rgba(195, 246, 12, 0.3)';
-    flash.style.zIndex = '9998';
-    flash.style.pointerEvents = 'none';
-    document.body.appendChild(flash);
-    flash.animate([{opacity:0}, {opacity:0.65}, {opacity:0}], {duration: 300});
-    setTimeout(() => flash.remove(), 450);
-
-    const colors = ['#c3f60c', '#f0ff7a', '#a0d00a', '#ffffff'];
-    for (let i = 0; i < 90; i++) {
-        const p = document.createElement('div');
-        p.style.position = 'fixed';
-        p.style.top = '50%';
-        p.style.left = '50%';
-        p.style.transform = 'translate(-50%, -50%)';
-        p.style.background = colors[Math.floor(Math.random() * colors.length)];
-        p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
-        p.style.borderRadius = '50%';
-        p.style.boxShadow = '0 0 25px currentColor';
-        p.style.zIndex = '9999';
-        document.body.appendChild(p);
-
-        const angle = Math.random() * Math.PI * 2;
-        const velocity = Math.random() * 420 + 140;
-        const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity - 90;
-
-        p.animate([
-            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-            { transform: `translate(${tx}px, ${ty}px) scale(0.1)`, opacity: 0 }
-        ], { duration: Math.random() * 950 + 750, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)' });
-
-        setTimeout(() => p.remove(), 1700);
-    }
-}
-
-payBtn.onclick = async () => {
-    const chatId = chatIdInput.value.trim().replace(/^@+/, '');
-    const email = emailInput.value.trim().toLowerCase();
-
-    if (!chatId || !email) {
-        showMessage('Please fill in all fields', true);
-        return;
-    }
-    if (!email.includes('@')) {
-        showMessage('Please enter a valid email', true);
-        return;
+    function showMessage(text, isError = false) {
+        messageEl.textContent = text;
+        messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
     }
 
-    boostSound.currentTime = 0;
-    boostSound.play().catch(() => {});
-    createExplosion();
+    // ====================== AUDIO & VISUAL EFFECTS ======================
+    const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
+    boostSound.volume = 0.8;
 
-    payBtn.disabled = true;
-    payBtn.textContent = "PROCESSING...";
-    showMessage('Verifying your account...');
+    function createExplosion() {
+        // Flash effect
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position:fixed; inset:0; background:rgba(195,246,12,0.3);
+            z-index:9998; pointer-events:none;
+        `;
+        document.body.appendChild(flash);
+        flash.animate([{ opacity: 0 }, { opacity: 0.65 }, { opacity: 0 }], { duration: 300 });
+        setTimeout(() => flash.remove(), 450);
 
-    const docId = sanitizeKey(email);
-    const userRef = doc(db, "users", docId);
+        // Particles
+        const colors = ['#c3f60c', '#f0ff7a', '#a0d00a', '#ffffff'];
+        for (let i = 0; i < 90; i++) {
+            const p = document.createElement('div');
+            p.style.cssText = `
+                position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+                width:${Math.random() * 10 + 5}px; height:${Math.random() * 10 + 5}px;
+                background:${colors[Math.floor(Math.random() * colors.length)]};
+                border-radius:50%; box-shadow:0 0 25px currentColor;
+                z-index:9999; pointer-events:none;
+            `;
+            document.body.appendChild(p);
 
-    try {
-        const snap = await getDoc(userRef);
-        if (!snap.exists()) {
-            showMessage('Account not found', true);
-            resetButton();
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 420 + 140;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 90;
+
+            p.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                { transform: `translate(${tx}px, ${ty}px) scale(0.1)`, opacity: 0 }
+            ], {
+                duration: Math.random() * 950 + 750,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+            });
+
+            setTimeout(() => p.remove(), 1700);
+        }
+    }
+
+    // ====================== BUTTON STATE MANAGEMENT ======================
+    function setLoading(isLoading) {
+        if (isLoading) {
+            payBtn.disabled = true;
+            payBtn.classList.add('loading');
+        } else {
+            payBtn.disabled = false;
+            payBtn.classList.remove('loading');
+            payBtn.textContent = "BOOST NOW";
+        }
+    }
+
+    function resetButton() {
+        setLoading(false);
+    }
+
+    // ====================== MAIN BOOST HANDLER ======================
+    payBtn.onclick = async () => {
+        const chatId = chatIdInput.value.trim().replace(/^@+/, '');
+        const email = emailInput.value.trim().toLowerCase();
+
+        // Validation
+        if (!chatId || !email) {
+            showMessage('Please fill in all fields', true);
+            return;
+        }
+        if (!email.includes('@')) {
+            showMessage('Please enter a valid email', true);
             return;
         }
 
-        const userData = snap.data();
-        if (userData.chatIdLower !== chatId.toLowerCase()) {
-            showMessage('Username does not match our records', true);
-            resetButton();
-            return;
-        }
-        if (!userData.isVIP) {
-            showMessage('This account is not VIP — upgrade first', true);
-            resetButton();
-            return;
-        }
+        // Start visual & audio feedback
+        boostSound.currentTime = 0;
+        boostSound.play().catch(() => {});
+        createExplosion();
 
-        showMessage('Verified! Opening payment...');
+        // Activate loading state (spinner only)
+        setLoading(true);
+        showMessage('Verifying your account...');
 
-        const handler = PaystackPop.setup({
-            key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
-            email: email,
-            amount: 10749 * 100,
-            currency: 'NGN',
-            ref: 'BOOST_' + Date.now(),
-            metadata: { chatId: chatId, type: 'renewal' },
-            callback: async function(response) {
-                showMessage('Processing your boost...');
-                // ... (your update logic remains the same)
-                try {
-                    const freshSnap = await getDoc(userRef);
-                    const freshUserData = freshSnap.data();
-                    const inviterId = freshUserData?.invitedBy;
+        const docId = sanitizeKey(email);
+        const userRef = doc(db, "users", docId);
 
-                    await updateDoc(userRef, {
-                        hasPaid: true,
-                        membershipLevel: increment(1),
-                        vipRenewedAt: serverTimestamp(),
-                        stars: increment(1000),
-                        starsReward: increment(1000),
-                        vipExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                        lastUpdated: serverTimestamp()
-                    });
+        try {
+            const snap = await getDoc(userRef);
 
-                    if (inviterId) {
-                        const inviterRef = doc(db, "users", inviterId);
-                        await updateDoc(inviterRef, {
-                            cash: increment(2500),
-                            cashReward: increment(2500),
-                            points: increment(5),
+            if (!snap.exists()) {
+                showMessage('Account not found', true);
+                resetButton();
+                return;
+            }
+
+            const userData = snap.data();
+
+            if (userData.chatIdLower !== chatId.toLowerCase()) {
+                showMessage('Username does not match our records', true);
+                resetButton();
+                return;
+            }
+
+            if (!userData.isVIP) {
+                showMessage('This account is not VIP — upgrade first', true);
+                resetButton();
+                return;
+            }
+
+            showMessage('Verified! Opening payment...');
+
+            // ====================== PAYSTACK PAYMENT ======================
+            const handler = PaystackPop.setup({
+                key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
+                email: email,
+                amount: 10749 * 100,
+                currency: 'NGN',
+                ref: `BOOST_${Date.now()}`,
+                metadata: {
+                    chatId: chatId,
+                    type: 'renewal'
+                },
+                callback: async (response) => {
+                    showMessage('Processing your boost...');
+                    try {
+                        const freshSnap = await getDoc(userRef);
+                        const freshUserData = freshSnap.data();
+                        const inviterId = freshUserData?.invitedBy;
+
+                        // Update user
+                        await updateDoc(userRef, {
+                            hasPaid: true,
+                            membershipLevel: increment(1),
+                            vipRenewedAt: serverTimestamp(),
+                            stars: increment(1000),
+                            starsReward: increment(1000),
+                            vipExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                             lastUpdated: serverTimestamp()
                         });
+
+                        // Reward inviter if exists
+                        if (inviterId) {
+                            const inviterRef = doc(db, "users", inviterId);
+                            await updateDoc(inviterRef, {
+                                cash: increment(2500),
+                                cashReward: increment(2500),
+                                points: increment(5),
+                                lastUpdated: serverTimestamp()
+                            });
+                        }
+
+                        // Success notification
+                        await addDoc(collection(db, "notifications"), {
+                            recipientId: docId,
+                            type: "renewal_success",
+                            title: "Boost Activated! 🔥",
+                            message: "Your host tab has been boosted. Enjoy your new perks!",
+                            read: false,
+                            createdAt: serverTimestamp()
+                        });
+
+                        showMessage('Boost Complete! 🔥');
+                        setTimeout(() => {
+                            window.location.href = "https://visitcube.xyz";
+                        }, 1600);
+
+                    } catch (err) {
+                        console.error('Sync error:', err);
+                        showMessage('Payment successful. Contact support for activation.', true);
+                        setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
                     }
-
-                    await addDoc(collection(db, "notifications"), {
-                        recipientId: docId,
-                        type: "renewal_success",
-                        title: "Boost Activated! 🔥",
-                        message: "Your host tab has been boosted. Enjoy your new perks!",
-                        read: false,
-                        createdAt: serverTimestamp()
-                    });
-
-                    showMessage('Boost Complete! 🔥');
-                    setTimeout(() => window.location.href = "https://visitcube.xyz", 1600);
-                } catch (err) {
-                    console.error(err);
-                    showMessage('Payment received — sync failed. Contact support.', true);
+                },
+                onClose: () => {
+                    showMessage('Payment was cancelled');
+                    resetButton();
                 }
-            },
-            onClose: () => {
-                showMessage('Payment cancelled');
-                resetButton();
-            }
-        });
+            });
 
-        handler.openIframe();
-    } catch (err) {
-        console.error(err);
-        showMessage('Something went wrong. Please try again.', true);
-        resetButton();
-    }
-};
+            handler.openIframe();
 
-function resetButton() {
-    payBtn.disabled = false;
-    payBtn.textContent = "BOOST NOW";
-}
+        } catch (err) {
+            console.error('Verification error:', err);
+            showMessage('Something went wrong. Please try again.', true);
+            resetButton();
+        }
+    };
 </script>
 </body>
 </html>
