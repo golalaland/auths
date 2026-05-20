@@ -1,240 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=no">
-    <title>CUBE • BOOST</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Orbitron:wght@700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --neon: #c3f60c;
-            --neon-dark: #a0d00a;
-            --deep: #0a1400;
-            --glow: rgba(195, 246, 12, 0.6);
-            --input-bg: rgba(10, 25, 0, 0.65);
-            --input-border: rgba(195, 246, 12, 0.5);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=no">
+<title>CUBE • BOOST</title>
 
-        * { margin:0; padding:0; box-sizing:border-box; }
-        
-        body {
-            min-height: 100vh;
-            background: var(--deep);
-            font-family: 'Poppins', sans-serif;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem 4rem;
-            position: relative;
-            overflow-x: hidden;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Orbitron:wght@700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-        .hero-video {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: -3;
-            opacity: 0.35;
-            filter: brightness(0.65) contrast(1.25);
-        }
+<style>
+:root {
+    --neon: #c3f60c;
+    --neon-dark: #a0d00a;
+    --gold: #f7d774;
+    --gold-deep: #caa12b;
+    --deep: #0a1400;
+    --glow: rgba(195, 246, 12, 0.6);
+    --input-bg: rgba(10, 25, 0, 0.65);
+    --input-border: rgba(195, 246, 12, 0.5);
+}
 
-        .hero-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(180deg, transparent 30%, #000 85%);
-            z-index: -2;
-        }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-        .particles {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
+body {
+    min-height: 100vh;
+    background: var(--deep);
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 2rem 1rem 3rem;
+    overflow-x:hidden;
+}
 
-        .particle {
-            position: absolute;
-            width: 6px; height: 6px;
-            background: var(--neon);
-            border-radius: 50%;
-            box-shadow: 0 0 25px var(--neon);
-            animation: float 14s infinite linear;
-        }
+/* background video */
+.hero-video {
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:0.35;
+    z-index:-3;
+}
 
-        @keyframes float {
-            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { transform: translateY(-120px) translateX(140px); opacity: 0; }
-        }
+/* overlay */
+.hero-overlay {
+    position:fixed;
+    inset:0;
+    background: linear-gradient(180deg, transparent 30%, #000 90%);
+    z-index:-2;
+}
 
-        .logo-container {
-            margin: 2rem 0 1.8rem;
-            text-align: center;
-            width: 100%;
-        }
+/* logo */
+.logo-container {
+    margin: 2rem 0 1rem;
+    text-align:center;
+}
 
-        .logo {
-            height: 260px;
-            width: auto;
-            max-width: 96vw;
-            object-fit: contain;
-            filter: drop-shadow(0 0 50px #c3f60c) drop-shadow(0 0 100px rgba(195,246,12,0.8));
-            animation: logoPulse 3.5s infinite alternate ease-in-out;
-        }
+.logo {
+    height: 240px;
+    max-width: 95vw;
+    filter: drop-shadow(0 0 60px #c3f60c);
+}
 
-        @keyframes logoPulse {
-            from { filter: drop-shadow(0 0 50px #c3f60c) drop-shadow(0 0 100px rgba(195,246,12,0.8)); }
-            to { filter: drop-shadow(0 0 70px #c3f60c) drop-shadow(0 0 140px rgba(195,246,12,1)); }
-        }
+/* title */
+h1 {
+    font-family:'Bungee';
+    font-size:5.2rem;
+    letter-spacing:4px;
+    background: linear-gradient(90deg, #c3f60c, #f7d774, #c3f60c);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    text-shadow:0 0 30px rgba(195,246,12,0.4);
+}
 
-        h1 {
-            font-family: 'Bungee', sans-serif;
-            font-size: 5.8rem;
-            font-weight: 400;
-            letter-spacing: 4px;
-            background: linear-gradient(90deg, #c3f60c, #f0ff7a, #c3f60c);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 
-                0 0 30px #c3f60c,
-                0 0 60px #c3f60c,
-                4px 4px 0 #000,
-                -2px -2px 0 #000;
-            margin: 0.2rem 0 0.6rem;
-            text-transform: uppercase;
-            line-height: 1;
-            animation: titleShake 4s infinite alternate;
-        }
+/* tagline */
+.tagline {
+    font-size:1.15rem;
+    color:#e0ff80;
+    margin: 0.5rem 0 2rem;
+    text-align:center;
+}
 
-        @keyframes titleShake {
-            0% { transform: rotate(-2deg); }
-            100% { transform: rotate(2deg); }
-        }
-        
-       .tagline {
-            font-size: 1.25rem;
-            color: #e0ff80;
-            margin-bottom: 2.5rem;
-            text-shadow: 0 0 20px var(--neon);
-            text-align: center;
-            max-width: 86%;
-            font-weight: 500;
-        }
+/* FORM */
+.form-container {
+    width:100%;
+    max-width: 440px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
 
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            width: 100%;
-            max-width: 400px;           /* Increased width */
-        }
+/* INPUTS (LONGER + PREMIUM) */
+.form-group input {
+    width:100%;
+    padding: 1.35rem 1.8rem;
+    border-radius: 60px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color:#fff;
+    font-size:1.05rem;
+    text-align:center;
+    transition:0.3s ease;
+    backdrop-filter: blur(16px);
+}
 
-        .form-group input {
-            width: 100%;
-            padding: 1.2rem 1.8rem;     /* Slightly more horizontal padding */
-            border-radius: 50px;
-            border: 2px solid var(--input-border);
-            background: var(--input-bg);
-            backdrop-filter: blur(15px);
-            color: white;
-            font-size: 1.08rem;
-            text-align: center;
-            box-shadow: 0 0 25px rgba(195,246,12,0.25);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
+.form-group input:focus {
+    outline:none;
+    transform: scale(1.03);
+    border-color: var(--neon);
+    box-shadow:0 0 35px var(--glow);
+}
 
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--neon);
-            box-shadow: 0 0 40px var(--glow);
-            transform: scale(1.04);
-        }
+/* MESSAGE */
+#message {
+    margin: 1.4rem 0;
+    text-align:center;
+    min-height: 1.4em;
+    font-weight:500;
+}
 
-        #message {
-            margin: 1.6rem 0;
-            font-size: 1.15rem;
-            min-height: 1.6em;
-            text-align: center;
-            font-weight: 500;
-        }
+/* BOOST BUTTON — GOLD SHIMMER */
+#payBtn {
+    margin-top: 1.2rem;
+    width: 100%;
+    max-width: 440px;
+    padding: 1.35rem;
+    border-radius: 60px;
+    border:none;
+    cursor:pointer;
+    font-size:1.35rem;
+    font-weight:900;
+    letter-spacing:2px;
+    text-transform:uppercase;
 
-        #payBtn {
-            margin: 1.5rem auto 0;
-            padding: 1.25rem 4rem;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #c3f60c, #a0d00a);
-            color: #000;
-            font-size: 1.45rem;
-            font-weight: 900;
-            letter-spacing: 3px;
-            cursor: pointer;
-            box-shadow: 0 12px 45px var(--glow);
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-        }
+    color:#1a1200;
 
-        #payBtn:hover {
-            transform: translateY(-6px) scale(1.06);
-            box-shadow: 0 25px 70px var(--glow);
-        }
+    background: linear-gradient(
+        120deg,
+        #f7d774 0%,
+        #fff3b0 20%,
+        #caa12b 40%,
+        #fff3b0 60%,
+        #f7d774 100%
+    );
 
-        #payBtn.loading::after {
-            content: " •••";
-        }
+    background-size: 300% 100%;
+    animation: goldShimmer 4s linear infinite;
 
-        #payBtn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-    </style>
+    box-shadow: 0 12px 45px rgba(247,215,116,0.25);
+    position:relative;
+    overflow:hidden;
+}
+
+/* shimmer motion */
+@keyframes goldShimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+#payBtn:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 25px 70px rgba(247,215,116,0.35);
+}
+
+#payBtn:disabled {
+    opacity:0.6;
+    cursor:not-allowed;
+    animation:none;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 3rem;
+    text-align:center;
+    font-size:0.82rem;
+    color:#666;
+    letter-spacing:1px;
+}
+
+.footer span {
+    color:#aaa;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+    h1 { font-size:3.6rem; }
+}
+</style>
 </head>
+
 <body>
-    <video class="hero-video" autoplay muted loop playsinline>
-        <source src="https://cdn.shopify.com/videos/c/o/v/8d1f9e76b0374ef49c9ad0f335437a1f.mp4" type="video/mp4">
-    </video>
-    <div class="hero-overlay"></div>
 
-    <div class="particles">
-        <div class="particle" style="left:8%; animation-delay:0s;"></div>
-        <div class="particle" style="left:22%; animation-delay:1.2s;"></div>
-        <div class="particle" style="left:38%; animation-delay:3.5s;"></div>
-        <div class="particle" style="left:55%; animation-delay:0.8s;"></div>
-        <div class="particle" style="left:72%; animation-delay:2.7s;"></div>
-        <div class="particle" style="left:85%; animation-delay:4.1s;"></div>
-        <div class="particle" style="left:95%; animation-delay:1.8s; width:8px; height:8px;"></div>
+<video class="hero-video" autoplay muted loop playsinline>
+<source src="https://cdn.shopify.com/videos/c/o/v/8d1f9e76b0374ef49c9ad0f335437a1f.mp4">
+</video>
+
+<div class="hero-overlay"></div>
+
+<div class="logo-container">
+    <img class="logo" src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962">
+</div>
+
+<h1>BOOST</h1>
+<div class="tagline">LEVEL UP YOUR MEMBERSHIP & BOOST YOUR HOST 🔥</div>
+
+<!-- FORM -->
+<div class="form-container">
+
+    <div class="form-group">
+        <input type="text" placeholder="@username" id="chatId">
     </div>
 
-    <div class="logo-container">
-        <img src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962"
-             alt="CUBE Logo" class="logo">
+    <div class="form-group">
+        <input type="email" placeholder="Email Address" id="email">
     </div>
 
-    <h1>BOOST</h1>
-    <div class="tagline">LEVEL UP YOUR MEMBERSHIP &amp; BOOST YOUR HOST 🔥</div>
+</div>
 
-    <div class="form-container">
-        <div class="form-group">
-            <input type="text" placeholder="@username" id="chatId">
-        </div>
-        <div class="form-group">
-            <input type="email" placeholder="Email Address" id="email">
-        </div>
-    </div>
+<div id="message"></div>
 
-    <div id="message"></div>
-    <button id="payBtn">BOOST</button>
+<button id="payBtn">BOOST</button>
 
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 CUBE. All rights reserved. • <span>UYE™</span>
+</div>
     <script src="https://js.paystack.co/v2/inline.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
