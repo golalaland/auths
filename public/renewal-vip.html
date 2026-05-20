@@ -3,10 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=no">
-<title>CUBE • BOOST</title>
-
+<title>CUBE • LEVEL UP YOUR MEMBERSHIP</title>
 <link href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
 <style>
 :root {
     --neon: #c3f60c;
@@ -17,12 +15,7 @@
     --input-border: rgba(195, 246, 12, 0.5);
     --glow: rgba(247, 215, 116, 0.35);
 }
-
-* {
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
     min-height: 100vh;
@@ -46,7 +39,6 @@ body {
     opacity:0.35;
     z-index:-3;
 }
-
 .hero-overlay {
     position:fixed;
     inset:0;
@@ -59,84 +51,56 @@ body {
     margin: 2rem 0 1rem;
     text-align:center;
 }
-
 .logo {
     height: 210px;
     max-width: 92vw;
     filter: drop-shadow(0 0 55px #c3f60c);
 }
 
+/* TAGLINE */
 .tagline-wrapper{
     text-align:center;
     margin: 0.6rem 0 2.4rem;
 }
-
 .tagline-static{
     font-size: 1.60rem;
     color: #e0ff80;
     font-weight: 600;
     margin-bottom: 10px;
 }
-
-/* SLIDER WINDOW */
 .tagline-slider{
     height: 28px;
     overflow:hidden;
     position:relative;
 }
-
-/* EACH WORD */
 .tagline-slider span{
     display:block;
     font-size: 1.05rem;
     color: #c3f60c;
     font-weight:500;
-
     position:absolute;
     width:100%;
     left:0;
-
     opacity:0;
     transform: translateY(18px) scale(0.98);
     filter: blur(6px);
-
     animation: slideWords 12s infinite;
 }
-
-/* stagger each word */
 .tagline-slider span:nth-child(1){ animation-delay: 0s; }
 .tagline-slider span:nth-child(2){ animation-delay: 2s; }
 .tagline-slider span:nth-child(3){ animation-delay: 4s; }
 .tagline-slider span:nth-child(4){ animation-delay: 6s; }
 .tagline-slider span:nth-child(5){ animation-delay: 8s; }
-.tagline-slider span:nth-child(6){ animation-delay: 10s; }
 
 @keyframes slideWords {
-    0% {
-        opacity:0;
-        transform: translateY(18px);
-        filter: blur(6px);
-    }
-    10% {
-        opacity:1;
-        transform: translateY(0);
-        filter: blur(0);
-    }
-    25% {
-        opacity:1;
-        transform: translateY(0);
-    }
-    40% {
-        opacity:0;
-        transform: translateY(-18px);
-        filter: blur(4px);
-    }
-    100% {
-        opacity:0;
-    }
+    0% { opacity:0; transform: translateY(18px); filter: blur(6px); }
+    10% { opacity:1; transform: translateY(0); filter: blur(0); }
+    25% { opacity:1; transform: translateY(0); }
+    40% { opacity:0; transform: translateY(-18px); filter: blur(4px); }
+    100% { opacity:0; }
 }
 
-/* FORM WRAPPER */
+/* FORM */
 .form-container {
     width:100%;
     max-width: 420px;
@@ -144,8 +108,6 @@ body {
     flex-direction:column;
     gap:12px;
 }
-
-/* INPUTS */
 .form-group input {
     width:100%;
     padding: 1.25rem 1.6rem;
@@ -158,7 +120,6 @@ body {
     transition:0.25s ease;
     backdrop-filter: blur(16px);
 }
-
 .form-group input:focus {
     outline:none;
     transform: scale(1.03);
@@ -174,61 +135,36 @@ body {
     font-weight:500;
 }
 
-/* 🔥 GOLD BOOST BUTTON (POLISHED + SHIMMER) */
+/* BOOST BUTTON */
 #payBtn {
     margin-top: 1rem;
-    width: fit-content;
     min-width: 180px;
-    max-width: 240px;
-
-    padding: 0.75rem 1.4rem;
-
+    padding: 0.9rem 2.2rem;
     border-radius: 999px;
     border: none;
-
     cursor: pointer;
-
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 900;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-
     color: #1a1200;
-
-    background: linear-gradient(
-        120deg,
-        #f7d774 0%,
-        #fff3b0 25%,
-        #caa12b 50%,
-        #fff3b0 75%,
-        #f7d774 100%
-    );
-
+    background: linear-gradient(120deg, #f7d774 0%, #fff3b0 25%, #caa12b 50%, #fff3b0 75%, #f7d774 100%);
     background-size: 300% 100%;
     animation: goldShimmer 4.2s ease-in-out infinite;
-
     box-shadow: 0 10px 28px rgba(247,215,116,0.22);
-
     position: relative;
     overflow: hidden;
-
-    transition: all 0.25s ease;
-
-    /* 🔥 KEY FIX: centers it without making it feel stretched */
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
-
-/* soft shimmer instead of aggressive scroll */
 @keyframes goldShimmer {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-
 #payBtn:hover {
-    transform: translateY(-2px) scale(1.03);
+    transform: translateY(-3px) scale(1.04);
     box-shadow: 0 18px 50px rgba(247,215,116,0.32);
 }
 #payBtn:disabled {
@@ -236,28 +172,8 @@ body {
     cursor:not-allowed;
     animation:none;
 }
-#payBtn::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -120%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255,255,255,0.55),
-        transparent
-    );
-    transform: skewX(-20deg);
-    animation: shineSweep 3.8s infinite;
-}
 
-@keyframes shineSweep {
-    0% { left: -120%; }
-    100% { left: 140%; }
-}
-/* ====================== FOOTER ====================== */
+/* FOOTER */
 .footer {
     margin-top: 4rem;
     padding: 2rem 1rem;
@@ -267,604 +183,247 @@ body {
     border-top: 1px solid rgba(195, 246, 12, 0.1);
     width: 100%;
 }
+.footer span { color: var(--neon); }
 
-.footer span {
-    color: var(--neon);
-}
-/* MOBILE */
 @media(max-width:600px){
     .logo { height: 170px; }
-    #payBtn { max-width: 100%; }
-}
-/* FEATURED HOST */
-.featured-host-wrap{
-    width:100%;
-    max-width:420px;
-    margin: 0 auto 2rem;
-}
-
-.featured-label{
-    text-align:center;
-    color:#c3f60c;
-    font-size:0.7rem;
-    letter-spacing:3px;
-    margin-bottom:12px;
-    opacity:0.8;
-}
-
-.featured-host-card{
-    position:relative;
-    overflow:hidden;
-
-    border-radius:28px;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(18,25,5,0.92),
-            rgba(7,12,2,0.96)
-        );
-
-    border:1px solid rgba(195,246,12,0.18);
-
-    box-shadow:
-        0 12px 50px rgba(0,0,0,0.45),
-        0 0 30px rgba(195,246,12,0.06);
-
-    backdrop-filter: blur(18px);
-}
-
-/* IMAGE */
-.featured-image-wrap{
-    position:relative;
-    height:280px;
-    overflow:hidden;
-}
-
-.featured-image{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-
-    transform:scale(1.02);
-
-    transition:transform 0.5s ease;
-}
-
-.featured-host-card:hover .featured-image{
-    transform:scale(1.06);
-}
-
-.featured-overlay{
-    position:absolute;
-    inset:0;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(0,0,0,0.05),
-            rgba(0,0,0,0.7)
-        );
-}
-
-.featured-badge{
-    position:absolute;
-    top:14px;
-    left:14px;
-
-    padding:7px 12px;
-
-    border-radius:999px;
-
-    background:rgba(195,246,12,0.14);
-
-    border:1px solid rgba(195,246,12,0.3);
-
-    color:#e8ff9c;
-
-    font-size:0.7rem;
-    font-weight:700;
-    letter-spacing:1px;
-
-    backdrop-filter:blur(12px);
-}
-
-/* CONTENT */
-.featured-content{
-    padding:18px 18px 22px;
-}
-
-.featured-mini{
-    color:#7d8f56;
-    font-size:0.68rem;
-    letter-spacing:2px;
-    margin-bottom:10px;
-}
-
-.featured-name{
-    font-size:1.7rem;
-    font-weight:700;
-    color:#fff;
-
-    margin-bottom:10px;
-
-    text-shadow:0 0 20px rgba(255,255,255,0.08);
-}
-
-.featured-note{
-    color:#d9e2c2;
-    font-size:0.96rem;
-    line-height:1.7;
-    opacity:0.92;
-}
-
-/* TAGS */
-.featured-tags{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-
-    margin-top:18px;
-}
-
-.featured-tags span{
-    padding:7px 12px;
-
-    border-radius:999px;
-
-    background:rgba(255,255,255,0.05);
-
-    border:1px solid rgba(255,255,255,0.06);
-
-    color:#d6ef89;
-
-    font-size:0.68rem;
-    letter-spacing:1px;
-}
-/* ====================== FEATURED HOST ====================== */
-.featured-host-wrap {
-    margin-top: 5.5rem;           /* Good breathing space after footer */
-    padding-bottom: 3rem;
-    width: 100%;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.featured-label {
-    font-family: 'Bungee', sans-serif;
-    font-size: 1.65rem;           /* Made bigger as requested */
-    font-weight: 400;
-    text-align: center;
-    color: #c3f60c;
-    letter-spacing: 6px;
-    margin-bottom: 1.2rem;
-    text-shadow: 0 0 25px rgba(195, 246, 12, 0.6);
-    text-transform: uppercase;
-}
-
-/* Featured Host Card */
-.featured-host-card {
-    background: rgba(10, 20, 5, 0.6);
-    border: 2px solid rgba(195, 246, 12, 0.3);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6),
-                0 0 30px rgba(195, 246, 12, 0.15);
-    transition: transform 0.4s ease;
-}
-
-.featured-host-card:hover {
-    transform: translateY(-8px);
-}
-
-.featured-image-wrap {
-    position: relative;
-    height: 260px;
-    overflow: hidden;
-}
-
-.featured-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-}
-
-.featured-host-card:hover .featured-image {
-    transform: scale(1.08);
-}
-
-.featured-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 60%, rgba(10,20,5,0.9) 95%);
-}
-
-.featured-badge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: #c3f60c;
-    color: #000;
-    font-size: 0.85rem;
-    font-weight: 900;
-    padding: 6px 14px;
-    border-radius: 30px;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(195, 246, 12, 0.4);
-}
-
-.featured-content {
-    padding: 1.4rem 1.6rem 1.8rem;
-}
-
-.featured-mini {
-    font-size: 0.8rem;
-    color: #a0d00a;
-    letter-spacing: 2px;
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-}
-
-.featured-name {
-    font-size: 2.1rem;
-    font-weight: 900;
-    color: white;
-    margin-bottom: 0.6rem;
-    line-height: 1;
-}
-
-.featured-note {
-    font-size: 1.02rem;
-    color: #ddd;
-    line-height: 1.45;
-    margin-bottom: 1.3rem;
-    font-style: italic;
-}
-
-.featured-tags {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.featured-tags span {
-    background: rgba(195, 246, 12, 0.15);
-    color: #c3f60c;
-    padding: 6px 16px;
-    border-radius: 30px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    border: 1px solid rgba(195, 246, 12, 0.3);
+    #payBtn { width: 100%; max-width: 100%; }
 }
 </style>
 </head>
-
 <body>
 
-<!-- BACKGROUND -->
 <video class="hero-video" autoplay muted loop playsinline>
     <source src="https://cdn.shopify.com/videos/c/o/v/8d1f9e76b0374ef49c9ad0f335437a1f.mp4">
 </video>
-
 <div class="hero-overlay"></div>
 
-<!-- LOGO -->
 <div class="logo-container">
     <img class="logo" src="https://cdn.shopify.com/s/files/1/0962/6648/6067/files/HABA_HOUSE.png?v=1765412962">
 </div>
-<!-- TAGLINE SLIDER -->
-<div class="tagline-wrapper">
-    <div class="tagline-static">
-   LEVEL UP YOUR EXPERIENCE
-    </div>
 
+<div class="tagline-wrapper">
+    <div class="tagline-static">LEVEL UP YOUR EXPERIENCE</div>
     <div class="tagline-slider">
         <span>boost your host </span>
-        <span>support real energy ⚡︎  </span>
+        <span>support real energy ⚡︎ </span>
         <span>unlock premium perks ꗃ </span>
         <span>upgrade your membership $ </span>
-        <span>move with intention ‪‪ </span>
+        <span>move with intention </span>
     </div>
 </div>
 
-<!-- FORM -->
 <div class="form-container">
-
-    <div class="form-group">
-        <input type="text" placeholder="@username" id="chatId">
-    </div>
-
-    <div class="form-group">
-        <input type="email" placeholder="Email Address" id="email">
-    </div>
-
+    <div class="form-group"><input type="text" placeholder="@username" id="chatId"></div>
+    <div class="form-group"><input type="email" placeholder="Email Address" id="email"></div>
 </div>
 
-<!-- MESSAGE -->
 <div id="message"></div>
+<button id="payBtn">BOOST NOW</button>
 
-<!-- BUTTON -->
-<button id="payBtn">BOOST</button>
-
-<!-- FOOTER -->
 <div class="footer">
     © 2026 CUBE. All rights reserved. • <span>UYE™</span>
 </div>
 
-   
-    <script src="https://js.paystack.co/v2/inline.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import {
-            getFirestore,
-            doc,
-            getDoc,
-            updateDoc,
-            serverTimestamp,
-            increment,
-            addDoc,
-            collection
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<script src="https://js.paystack.co/v2/inline.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    updateDoc,
+    serverTimestamp,
+    increment,
+    addDoc,
+    collection
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
-            authDomain: "dettyverse.firebaseapp.com",
-            projectId: "dettyverse",
-            storageBucket: "dettyverse.firebasestorage.app",
-            messagingSenderId: "1036459652488",
-            appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
-            measurementId: "G-NX2KWZW85V"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+    authDomain: "dettyverse.firebaseapp.com",
+    projectId: "dettyverse",
+    storageBucket: "dettyverse.firebasestorage.app",
+    messagingSenderId: "1036459652488",
+    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+    measurementId: "G-NX2KWZW85V"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        const messageEl = document.getElementById('message');
-        const payBtn = document.getElementById('payBtn');
-        const chatIdInput = document.getElementById('chatId');
-        const emailInput = document.getElementById('email');
+const messageEl = document.getElementById('message');
+const payBtn = document.getElementById('payBtn');
+const chatIdInput = document.getElementById('chatId');
+const emailInput = document.getElementById('email');
 
-        const sanitizeKey = email => email.trim().toLowerCase()
-            .replace(/[@.]/g, '_')
-            .replace(/[,\\/*[\]]/g, '_')
-            .replace(/_+/g, '_')
-            .replace(/^_|_$/g, '');
+const sanitizeKey = email => email.trim().toLowerCase()
+    .replace(/[@.]/g, '_')
+    .replace(/[,\\/*[\]]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
 
-        function showMessage(text, isError = false) {
-            messageEl.textContent = text;
-            messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
-        }
-
-const featuredHosts = [
-
-{
-    name: "ADA",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop",
-    note: "Soft energy. Loud presence. Somewhere in Lagos tonight."
-},
-
-{
-    name: "ZARA",
-    image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=1200&auto=format&fit=crop",
-    note: "Champagne habits. Rooftop moods. Replies fast after midnight."
-},
-
-{
-    name: "MAYA",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1200&auto=format&fit=crop",
-    note: "Private dinners. Pretty chaos. The type you remember later."
+function showMessage(text, isError = false) {
+    messageEl.textContent = text;
+    messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
 }
 
-];
+const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
+boostSound.volume = 0.8;
 
-const randomHost =
-featuredHosts[Math.floor(Math.random() * featuredHosts.length)];
+function createExplosion() {
+    const flash = document.createElement('div');
+    flash.style.position = 'fixed'; flash.style.inset = '0';
+    flash.style.background = 'rgba(195, 246, 12, 0.3)';
+    flash.style.zIndex = '9998';
+    flash.style.pointerEvents = 'none';
+    document.body.appendChild(flash);
+    flash.animate([{opacity:0}, {opacity:0.65}, {opacity:0}], {duration: 300});
+    setTimeout(() => flash.remove(), 450);
 
-document.getElementById("featuredName").textContent =
-randomHost.name;
+    const colors = ['#c3f60c', '#f0ff7a', '#a0d00a', '#ffffff'];
+    for (let i = 0; i < 90; i++) {
+        const p = document.createElement('div');
+        p.style.position = 'fixed';
+        p.style.top = '50%';
+        p.style.left = '50%';
+        p.style.transform = 'translate(-50%, -50%)';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
+        p.style.borderRadius = '50%';
+        p.style.boxShadow = '0 0 25px currentColor';
+        p.style.zIndex = '9999';
+        document.body.appendChild(p);
 
-document.getElementById("featuredImage").src =
-randomHost.image;
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 420 + 140;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity - 90;
 
-document.getElementById("featuredNote").textContent =
-randomHost.note;
+        p.animate([
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+            { transform: `translate(${tx}px, ${ty}px) scale(0.1)`, opacity: 0 }
+        ], { duration: Math.random() * 950 + 750, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)' });
 
-        // Boost sound
-        const boostSound = new Audio("https://freesound.org/data/previews/276/276951_5123854-lq.mp3");
-        boostSound.volume = 0.8;
+        setTimeout(() => p.remove(), 1700);
+    }
+}
 
-        function createExplosion() {
-            // Flash
-            const flash = document.createElement('div');
-            flash.style.position = 'fixed';
-            flash.style.top = '0';
-            flash.style.left = '0';
-            flash.style.width = '100%';
-            flash.style.height = '100%';
-            flash.style.background = 'rgba(195, 246, 12, 0.3)';
-            flash.style.pointerEvents = 'none';
-            flash.style.zIndex = '9998';
-            document.body.appendChild(flash);
-            
-            flash.animate([{ opacity: 0 }, { opacity: 0.65 }, { opacity: 0 }], { duration: 300 });
-            setTimeout(() => flash.remove(), 450);
+payBtn.onclick = async () => {
+    const chatId = chatIdInput.value.trim().replace(/^@+/, '');
+    const email = emailInput.value.trim().toLowerCase();
 
-            // Particles
-            const colors = ['#c3f60c', '#f0ff7a', '#a0d00a', '#ffffff'];
-            for (let i = 0; i < 90; i++) {
-                const p = document.createElement('div');
-                p.style.position = 'fixed';
-                p.style.top = '50%';
-                p.style.left = '50%';
-                p.style.transform = 'translate(-50%, -50%)';
-                p.style.background = colors[Math.floor(Math.random() * colors.length)];
-                p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
-                p.style.borderRadius = '50%';
-                p.style.boxShadow = '0 0 25px currentColor';
-                p.style.pointerEvents = 'none';
-                p.style.zIndex = '9999';
-                document.body.appendChild(p);
+    if (!chatId || !email) {
+        showMessage('Please fill in all fields', true);
+        return;
+    }
+    if (!email.includes('@')) {
+        showMessage('Please enter a valid email', true);
+        return;
+    }
 
-                const angle = Math.random() * Math.PI * 2;
-                const velocity = Math.random() * 420 + 140;
-                const tx = Math.cos(angle) * velocity;
-                const ty = Math.sin(angle) * velocity - 90;
+    boostSound.currentTime = 0;
+    boostSound.play().catch(() => {});
+    createExplosion();
 
-                p.animate([
-                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-                    { transform: `translate(${tx}px, ${ty}px) scale(0.1)`, opacity: 0 }
-                ], {
-                    duration: Math.random() * 950 + 750,
-                    easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
-                });
+    payBtn.disabled = true;
+    payBtn.textContent = "PROCESSING...";
+    showMessage('Verifying your account...');
 
-                setTimeout(() => p.remove(), 1700);
-            }
+    const docId = sanitizeKey(email);
+    const userRef = doc(db, "users", docId);
 
-            // Screen shake
-            document.body.style.transition = 'transform 60ms';
-            document.body.style.transform = 'translateX(6px)';
-            setTimeout(() => document.body.style.transform = 'translateX(-6px)', 60);
-            setTimeout(() => document.body.style.transform = 'translateX(4px)', 140);
-            setTimeout(() => document.body.style.transform = 'translateX(0)', 220);
+    try {
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+            showMessage('Account not found', true);
+            resetButton();
+            return;
         }
 
-        payBtn.onclick = async () => {
-            const chatId = chatIdInput.value.trim().replace(/^@+/, '');
-            const email = emailInput.value.trim().toLowerCase();
+        const userData = snap.data();
+        if (userData.chatIdLower !== chatId.toLowerCase()) {
+            showMessage('Username does not match our records', true);
+            resetButton();
+            return;
+        }
+        if (!userData.isVIP) {
+            showMessage('This account is not VIP — upgrade first', true);
+            resetButton();
+            return;
+        }
 
-            if (!chatId || !email) {
-                showMessage('Please fill in all fields', true);
-                return;
-            }
-            if (!email.includes('@')) {
-                showMessage('Please enter a valid email', true);
-                return;
-            }
+        showMessage('Verified! Opening payment...');
 
-            // Effects
-            boostSound.currentTime = 0;
-            boostSound.play().catch(() => {});
-            createExplosion();
+        const handler = PaystackPop.setup({
+            key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
+            email: email,
+            amount: 10749 * 100,
+            currency: 'NGN',
+            ref: 'BOOST_' + Date.now(),
+            metadata: { chatId: chatId, type: 'renewal' },
+            callback: async function(response) {
+                showMessage('Processing your boost...');
+                // ... (your update logic remains the same)
+                try {
+                    const freshSnap = await getDoc(userRef);
+                    const freshUserData = freshSnap.data();
+                    const inviterId = freshUserData?.invitedBy;
 
-            payBtn.disabled = true;
-            payBtn.classList.add('loading');
-            showMessage('Verifying your account...');
+                    await updateDoc(userRef, {
+                        hasPaid: true,
+                        membershipLevel: increment(1),
+                        vipRenewedAt: serverTimestamp(),
+                        stars: increment(1000),
+                        starsReward: increment(1000),
+                        vipExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                        lastUpdated: serverTimestamp()
+                    });
 
-            const docId = sanitizeKey(email);
-            const userRef = doc(db, "users", docId);
-
-            try {
-                const snap = await getDoc(userRef);
-                if (!snap.exists()) {
-                    showMessage('Account not found', true);
-                    resetButton();
-                    return;
-                }
-
-                const userData = snap.data();
-
-                if (userData.chatIdLower !== chatId.toLowerCase()) {
-                    showMessage('Username does not match our records', true);
-                    resetButton();
-                    return;
-                }
-
-                if (!userData.isVIP) {
-                    showMessage('This account is not VIP — upgrade first', true);
-                    resetButton();
-                    return;
-                }
-
-                showMessage('Verified! Opening payment...');
-
-                const handler = PaystackPop.setup({
-                    key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
-                    email: email,
-                    amount: 10749 * 100,
-                    currency: 'NGN',
-                    ref: 'BOOST_' + Date.now(),
-                    metadata: {
-                        chatId: chatId,
-                        type: 'renewal'
-                    },
-                    callback: async function(response) {
-                        showMessage('Processing your boost...');
-                        try {
-                            const freshSnap = await getDoc(userRef);
-                            const freshUserData = freshSnap.data();
-                            const inviterId = freshUserData?.invitedBy;
-
-                            await updateDoc(userRef, {
-                                hasPaid: true,
-                                membershipLevel: increment(1),
-                                vipRenewedAt: serverTimestamp(),
-                                stars: increment(2500),
-                                starsReward: increment(2500),
-                               vipExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // ← Changed to 7 days
-                                lastUpdated: serverTimestamp()
-                            });
-
-                            if (inviterId) {
-                                const inviterRef = doc(db, "users", inviterId);
-                                await updateDoc(inviterRef, {
-                                    cash: increment(2500),
-                                    cashReward: increment(2500),
-                                    points: increment(5),
-                                    lastUpdated: serverTimestamp()
-                                });
-
-                                await addDoc(collection(db, "notifications"), {
-                                    recipientId: inviterId,
-                                    type: "renewal_reward",
-                                    title: "₦2,500 Cash Reward Earned!",
-                                    message: `@${freshUserData.chatId || "someone"} just boosted your tab!`,
-                                    relatedUserId: docId,
-                                    relatedUserName: freshUserData.chatId || chatId,
-                                    read: false,
-                                    createdAt: serverTimestamp()
-                                });
-                            }
-
-                            await addDoc(collection(db, "notifications"), {
-                                recipientId: docId,
-                                type: "renewal_success",
-                                title: "Boost Activated! 🔥",
-                                message: "Your host tab has been boosted. Enjoy your new perks!",
-                                read: false,
-                                createdAt: serverTimestamp()
-                            });
-
-                            showMessage('Boost Complete! 🔥');
-                            setTimeout(() => {
-                                window.location.href = "https://visitcube.xyz";
-                            }, 1600);
-                        } catch (err) {
-                            console.error(err);
-                            showMessage('Payment received — sync failed. Contact support.', true);
-                            setTimeout(() => window.location.href = "https://visitcube.xyz", 3500);
-                        }
-                    },
-                    onClose: function() {
-                        showMessage('Payment cancelled');
-                        resetButton();
+                    if (inviterId) {
+                        const inviterRef = doc(db, "users", inviterId);
+                        await updateDoc(inviterRef, {
+                            cash: increment(2500),
+                            cashReward: increment(2500),
+                            points: increment(5),
+                            lastUpdated: serverTimestamp()
+                        });
                     }
-                });
 
-                handler.openIframe();
-            } catch (err) {
-                console.error(err);
-                showMessage('Something went wrong. Please try again.', true);
+                    await addDoc(collection(db, "notifications"), {
+                        recipientId: docId,
+                        type: "renewal_success",
+                        title: "Boost Activated! 🔥",
+                        message: "Your host tab has been boosted. Enjoy your new perks!",
+                        read: false,
+                        createdAt: serverTimestamp()
+                    });
+
+                    showMessage('Boost Complete! 🔥');
+                    setTimeout(() => window.location.href = "https://visitcube.xyz", 1600);
+                } catch (err) {
+                    console.error(err);
+                    showMessage('Payment received — sync failed. Contact support.', true);
+                }
+            },
+            onClose: () => {
+                showMessage('Payment cancelled');
                 resetButton();
             }
-        };
+        });
 
-        function resetButton() {
-            payBtn.disabled = false;
-            payBtn.classList.remove('loading');
-        }
-    </script>
+        handler.openIframe();
+    } catch (err) {
+        console.error(err);
+        showMessage('Something went wrong. Please try again.', true);
+        resetButton();
+    }
+};
+
+function resetButton() {
+    payBtn.disabled = false;
+    payBtn.textContent = "BOOST NOW";
+}
+</script>
 </body>
 </html>
