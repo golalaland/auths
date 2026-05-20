@@ -135,25 +135,46 @@ body {
     font-weight:500;
 }
 
-/* BOOST BUTTON */
 #payBtn {
     margin-top: 1rem;
+    width: fit-content;
     min-width: 180px;
-    padding: 0.9rem 2.2rem;
+    max-width: 240px;
+
+    padding: 0.75rem 1.4rem;
+
     border-radius: 999px;
     border: none;
+
     cursor: pointer;
-    font-size: 1.05rem;
+
+    font-size: 0.95rem;
     font-weight: 900;
     letter-spacing: 2.5px;
     text-transform: uppercase;
+
     color: #1a1200;
-    background: linear-gradient(120deg, #f7d774 0%, #fff3b0 25%, #caa12b 50%, #fff3b0 75%, #f7d774 100%);
+
+    background: linear-gradient(
+        120deg,
+        #f7d774 0%,
+        #fff3b0 25%,
+        #caa12b 50%,
+        #fff3b0 75%,
+        #f7d774 100%
+    );
+
     background-size: 300% 100%;
     animation: goldShimmer 4.2s ease-in-out infinite;
+
     box-shadow: 0 10px 28px rgba(247,215,116,0.22);
+
     position: relative;
     overflow: hidden;
+
+    transition: all 0.25s ease;
+
+    /* 🔥 KEY FIX: centers it without making it feel stretched */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -219,7 +240,7 @@ body {
 </div>
 
 <div id="message"></div>
-<button id="payBtn">BOOST NOW</button>
+<button id="payBtn">BOOST</button>
 
 <div class="footer">
     © 2026 CUBE. All rights reserved. • <span>UYE™</span>
