@@ -290,7 +290,7 @@ body {
     const messageEl = document.getElementById('message');
 
     // ====================== UTILITIES ======================
-    const sanitizeKey = (email) => 
+    const sanitizeKey = (email) =>
         email.trim().toLowerCase()
             .replace(/[@.]/g, '_')
             .replace(/[,\\/*[\]]/g, '_')
@@ -302,30 +302,24 @@ body {
         messageEl.style.color = isError ? '#ff4444' : '#c3f60c';
     }
 
-const boostSound = new Audio(
-  "https://raw.githubusercontent.com/golalaland/999/main/assets/benkirb-shine-1-268902.mp3"
-);
+    // ====================== AUDIO & EFFECTS ======================
+    const boostSound = new Audio("https://raw.githubusercontent.com/golalaland/999/main/assets/benkirb-shine-1-268902.mp3");
     boostSound.volume = 0.8;
 
     function createExplosion() {
-        // Flash effect
         const flash = document.createElement('div');
-        flash.style.cssText = `
-            position:fixed; inset:0; background:rgba(195,246,12,0.3);
-            z-index:9998; pointer-events:none;
-        `;
+        flash.style.cssText = `position:fixed; inset:0; background:rgba(195,246,12,0.3); z-index:9998; pointer-events:none;`;
         document.body.appendChild(flash);
         flash.animate([{ opacity: 0 }, { opacity: 0.65 }, { opacity: 0 }], { duration: 300 });
         setTimeout(() => flash.remove(), 450);
 
-        // Particles
         const colors = ['#c3f60c', '#f0ff7a', '#a0d00a', '#ffffff'];
         for (let i = 0; i < 90; i++) {
             const p = document.createElement('div');
             p.style.cssText = `
                 position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-                width:${Math.random() * 10 + 5}px; height:${Math.random() * 10 + 5}px;
-                background:${colors[Math.floor(Math.random() * colors.length)]};
+                width:${Math.random()*10+5}px; height:${Math.random()*10+5}px;
+                background:${colors[Math.floor(Math.random()*colors.length)]};
                 border-radius:50%; box-shadow:0 0 25px currentColor;
                 z-index:9999; pointer-events:none;
             `;
@@ -348,7 +342,7 @@ const boostSound = new Audio(
         }
     }
 
-    // ====================== BUTTON STATE MANAGEMENT ======================
+    // ====================== BUTTON STATE ======================
     function setLoading(isLoading) {
         if (isLoading) {
             payBtn.disabled = true;
@@ -356,7 +350,7 @@ const boostSound = new Audio(
         } else {
             payBtn.disabled = false;
             payBtn.classList.remove('loading');
-            payBtn.textContent = "BOOST NOW";
+            payBtn.textContent = "BOOST";
         }
     }
 
@@ -369,7 +363,6 @@ const boostSound = new Audio(
         const chatId = chatIdInput.value.trim().replace(/^@+/, '');
         const email = emailInput.value.trim().toLowerCase();
 
-        // Validation
         if (!chatId || !email) {
             showMessage('Please fill in all fields', true);
             return;
@@ -379,12 +372,10 @@ const boostSound = new Audio(
             return;
         }
 
-        // Start visual & audio feedback
         boostSound.currentTime = 0;
         boostSound.play().catch(() => {});
         createExplosion();
 
-        // Activate loading state (spinner only)
         setLoading(true);
         showMessage('Verifying your account...');
 
@@ -393,7 +384,6 @@ const boostSound = new Audio(
 
         try {
             const snap = await getDoc(userRef);
-
             if (!snap.exists()) {
                 showMessage('Account not found', true);
                 resetButton();
@@ -403,30 +393,44 @@ const boostSound = new Audio(
             const userData = snap.data();
 
             if (userData.chatIdLower !== chatId.toLowerCase()) {
-                showMessage('nope, details are not correct', true);
+                showMessage('Details are not correct', true);
                 resetButton();
                 return;
             }
 
             if (!userData.isVIP) {
-                showMessage('This account is not VIP, upgrade first', true);
+                showMessage('This account is not VIP — upgrade first', true);
                 resetButton();
                 return;
             }
 
-            showMessage('Verified! ...');
+            // ====================== VIP EXPIRY CHECK ======================
+            if (userData.vipExpiresAt) {
+                const expiresAt = userData.vipExpiresAt.toDate 
+                    ? userData.vipExpiresAt.toDate() 
+                    : new Date(userData.vipExpiresAt);
 
-            // ====================== PAYSTACK PAYMENT ======================
+                if (expiresAt > new Date()) {
+                    showMessage('Your VIP is still active. Redirecting...', true);
+                    
+                    // Redirect after short delay so user can read the message
+                    setTimeout(() => {
+                        window.location.href = "https://cube.xixi.live/34d505af-271a-48ec-a8a9-2f6f22d5e710";
+                    }, 1800);
+                    return;
+                }
+            }
+
+            // VIP has expired → proceed with payment
+            showMessage('Verified! Opening payment...');
+
             const handler = PaystackPop.setup({
                 key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
                 email: email,
                 amount: 10749 * 100,
                 currency: 'NGN',
                 ref: `BOOST_${Date.now()}`,
-                metadata: {
-                    chatId: chatId,
-                    type: 'renewal'
-                },
+                metadata: { chatId: chatId, type: 'renewal' },
                 callback: async (response) => {
                     showMessage('Processing your boost...');
                     try {
@@ -434,7 +438,6 @@ const boostSound = new Audio(
                         const freshUserData = freshSnap.data();
                         const inviterId = freshUserData?.invitedBy;
 
-                        // Update user
                         await updateDoc(userRef, {
                             hasPaid: true,
                             membershipLevel: increment(1),
@@ -445,35 +448,35 @@ const boostSound = new Audio(
                             lastUpdated: serverTimestamp()
                         });
 
- if (inviterId) {
-                                const inviterRef = doc(db, "users", inviterId);
-                                await updateDoc(inviterRef, {
-                                    cash: increment(2500),
-                                    cashReward: increment(2500),
-                                    points: increment(5),
-                                    lastUpdated: serverTimestamp()
-                                });
-
-                                await addDoc(collection(db, "notifications"), {
-                                    recipientId: inviterId,
-                                    type: "renewal_reward",
-                                    title: "₦2,500 Cash Reward Earned!",
-                                    message: `@${freshUserData.chatId || "someone"} just boosted your VIP tab! Enjoy your Rewards! `,
-                                    relatedUserId: docId,
-                                    relatedUserName: freshUserData.chatId || chatId,
-                                    read: false,
-                                    createdAt: serverTimestamp()
-                                });
-                            }
+                        if (inviterId) {
+                            const inviterRef = doc(db, "users", inviterId);
+                            await updateDoc(inviterRef, {
+                                cash: increment(2500),
+                                cashReward: increment(2500),
+                                points: increment(5),
+                                lastUpdated: serverTimestamp()
+                            });
 
                             await addDoc(collection(db, "notifications"), {
-                                recipientId: docId,
-                                type: "renewal_success",
-                                title: "Boost Activated! 🔥",
-                                message: "Your VIP tab has been boosted. Enjoy your new perks!",
+                                recipientId: inviterId,
+                                type: "renewal_reward",
+                                title: "₦2,500 Cash Reward Earned!",
+                                message: `@${freshUserData.chatId || "someone"} just boosted your VIP tab!`,
+                                relatedUserId: docId,
+                                relatedUserName: freshUserData.chatId || chatId,
                                 read: false,
                                 createdAt: serverTimestamp()
                             });
+                        }
+
+                        await addDoc(collection(db, "notifications"), {
+                            recipientId: docId,
+                            type: "renewal_success",
+                            title: "VIP Boost Activated! 🔥",
+                            message: "Your VIP tab has been boosted. Enjoy your new perks!",
+                            read: false,
+                            createdAt: serverTimestamp()
+                        });
 
                         showMessage('Boost Complete! 🔥');
                         setTimeout(() => {
@@ -483,7 +486,6 @@ const boostSound = new Audio(
                     } catch (err) {
                         console.error('Sync error:', err);
                         showMessage('Payment successful. Contact support for activation.', true);
-                        setTimeout(() => window.location.href = "https://visitcube.xyz", 4000);
                     }
                 },
                 onClose: () => {
