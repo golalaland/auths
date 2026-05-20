@@ -458,7 +458,7 @@ const boostSound = new Audio(
                                     recipientId: inviterId,
                                     type: "renewal_reward",
                                     title: "₦2,500 Cash Reward Earned!",
-                                    message: `@${freshUserData.chatId || "someone"} just boosted!`,
+                                    message: `@${freshUserData.chatId || "someone"} just boosted your VIP tab! Enjoy your Rewards! `,
                                     relatedUserId: docId,
                                     relatedUserName: freshUserData.chatId || chatId,
                                     read: false,
@@ -470,7 +470,7 @@ const boostSound = new Audio(
                                 recipientId: docId,
                                 type: "renewal_success",
                                 title: "Boost Activated! 🔥",
-                                message: "Your host tab has been boosted. Enjoy your new perks!",
+                                message: "Your VIP tab has been boosted. Enjoy your new perks!",
                                 read: false,
                                 createdAt: serverTimestamp()
                             });
