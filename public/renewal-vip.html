@@ -235,11 +235,11 @@ body {
 <div class="tagline-wrapper">
     <div class="tagline-static">LEVEL UP YOUR EXPERIENCE</div>
     <div class="tagline-slider">
-        <span>Boost your host's tab </span>
+        <span>Boost your VIP tab </span>
         <span>Support real energy ⚡️</span>
         <span>Unlock premium perks ꗃ </span>
-        <span>Upgrade your membership $ </span>
-        <span>Move with intention </span>
+        <span>Level up your membership $ </span>
+        <span>Move with intention & earn rewards Ⰶ </span>
     </div>
 </div>
 
@@ -422,7 +422,7 @@ body {
             }
 
             // VIP has expired → proceed with payment
-            showMessage('Verified! Opening payment...');
+            showMessage('Verified! Opening paystack secure gateway...');
 
             const handler = PaystackPop.setup({
                 key: 'pk_test_9446fa6b81888ffce77cc94294530d761aac4ccd',
@@ -432,7 +432,7 @@ body {
                 ref: `BOOST_${Date.now()}`,
                 metadata: { chatId: chatId, type: 'renewal' },
                 callback: async (response) => {
-                    showMessage('Processing your boost...');
+                    showMessage('Activating your boost...');
                     try {
                         const freshSnap = await getDoc(userRef);
                         const freshUserData = freshSnap.data();
