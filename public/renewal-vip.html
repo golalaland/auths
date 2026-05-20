@@ -444,26 +444,35 @@ body {
                             lastUpdated: serverTimestamp()
                         });
 
-                        // Reward inviter if exists
-                        if (inviterId) {
-                            const inviterRef = doc(db, "users", inviterId);
-                            await updateDoc(inviterRef, {
-                                cash: increment(2500),
-                                cashReward: increment(2500),
-                                points: increment(5),
-                                lastUpdated: serverTimestamp()
-                            });
-                        }
+ if (inviterId) {
+                                const inviterRef = doc(db, "users", inviterId);
+                                await updateDoc(inviterRef, {
+                                    cash: increment(2500),
+                                    cashReward: increment(2500),
+                                    points: increment(5),
+                                    lastUpdated: serverTimestamp()
+                                });
 
-                        // Success notification
-                        await addDoc(collection(db, "notifications"), {
-                            recipientId: docId,
-                            type: "renewal_success",
-                            title: "Boost Activated! 🔥",
-                            message: "Your host tab has been boosted. Enjoy your new perks!",
-                            read: false,
-                            createdAt: serverTimestamp()
-                        });
+                                await addDoc(collection(db, "notifications"), {
+                                    recipientId: inviterId,
+                                    type: "renewal_reward",
+                                    title: "₦2,500 Cash Reward Earned!",
+                                    message: `@${freshUserData.chatId || "someone"} just boosted!`,
+                                    relatedUserId: docId,
+                                    relatedUserName: freshUserData.chatId || chatId,
+                                    read: false,
+                                    createdAt: serverTimestamp()
+                                });
+                            }
+
+                            await addDoc(collection(db, "notifications"), {
+                                recipientId: docId,
+                                type: "renewal_success",
+                                title: "Boost Activated! 🔥",
+                                message: "Your host tab has been boosted. Enjoy your new perks!",
+                                read: false,
+                                createdAt: serverTimestamp()
+                            });
 
                         showMessage('Boost Complete! 🔥');
                         setTimeout(() => {
