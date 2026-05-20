@@ -177,21 +177,20 @@ body {
 /* 🔥 GOLD BOOST BUTTON (POLISHED + SHIMMER) */
 #payBtn {
     margin-top: 1rem;
-    width: 100%;
-    max-width: 260px;   /* 🔥 tighter = premium */
-    margin-left: auto;
-    margin-right: auto;
+    width: fit-content;
+    min-width: 180px;
+    max-width: 240px;
 
-    padding: 0.9rem 1.2rem;
+    padding: 0.75rem 1.4rem;
 
-    border-radius: 55px;
+    border-radius: 999px;
     border: none;
 
     cursor: pointer;
 
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 900;
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
 
     color: #1a1200;
@@ -205,8 +204,8 @@ body {
         #f7d774 100%
     );
 
-    background-size: 250% 100%;
-    animation: goldShimmer 4.5s ease-in-out infinite;
+    background-size: 300% 100%;
+    animation: goldShimmer 4.2s ease-in-out infinite;
 
     box-shadow: 0 10px 28px rgba(247,215,116,0.22);
 
@@ -214,6 +213,11 @@ body {
     overflow: hidden;
 
     transition: all 0.25s ease;
+
+    /* 🔥 KEY FIX: centers it without making it feel stretched */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* soft shimmer instead of aggressive scroll */
@@ -290,15 +294,15 @@ body {
 <!-- TAGLINE SLIDER -->
 <div class="tagline-wrapper">
     <div class="tagline-static">
-        Level up your experience
+   LEVEL UP YOUR EXPERIENCE
     </div>
 
     <div class="tagline-slider">
-        <span>boost your host</span>
+        <span>boost your host 𐃯</span>
         <span>support real energy ⚡</span>
-        <span>unlock premium perks</span>
-        <span>upgrade your membership</span>
-        <span>move with intention</span>
+        <span>unlock premium perks ꗃ </span>
+        <span>upgrade your membership $ </span>
+        <span>move with intention ‪‪❤︎‬ </span>
     </div>
 </div>
 <!-- FORM -->
