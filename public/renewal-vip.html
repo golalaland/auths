@@ -63,7 +63,7 @@ body {
     margin: 0.6rem 0 2.4rem;
 }
 .tagline-static{
-    font-size: 1.60rem;
+    font-size: 1.80rem;
     color: #e0ff80;
     font-weight: 600;
     margin-bottom: 10px;
@@ -135,30 +135,29 @@ body {
     font-weight:500;
 }
 #payBtn {
-    margin-top: 1.2rem;
+    margin-top: 1.3rem;
     width: fit-content;
-    min-width: 140px;           /* Smaller */
-    max-width: 180px;           /* Smaller */
-    padding: 0.85rem 2rem;      /* Balanced padding */
+    min-width: 115px;           /* Much tighter */
+    padding: 0.85rem 2.1rem;    /* Reduced horizontal padding */
     border-radius: 999px;
     border: none;
     cursor: pointer;
-    font-size: 1.0rem;          /* Slightly bigger font for better readability */
+    font-size: 1.05rem;
     font-weight: 900;
-    letter-spacing: 3px;
+    letter-spacing: 3.5px;
     text-transform: uppercase;
     color: #1a1200;
     background: linear-gradient(
         120deg,
         #f7d774 0%,
-        #fff3b0 25%,
+        #fff3b0 30%,
         #caa12b 50%,
-        #fff3b0 75%,
+        #fff3b0 70%,
         #f7d774 100%
     );
     background-size: 300% 100%;
-    animation: goldShimmer 4.2s ease-in-out infinite;
-    box-shadow: 0 10px 28px rgba(247,215,116,0.25);
+    animation: goldShimmer 4s ease-in-out infinite;
+    box-shadow: 0 10px 30px rgba(247,215,116,0.28);
     position: relative;
     overflow: hidden;
     display: inline-flex;
@@ -168,22 +167,22 @@ body {
 }
 
 #payBtn:hover {
-    transform: translateY(-4px) scale(1.06);
-    box-shadow: 0 20px 55px rgba(247,215,116,0.35);
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 22px 60px rgba(247,215,116,0.4);
 }
 
 #payBtn:disabled {
-    opacity: 0.65;
+    opacity: 0.7;
     cursor: not-allowed;
     animation: none;
 }
 
-/* Spinner adjustment for smaller button */
+/* ==================== SPINNER FOR SMALL BUTTON ==================== */
 #payBtn.loading {
     pointer-events: none;
     color: transparent !important;
-    min-width: 52px;
-    padding: 0.85rem 1.8rem;
+    min-width: 55px;
+    padding: 0.85rem 1.6rem;
 }
 
 #payBtn.loading::before {
@@ -192,12 +191,12 @@ body {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(26, 18, 0, 0.3);
+    width: 19px;
+    height: 19px;
+    border: 3px solid rgba(26, 18, 0, 0.35);
     border-top: 3px solid #1a1200;
     border-radius: 50%;
-    animation: spin 0.85s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -237,7 +236,7 @@ body {
     <div class="tagline-static">LEVEL UP YOUR EXPERIENCE</div>
     <div class="tagline-slider">
         <span>Boost your host </span>
-        <span>Support real energy ⚡︎ </span>
+        <span>Support real energy ⚡️</span>
         <span>Unlock premium perks ꗃ </span>
         <span>Upgrade your membership $ </span>
         <span>Move with intention </span>
