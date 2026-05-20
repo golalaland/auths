@@ -451,7 +451,31 @@ body {
     </div>
 </div>
 
-<!-- FEATURED HOST -->
+<!-- FORM -->
+<div class="form-container">
+
+    <div class="form-group">
+        <input type="text" placeholder="@username" id="chatId">
+    </div>
+
+    <div class="form-group">
+        <input type="email" placeholder="Email Address" id="email">
+    </div>
+
+</div>
+
+<!-- MESSAGE -->
+<div id="message"></div>
+
+<!-- BUTTON -->
+<button id="payBtn">BOOST</button>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 CUBE. All rights reserved. • <span>UYE™</span>
+</div>
+
+    <!-- FEATURED HOST -->
 <section class="featured-host-wrap">
 
     <div class="featured-label">
@@ -496,30 +520,6 @@ body {
 
     </div>
 </section>
-    
-<!-- FORM -->
-<div class="form-container">
-
-    <div class="form-group">
-        <input type="text" placeholder="@username" id="chatId">
-    </div>
-
-    <div class="form-group">
-        <input type="email" placeholder="Email Address" id="email">
-    </div>
-
-</div>
-
-<!-- MESSAGE -->
-<div id="message"></div>
-
-<!-- BUTTON -->
-<button id="payBtn">BOOST</button>
-
-<!-- FOOTER -->
-<div class="footer">
-    © 2026 CUBE. All rights reserved. • <span>UYE™</span>
-</div>
 
     <script src="https://js.paystack.co/v2/inline.js"></script>
     <script type="module">
@@ -792,7 +792,6 @@ randomHost.note;
             payBtn.disabled = false;
             payBtn.classList.remove('loading');
         }
-
     </script>
 </body>
 </html>
