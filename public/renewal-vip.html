@@ -403,18 +403,18 @@ const boostSound = new Audio(
             const userData = snap.data();
 
             if (userData.chatIdLower !== chatId.toLowerCase()) {
-                showMessage('Username does not match our records', true);
+                showMessage('nope, details are not correct', true);
                 resetButton();
                 return;
             }
 
             if (!userData.isVIP) {
-                showMessage('This account is not VIP — upgrade first', true);
+                showMessage('This account is not VIP, upgrade first', true);
                 resetButton();
                 return;
             }
 
-            showMessage('Verified! Opening payment...');
+            showMessage('Verified! ...');
 
             // ====================== PAYSTACK PAYMENT ======================
             const handler = PaystackPop.setup({
