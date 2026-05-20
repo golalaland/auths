@@ -421,6 +421,123 @@ body {
     font-size:0.68rem;
     letter-spacing:1px;
 }
+/* ====================== FEATURED HOST ====================== */
+.featured-host-wrap {
+    margin-top: 5.5rem;           /* Good breathing space after footer */
+    padding-bottom: 3rem;
+    width: 100%;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.featured-label {
+    font-family: 'Bungee', sans-serif;
+    font-size: 1.65rem;           /* Made bigger as requested */
+    font-weight: 400;
+    text-align: center;
+    color: #c3f60c;
+    letter-spacing: 6px;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 0 25px rgba(195, 246, 12, 0.6);
+    text-transform: uppercase;
+}
+
+/* Featured Host Card */
+.featured-host-card {
+    background: rgba(10, 20, 5, 0.6);
+    border: 2px solid rgba(195, 246, 12, 0.3);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6),
+                0 0 30px rgba(195, 246, 12, 0.15);
+    transition: transform 0.4s ease;
+}
+
+.featured-host-card:hover {
+    transform: translateY(-8px);
+}
+
+.featured-image-wrap {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.featured-host-card:hover .featured-image {
+    transform: scale(1.08);
+}
+
+.featured-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(10,20,5,0.9) 95%);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #c3f60c;
+    color: #000;
+    font-size: 0.85rem;
+    font-weight: 900;
+    padding: 6px 14px;
+    border-radius: 30px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(195, 246, 12, 0.4);
+}
+
+.featured-content {
+    padding: 1.4rem 1.6rem 1.8rem;
+}
+
+.featured-mini {
+    font-size: 0.8rem;
+    color: #a0d00a;
+    letter-spacing: 2px;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.featured-name {
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 0.6rem;
+    line-height: 1;
+}
+
+.featured-note {
+    font-size: 1.02rem;
+    color: #ddd;
+    line-height: 1.45;
+    margin-bottom: 1.3rem;
+    font-style: italic;
+}
+
+.featured-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.featured-tags span {
+    background: rgba(195, 246, 12, 0.15);
+    color: #c3f60c;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid rgba(195, 246, 12, 0.3);
+}
 </style>
 </head>
 
@@ -492,7 +609,7 @@ body {
             <div class="featured-overlay"></div>
 
             <div class="featured-badge">
-                LIVE TONIGHT
+                MEMBER
             </div>
         </div>
 
@@ -512,8 +629,8 @@ body {
             </div>
 
             <div class="featured-tags">
-                <span>VIP</span>
-                <span>LAGOS</span>
+                <span></span>
+                <span>FEMALE</span>
                 <span>HOST</span>
             </div>
 
