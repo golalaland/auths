@@ -3,171 +3,150 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dettyverse Admin Dashboard</title>
+  <title>Dettyverse Admin - Content Management</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; background: #0a0a0a; color: #fff; padding: 20px; margin: 0; }
-    .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab { padding: 10px 20px; background: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: #0a0a0a; 
+      color: #fff; 
+      padding: 20px; 
+      margin: 0; 
+    }
+    .tab-container { 
+      display: flex; 
+      gap: 12px; 
+      margin-bottom: 25px; 
+      flex-wrap: wrap; 
+    }
+    .tab { 
+      padding: 12px 24px; 
+      background: #333; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.3s; 
+    }
     .tab:hover { background: #444; }
-    .tab.active { background: #c3f60c; color: #000; font-weight: bold; }
-    .section { display: none; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .tab.active { 
+      background: #c3f60c; 
+      color: #000; 
+      font-weight: bold; 
+    }
+    .section { 
+      display: none; 
+      background: #1a1a1a; 
+      padding: 25px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
+    }
     .section.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px; border: 1px solid #333; text-align: left; }
-    th { background: #222; }
-    input, select, button, textarea { padding: 10px; margin: 5px; border-radius: 8px; border: none; font-size: 1rem; }
-    button { background: #c3f60c; color: #000; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+
+    input, textarea, button { 
+      padding: 10px; 
+      margin: 5px 5px 10px 0; 
+      border-radius: 8px; 
+      border: none; 
+      font-size: 1rem; 
+    }
+    button { 
+      background: #c3f60c; 
+      color: #000; 
+      cursor: pointer; 
+      font-weight: bold; 
+    }
     button:hover { transform: scale(1.05); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    #loaderOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    #loaderText { color: #c3f60c; font-size: 18px; font-weight: bold; }
-
-    #dopeAlert { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(16px); display: none; align-items: center; justify-content: center; z-index: 999999; }
-    #dopeAlertContent { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4); border: 2px solid #c3f60c; }
+    #loaderOverlay { 
+      position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
+      display: none; align-items: center; justify-content: center; z-index: 9999; 
+    }
+    #dopeAlert { 
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
+      backdrop-filter: blur(16px); display: none; align-items: center; 
+      justify-content: center; z-index: 999999; 
+    }
+    #dopeAlertContent { 
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); 
+      padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%; 
+      text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4); 
+      border: 2px solid #c3f60c; 
+    }
 
     .card-preview {
-      background: #111; border-radius: 12px; padding: 15px; margin: 12px 0; border: 1px solid #333;
+      background: #111; 
+      border-radius: 12px; 
+      padding: 15px; 
+      margin: 12px 0; 
+      border: 1px solid #333;
     }
     .card-preview h4 { margin: 0 0 8px; color: #c3f60c; }
-    .event-actions button { margin-right: 8px; font-size: 0.9rem; padding: 6px 12px; }
+    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
 
   <div id="loaderOverlay"><div id="loaderText">Working...</div></div>
 
-  <div id="adminGate">
-    <h2>DET TYVERSE ADMIN LOGIN</h2>
-    <input id="adminEmail" type="email" placeholder="Admin Email">
-    <button id="adminCheckBtn">Login</button>
-    <p id="adminGateMsg"></p>
+  <h1>Dettyverse Content Management</h1>
+
+  <div class="tab-container">
+    <div class="tab active" data-tab="upcoming">Upcoming Events</div>
+    <div class="tab" data-tab="tvshows">TV Shows</div>
   </div>
 
-  <div id="adminPanel" style="display: none;">
-    <h1>DET TYVERSE MASTER ADMIN DASHBOARD</h1>
-    <button id="logoutBtn">Logout</button>
-
-    <div class="tab-container">
-      <div class="tab active" data-tab="users">Users Management</div>
-      <div class="tab" data-tab="hosts">Hosts Management</div>
-      <div class="tab" data-tab="vips">VIPs Management</div>
-      <div class="tab" data-tab="upcoming">Upcoming Events</div>
-      <div class="tab" data-tab="tvshows">TV Shows</div>
-      <div class="tab" data-tab="exports">Exports & Filters</div>
+  <!-- DOPE ALERT -->
+  <div id="dopeAlert">
+    <div id="dopeAlertContent">
+      <div id="dopeIcon">✅</div>
+      <h2 id="dopeTitle">Success!</h2>
+      <p id="dopeMessage">Operation completed successfully.</p>
+      <button id="dopeClose">GOT IT</button>
     </div>
+  </div>
 
-    <!-- Dope Alert -->
-    <div id="dopeAlert">
-      <div id="dopeAlertContent">
-        <div id="dopeIcon">✅</div>
-        <h2 id="dopeTitle">Success!</h2>
-        <p id="dopeMessage">Operation completed successfully.</p>
-        <button id="dopeClose">GOT IT</button>
+  <!-- UPCOMING EVENTS SECTION -->
+  <div id="upcoming" class="section active">
+    <h2>Manage Upcoming Events / Shows</h2>
+    <p>Changes here will appear in the live modal / homepage posters.</p>
+    <button id="fetch-upcoming">Refresh List</button>
+    <button id="add-new-event">+ Add New Event</button>
+    <div id="events-container" style="margin-top: 20px;"></div>
+
+    <template id="event-form-template">
+      <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
+        <input type="text" placeholder="Title" class="event-title" style="width:100%; margin-bottom:8px;">
+        <input type="text" placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time" style="width:100%; margin-bottom:8px;">
+        <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
+        <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
+        <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
+        <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
+        <button class="cancel-event-btn">Cancel</button>
       </div>
-    </div>
+    </template>
+  </div>
 
-    <!-- USERS -->
-    <div id="users" class="section active">
-      <h2>All Users</h2>
-      <div class="filter-container">
-        <input id="user-search" type="text" placeholder="Search by ChatID/Email/Phone">
-        <select id="user-filter-type">
-          <option value="all">All</option>
-          <option value="isHost">Hosts Only</option>
-          <option value="isVIP">VIPs Only</option>
-        </select>
-        <button id="fetch-users">Refresh Users</button>
+  <!-- TV SHOWS SECTION -->
+  <div id="tvshows" class="section">
+    <h2>TV Shows / Video Lounge Management</h2>
+    <p>Manage videos that appear in the Video Lounge for logged-in users.</p>
+    <button id="fetch-tvshows">Refresh List</button>
+    <button id="add-new-tvshow">+ Add New Video</button>
+    <div id="tvshows-container" style="margin-top: 20px;"></div>
+
+    <template id="tvshow-form-template">
+      <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
+        <input type="text" placeholder="Title" class="tv-title" style="width:100%; margin-bottom:8px;">
+        <input type="text" placeholder="Channel (e.g. CH 3)" class="tv-channel" style="width:100%; margin-bottom:8px;">
+        <input type="url" placeholder="Direct MP4 Video URL" class="tv-url" style="width:100%; margin-bottom:12px;">
+        <button class="save-tvshow-btn" style="background:#c3f60c; color:#000;">Save Video</button>
+        <button class="cancel-tvshow-btn">Cancel</button>
       </div>
-      <table id="users-table">
-        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Has Paid</th><th>First/Last Paid</th><th>Referred Users</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- HOSTS -->
-    <div id="hosts" class="section">
-      <h2>Hosts Management</h2>
-      <button id="fetch-hosts">Refresh Hosts</button>
-      <table id="hosts-table">
-        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Hive Name</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- VIPS -->
-    <div id="vips" class="section">
-      <h2>VIPs Management</h2>
-      <button id="fetch-vips">Refresh VIPs</button>
-      <table id="vips-table">
-        <thead><tr><th>ChatID</th><th>Email</th><th>Phone</th><th>Has Paid</th><th>VIP Expires</th><th>Cash</th><th>Stars</th><th>Actions</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- UPCOMING EVENTS -->
-    <div id="upcoming" class="section">
-      <h2>Manage Upcoming Events / Shows</h2>
-      <p>Changes here will appear in the live modal / homepage posters.</p>
-      <button id="fetch-upcoming">Refresh List</button>
-      <button id="add-new-event">+ Add New Event</button>
-      <div id="events-container" style="margin-top: 20px;"></div>
-
-      <template id="event-form-template">
-        <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
-          <input type="text" placeholder="Title" class="event-title" style="width:100%; margin-bottom:8px;">
-          <input type="text" placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time" style="width:100%; margin-bottom:8px;">
-          <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
-          <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
-          <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
-          <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
-          <button class="cancel-event-btn">Cancel</button>
-        </div>
-      </template>
-    </div>
-
-    <!-- TV SHOWS -->
-    <div id="tvshows" class="section">
-      <h2>TV Shows / Video Lounge Management</h2>
-      <p>Manage videos that appear in the Video Lounge for logged-in users.</p>
-      <button id="fetch-tvshows">Refresh List</button>
-      <button id="add-new-tvshow">+ Add New Video</button>
-      <div id="tvshows-container" style="margin-top: 20px;"></div>
-
-      <template id="tvshow-form-template">
-        <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
-          <input type="text" placeholder="Title" class="tv-title" style="width:100%; margin-bottom:8px;">
-          <input type="text" placeholder="Channel (e.g. CH 3)" class="tv-channel" style="width:100%; margin-bottom:8px;">
-          <input type="url" placeholder="Direct MP4 Video URL" class="tv-url" style="width:100%; margin-bottom:12px;">
-          <button class="save-tvshow-btn" style="background:#c3f60c; color:#000;">Save Video</button>
-          <button class="cancel-tvshow-btn">Cancel</button>
-        </div>
-      </template>
-    </div>
-
-    <!-- EXPORTS -->
-    <div id="exports" class="section">
-      <h2>Exports & Filters</h2>
-      <select id="export-type">
-        <option value="emails">Export Emails</option>
-        <option value="phones">Export Phones</option>
-      </select>
-      <select id="export-filter">
-        <option value="all">All Users</option>
-        <option value="hosts">Hosts Only</option>
-        <option value="vips">VIPs Only</option>
-        <option value="paid">Paid Users Only</option>
-      </select>
-      <button id="export-data">Export CSV</button>
-      <textarea id="export-output" placeholder="Exported data will appear here (copy-paste)" style="width:100%; height:200px; margin-top:20px;"></textarea>
-    </div>
+    </template>
   </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, query, where, orderBy,
-    doc, updateDoc, deleteDoc, getDoc, increment
+    getFirestore, doc, updateDoc, getDoc
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -176,25 +155,18 @@
     projectId: "dettyverse",
     storageBucket: "dettyverse.firebasestorage.app",
     messagingSenderId: "1036459652488",
-    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
-    measurementId: "G-NX2KWZW85V"
+    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const adminGate = document.getElementById("adminGate");
-  const adminPanel = document.getElementById("adminPanel");
-  const adminEmailInput = document.getElementById("adminEmail");
-  const adminCheckBtn = document.getElementById("adminCheckBtn");
-  const adminGateMsg = document.getElementById("adminGateMsg");
-  const logoutBtn = document.getElementById("logoutBtn");
   const loaderOverlay = document.getElementById("loaderOverlay");
   const loaderText = document.getElementById("loaderText");
   const dopeAlert = document.getElementById("dopeAlert");
-  const dopeIcon = document.getElementById("dopeIcon");
   const dopeTitle = document.getElementById("dopeTitle");
   const dopeMessage = document.getElementById("dopeMessage");
+  const dopeIcon = document.getElementById("dopeIcon");
   const dopeClose = document.getElementById("dopeClose");
 
   function showLoader(text = "Working...") {
@@ -211,16 +183,7 @@
     dopeMessage.textContent = message;
     dopeIcon.textContent = icon;
     dopeAlert.style.display = "flex";
-    setTimeout(() => {
-      dopeAlert.style.opacity = "1";
-      dopeAlert.querySelector('#dopeAlertContent').style.transform = "scale(1)";
-      dopeIcon.style.opacity = "1";
-      dopeIcon.style.transform = "translateY(0)";
-      dopeTitle.style.opacity = "1";
-      dopeTitle.style.transform = "translateY(0)";
-      dopeMessage.style.opacity = "1";
-      dopeMessage.style.transform = "translateY(0)";
-    }, 50);
+    setTimeout(() => dopeAlert.style.opacity = "1", 50);
   }
 
   dopeClose.onclick = () => {
@@ -228,132 +191,15 @@
     setTimeout(() => dopeAlert.style.display = "none", 400);
   };
 
-  // Admin Login
-  adminCheckBtn.onclick = async () => {
-    const email = adminEmailInput.value.trim().toLowerCase();
-    if (!email) return;
-    showLoader("Checking admin access...");
-    try {
-      const docId = email.replace(/[@.]/g, '_').replace(/[,\\/*[\]]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-      const userDoc = await getDoc(doc(db, "users", docId));
-      if (userDoc.exists() && userDoc.data().isAdmin) {
-        localStorage.setItem('dettyAdmin', email);
-        adminGate.style.display = "none";
-        adminPanel.style.display = "block";
-        showDopeAlert("Access Granted", "Welcome, Admin!");
-      } else {
-        adminGateMsg.textContent = "Access Denied: Not an admin account.";
-      }
-    } catch (err) {
-      console.error(err);
-      adminGateMsg.textContent = "Error checking admin status.";
-    }
-    hideLoader();
-  };
-
-  const storedAdmin = localStorage.getItem('dettyAdmin');
-  if (storedAdmin) {
-    adminEmailInput.value = storedAdmin;
-    adminCheckBtn.click();
-  }
-
-  logoutBtn.onclick = () => {
-    localStorage.removeItem('dettyAdmin');
-    location.reload();
-  };
-
   // Tab Switching
   document.querySelectorAll('.tab').forEach(tab => {
-    tab.onclick = () => {
+    tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById(tab.dataset.tab).classList.add('active');
-    };
+    });
   });
-
-  // ================== USERS, HOSTS, VIPS, EXPORTS (kept as you had) ==================
-  // ... [Your existing users, hosts, vips, exports code remains unchanged] ...
-
-  // Fetch Users Function (kept)
-  async function fetchUsers(filterType = 'all', search = '') {
-    showLoader("Fetching users...");
-    let q = query(collection(db, "users"), orderBy("createdAt", "desc"));
-    if (filterType === 'isHost') q = query(q, where("isHost", "==", true));
-    if (filterType === 'isVIP') q = query(q, where("isVIP", "==", true));
-    const snapshot = await getDocs(q);
-    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    let filtered = users;
-    if (search) {
-      const lowSearch = search.toLowerCase();
-      filtered = users.filter(u => 
-        u.chatIdLower?.includes(lowSearch) || u.email?.toLowerCase().includes(lowSearch) || u.phone?.includes(lowSearch)
-      );
-    }
-    hideLoader();
-    return filtered;
-  }
-
-  async function renderUsersTable(users) {
-    const tbody = document.querySelector('#users-table tbody');
-    tbody.innerHTML = '';
-    for (const user of users) {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${user.chatId || 'N/A'}</td>
-        <td>${user.email || 'N/A'}</td>
-        <td>${user.phone || 'N/A'}</td>
-        <td>${user.hasPaid ? 'Yes' : 'No'}</td>
-        <td>${user.vipActivatedAt?.toDate()?.toLocaleDateString() || 'N/A'} / ${user.vipExpiresAt?.toDate()?.toLocaleDateString() || 'N/A'}</td>
-        <td><button class="view-referrals" data-id="${user.id}">View Referrals</button></td>
-        <td>${user.cash || 0}</td>
-        <td>${user.stars || 0}</td>
-        <td>
-          <button class="edit-balance" data-id="${user.id}">Edit Balances</button>
-          <button class="suspend-btn" data-id="${user.id}">Suspend</button>
-          <button class="delete-btn" data-id="${user.id}">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(row);
-      // (Event listeners for actions can be expanded if needed)
-    }
-  }
-
-  async function fetchAndRenderUsers() {
-    const filter = document.getElementById('user-filter-type').value;
-    const search = document.getElementById('user-search').value;
-    const users = await fetchUsers(filter, search);
-    renderUsersTable(users);
-  }
-
-  document.getElementById('fetch-users').onclick = fetchAndRenderUsers;
-  document.getElementById('user-search').oninput = fetchAndRenderUsers;
-
-  // Fetch Hosts & VIPs (basic)
-  document.getElementById('fetch-hosts').onclick = async () => {
-    const hosts = await fetchUsers('isHost');
-    // Render logic can be expanded
-  };
-
-  document.getElementById('fetch-vips').onclick = async () => {
-    const vips = await fetchUsers('isVIP');
-    // Render logic can be expanded
-  };
-
-  // Export
-  document.getElementById('export-data').onclick = async () => {
-    showLoader("Exporting data...");
-    const type = document.getElementById('export-type').value;
-    const filter = document.getElementById('export-filter').value;
-    let users = await fetchUsers(filter === 'all' ? 'all' : filter === 'hosts' ? 'isHost' : filter === 'vips' ? 'isVIP' : 'all');
-    if (filter === 'paid') users = users.filter(u => u.hasPaid);
-    const data = users.map(u => type === 'emails' ? u.email : u.phone).filter(Boolean).join('\n');
-    document.getElementById('export-output').value = data;
-    hideLoader();
-    showDopeAlert("Exported", "Data ready to copy!");
-  };
-
-  fetchAndRenderUsers();
 
   // ================== UPCOMING EVENTS ==================
   const eventsContainer = document.getElementById('events-container');
@@ -377,7 +223,7 @@
 
     events.forEach((event, index) => {
       const card = document.createElement('div');
-      card.className = 'event-card-preview';
+      card.className = 'card-preview';
       card.innerHTML = `
         <h4>${event.title || 'No title'}</h4>
         <p><strong>Time:</strong> ${event.time || '-'}</p>
@@ -390,7 +236,7 @@
         </div>
       `;
 
-      card.querySelector('.edit-event').onclick = () => editEvent(index, event);
+      card.querySelector('.edit-event').onclick = () => editEvent(index);
       card.querySelector('.delete-event').onclick = () => deleteEvent(index);
       eventsContainer.appendChild(card);
     });
@@ -401,28 +247,79 @@
     renderEvents(events);
   }
 
-  async function editEvent(index, event) {
-    // Implementation similar to TV Show edit
-    // (Full code available if needed)
-    loadAndRenderEvents();
+  async function editEvent(index) {
+    const events = await getUpcomingEvents();
+    const event = events[index];
+    const form = eventFormTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+
+    form.querySelector('.event-title').value = event.title || '';
+    form.querySelector('.event-time').value = event.time || '';
+    form.querySelector('.event-desc').value = event.desc || '';
+    form.querySelector('.event-image').value = event.imageUrl || '';
+    form.querySelector('.event-link').value = event.link || '';
+
+    form.querySelector('.save-event-btn').onclick = async () => {
+      const updated = {
+        title: form.querySelector('.event-title').value.trim(),
+        time: form.querySelector('.event-time').value.trim(),
+        desc: form.querySelector('.event-desc').value.trim(),
+        imageUrl: form.querySelector('.event-image').value.trim(),
+        link: form.querySelector('.event-link').value.trim()
+      };
+
+      if (!updated.title || !updated.time || !updated.desc || !updated.imageUrl) {
+        alert("Title, Time, Description and Image URL are required.");
+        return;
+      }
+
+      events[index] = updated;
+      await updateDoc(doc(db, "settings", "live"), { upcomingEvents: events });
+      showDopeAlert("Updated", "Event updated successfully!");
+      loadAndRenderEvents();
+    };
+
+    form.querySelector('.cancel-event-btn').onclick = () => form.remove();
+    eventsContainer.prepend(form);
   }
 
   async function deleteEvent(index) {
     if (!confirm("Delete this event?")) return;
-    const current = await getUpcomingEvents();
-    current.splice(index, 1);
-    await updateDoc(doc(db, "settings", "live"), { upcomingEvents: current });
+    const events = await getUpcomingEvents();
+    events.splice(index, 1);
+    await updateDoc(doc(db, "settings", "live"), { upcomingEvents: events });
     showDopeAlert("Deleted", "Event removed.");
     loadAndRenderEvents();
   }
 
   addNewEventBtn.onclick = () => {
-    // Your existing add new event logic
-    loadAndRenderEvents();
+    const form = eventFormTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+    form.querySelector('.save-event-btn').textContent = "Create Event";
+
+    form.querySelector('.save-event-btn').onclick = async () => {
+      const newEvent = {
+        title: form.querySelector('.event-title').value.trim(),
+        time: form.querySelector('.event-time').value.trim(),
+        desc: form.querySelector('.event-desc').value.trim(),
+        imageUrl: form.querySelector('.event-image').value.trim(),
+        link: form.querySelector('.event-link').value.trim()
+      };
+
+      if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
+        alert("Title, Time, Description and Image URL are required.");
+        return;
+      }
+
+      const current = await getUpcomingEvents();
+      current.push(newEvent);
+      await updateDoc(doc(db, "settings", "live"), { upcomingEvents: current });
+      showDopeAlert("Added", "New event created!");
+      loadAndRenderEvents();
+    };
+
+    eventsContainer.prepend(form);
   };
 
   fetchUpcomingBtn.onclick = loadAndRenderEvents;
-  document.querySelector('[data-tab="upcoming"]').onclick = loadAndRenderEvents;
 
   // ================== TV SHOWS ==================
   const tvshowsContainer = document.getElementById('tvshows-container');
@@ -491,7 +388,6 @@
 
       shows[index] = updated;
       await updateDoc(doc(db, "settings", "live"), { tvShows: shows });
-      hideLoader();
       showDopeAlert("Updated", "Video updated successfully!");
       loadAndRenderTVShows();
     };
@@ -535,7 +431,6 @@
   };
 
   fetchTVShowsBtn.onclick = loadAndRenderTVShows;
-  document.querySelector('[data-tab="tvshows"]').onclick = loadAndRenderTVShows;
 
   // Initial Load
   loadAndRenderEvents();
