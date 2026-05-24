@@ -69,13 +69,14 @@
   <div id="adminPanel" style="display: none;">
     <h1>DET TYVERSE MASTER ADMIN DASHBOARD</h1>
     <button id="logoutBtn">Logout</button>
-    <div class="tab-container">
-      <div class="tab active" data-tab="users">Users Management</div>
-      <div class="tab" data-tab="hosts">Hosts Management</div>
-      <div class="tab" data-tab="vips">VIPs Management</div>
-      <div class="tab" data-tab="upcoming">Upcoming Events</div>
-      <div class="tab" data-tab="exports">Exports & Filters</div>
-    </div>
+   <div class="tab-container">
+  <div class="tab active" data-tab="users">Users</div>
+  <div class="tab" data-tab="hosts">Hosts</div>
+  <div class="tab" data-tab="vips">VIPs</div>
+  <div class="tab" data-tab="upcoming">Upcoming Events</div>
+  <div class="tab" data-tab="tvshows">TV Shows</div>   <!-- NEW -->
+  <div class="tab" data-tab="exports">Exports</div>
+</div>
     <!-- Dope Alert -->
     <div id="dopeAlert">
       <div id="dopeAlertContent">
@@ -126,6 +127,7 @@
 
   <div id="events-container" style="margin-top: 20px;"></div>
 
+
   <!-- Hidden template for new/edit form -->
   <template id="event-form-template">
     <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
@@ -139,6 +141,29 @@
     </div>
   </template>
 </div>
+
+          <!-- === TV SHOWS MANAGEMENT (NEW SECTION) === -->
+<div id="tvshows" class="section">
+  <h2>TV Shows / Video Lounge Management</h2>
+  <p>Changes here will appear in the Video Lounge for logged-in users.</p>
+  
+  <button id="fetch-tvshows">Refresh List</button>
+  <button id="add-new-tvshow">+ Add New Video</button>
+
+  <div id="tvshows-container" style="margin-top: 20px;"></div>
+
+  <!-- Template -->
+  <template id="tvshow-form-template">
+    <div class="edit-event-form" style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
+      <input type="text" placeholder="Title" class="tv-title" style="width:100%; margin-bottom:8px;">
+      <input type="text" placeholder="Channel (e.g. CH 3)" class="tv-channel" style="width:100%; margin-bottom:8px;">
+      <input type="url" placeholder="Video URL (MP4)" class="tv-url" style="width:100%; margin-bottom:12px;">
+      <button class="save-tvshow-btn" style="background:#c3f60c; color:#000;">Save Video</button>
+      <button class="cancel-tvshow-btn">Cancel</button>
+    </div>
+  </template>
+</div>
+    
     <div id="exports" class="section">
       <h2>Exports & Filters</h2>
       <select id="export-type">
@@ -609,6 +634,134 @@ fetchUpcomingBtn.onclick = loadAndRenderEvents;
 document.querySelector('[data-tab="upcoming"]').onclick = (e) => {
   // existing tab logic...
   loadAndRenderEvents();
+};
+
+// ====================== TV SHOWS MANAGEMENT ======================
+const tvshowsSection = document.getElementById('tvshows');
+const tvshowsContainer = document.getElementById('tvshows-container');
+const addNewTVShowBtn = document.getElementById('add-new-tvshow');
+const fetchTVShowsBtn = document.getElementById('fetch-tvshows');
+const tvFormTemplate = document.getElementById('tvshow-form-template');
+
+async function getTVShows() {
+  showLoader("Loading TV Shows...");
+  const docRef = doc(db, "settings", "live");
+  const snap = await getDoc(docRef);
+  hideLoader();
+  return snap.exists() ? (snap.data().tvShows || []) : [];
+}
+
+function renderTVShows(tvShows) {
+  tvshowsContainer.innerHTML = '';
+  if (tvShows.length === 0) {
+    tvshowsContainer.innerHTML = '<p style="color:#888;">No videos yet. Add some!</p>';
+    return;
+  }
+
+  tvShows.forEach((show, index) => {
+    const card = document.createElement('div');
+    card.className = 'event-card-preview';
+    card.innerHTML = `
+      <h4>${show.title}</h4>
+      <p><strong>Channel:</strong> ${show.channel}</p>
+      <p><strong>URL:</strong> <a href="${show.url}" target="_blank">View Video</a></p>
+      <div class="event-actions">
+        <button class="edit-tvshow" data-index="${index}">Edit</button>
+        <button class="delete-tvshow" data-index="${index}">Delete</button>
+      </div>
+    `;
+
+    // Edit
+    card.querySelector('.edit-tvshow').onclick = () => {
+      document.querySelectorAll('.edit-event-form').forEach(f => f.remove());
+      const form = tvFormTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+
+      form.querySelector('.tv-title').value = show.title || '';
+      form.querySelector('.tv-channel').value = show.channel || '';
+      form.querySelector('.tv-url').value = show.url || '';
+
+      const saveBtn = form.querySelector('.save-tvshow-btn');
+      saveBtn.textContent = "Update Video";
+      saveBtn.onclick = async () => {
+        const updated = {
+          title: form.querySelector('.tv-title').value.trim(),
+          channel: form.querySelector('.tv-channel').value.trim(),
+          url: form.querySelector('.tv-url').value.trim()
+        };
+
+        if (!updated.title || !updated.url) {
+          alert("Title and Video URL are required.");
+          return;
+        }
+
+        showLoader("Updating...");
+        const current = await getTVShows();
+        current[index] = updated;
+        await updateDoc(doc(db, "settings", "live"), { tvShows: current });
+        hideLoader();
+        showDopeAlert("Updated", "Video updated successfully!");
+        loadAndRenderTVShows();
+      };
+
+      const cancelBtn = form.querySelector('.cancel-tvshow-btn');
+      cancelBtn.onclick = () => form.remove();
+      card.after(form);
+    };
+
+    // Delete
+    card.querySelector('.delete-tvshow').onclick = async () => {
+      if (!confirm("Delete this video?")) return;
+      showLoader("Deleting...");
+      const current = await getTVShows();
+      current.splice(index, 1);
+      await updateDoc(doc(db, "settings", "live"), { tvShows: current });
+      hideLoader();
+      showDopeAlert("Deleted", "Video removed.");
+      loadAndRenderTVShows();
+    };
+
+    tvshowsContainer.appendChild(card);
+  });
+}
+
+async function loadAndRenderTVShows() {
+  const shows = await getTVShows();
+  renderTVShows(shows);
+}
+
+addNewTVShowBtn.onclick = () => {
+  document.querySelectorAll('.edit-event-form').forEach(f => f.remove());
+  const form = tvFormTemplate.content.cloneNode(true).querySelector('.edit-event-form');
+
+  form.querySelector('.save-tvshow-btn').onclick = async () => {
+    const newShow = {
+      title: form.querySelector('.tv-title').value.trim(),
+      channel: form.querySelector('.tv-channel').value.trim(),
+      url: form.querySelector('.tv-url').value.trim()
+    };
+
+    if (!newShow.title || !newShow.url) {
+      alert("Title and Video URL are required.");
+      return;
+    }
+
+    showLoader("Adding video...");
+    const current = await getTVShows();
+    current.push(newShow);
+    await updateDoc(doc(db, "settings", "live"), { tvShows: current });
+    hideLoader();
+    showDopeAlert("Added", "New video added to lounge!");
+    loadAndRenderTVShows();
+  };
+
+  tvshowsContainer.prepend(form);
+};
+
+fetchTVShowsBtn.onclick = loadAndRenderTVShows;
+
+// Auto-load when tab is clicked
+document.querySelector('[data-tab="tvshows"]').onclick = () => {
+  loadAndRenderTVShows();
 };
 </script>
 </body>
