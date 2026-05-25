@@ -116,11 +116,7 @@
         <input type="text" placeholder="Title" class="event-title" style="width:100%; margin-bottom:8px;">
         <input type="text" placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time" style="width:100%; margin-bottom:8px;">
         <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
-       <textarea
-  class="tv-urls"
-  placeholder="One video URL per line"
-  style="width:100%;height:120px;margin-bottom:12px;"
-></textarea>
+        <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
         <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
         <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
         <button class="cancel-event-btn">Cancel</button>
@@ -272,15 +268,7 @@
       const updated = {
         title: form.querySelector('.tv-title').value.trim(),
         channel: form.querySelector('.tv-channel').value.trim(),
-      videos: form.querySelector('.tv-urls')
-  .value
-  .split('\n')
-  .map(v => v.trim())
-  .filter(Boolean)
-  .map((url, i) => ({
-    title: `Clip ${i + 1}`,
-    url
-  }))
+        url: form.querySelector('.tv-url').value.trim()
       };
 
       if (!updated.title || !updated.url) {
@@ -316,15 +304,7 @@
       const newShow = {
         title: form.querySelector('.tv-title').value.trim(),
         channel: form.querySelector('.tv-channel').value.trim(),
-       videos: form.querySelector('.tv-urls')
-  .value
-  .split('\n')
-  .map(v => v.trim())
-  .filter(Boolean)
-  .map((url, i) => ({
-    title: `Clip ${i + 1}`,
-    url
-  }))
+        url: form.querySelector('.tv-url').value.trim()
       };
 
       if (!newShow.title || !newShow.url) {
