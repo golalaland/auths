@@ -88,10 +88,15 @@
 
   <h1>Dettyverse Content Management</h1>
 
-  <div class="tab-container">
-    <div class="tab active" data-tab="upcoming">Upcoming Events</div>
-    <div class="tab" data-tab="tvshows">TV Shows</div>
-  </div>
+ <div class="tab active" data-tab="upcoming">Upcoming Events</div>
+
+<div class="tab" data-tab="tvshows">
+  TV Shows
+</div>
+
+<div class="tab" data-tab="promos">
+  Promo Slider
+</div>
 
   <!-- Dope Alert -->
   <div id="dopeAlert">
@@ -142,6 +147,70 @@
       </div>
     </template>
   </div>
+
+
+  <!-- PROMO SLIDER SECTION -->
+<div id="promos" class="section">
+
+  <h2>Manage Promo Slider</h2>
+
+  <p>
+    These images will appear inside TapMaster
+    leaderboard slider.
+  </p>
+
+  <button id="fetch-promos">
+    Refresh List
+  </button>
+
+  <button id="add-new-promo">
+    + Add New Slide
+  </button>
+
+  <div
+    id="promos-container"
+    style="margin-top:20px;"
+  ></div>
+
+  <template id="promo-form-template">
+
+    <div style="
+      background:#222;
+      padding:16px;
+      border-radius:12px;
+      margin:16px 0;
+    ">
+
+      <input
+        type="url"
+        placeholder="Image URL"
+        class="promo-image"
+        style="width:100%;margin-bottom:8px;"
+      >
+
+      <input
+        type="url"
+        placeholder="Link URL (optional)"
+        class="promo-link"
+        style="width:100%;margin-bottom:12px;"
+      >
+
+      <button
+        class="save-promo-btn"
+        style="background:#c3f60c;color:#000;"
+      >
+        Save Slide
+      </button>
+
+      <button class="cancel-promo-btn">
+        Cancel
+      </button>
+
+    </div>
+
+  </template>
+
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -450,8 +519,11 @@
   fetchUpcomingBtn.onclick = loadAndRenderEvents;
 
   // Initial Load
-  loadAndRenderEvents();
-  loadAndRenderTVShows();
+ loadAndRenderEvents();
+
+loadAndRenderTVShows();
+
+loadAndRenderPromos();
 </script>
 </body>
 </html>
