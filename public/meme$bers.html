@@ -670,7 +670,17 @@ async function loadAndRenderPromos() {
     track.innerHTML = "";
 
     promos.forEach((promo) => {
-      const slide = document.createElement("a");
+    const slide = document.createElement("img");
+
+slide.src = promo.imageUrl;
+slide.className = "leaderboard-slide";
+
+slide.style.cssText = `
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  flex-shrink:0;
+`;
 
       slide.href = promo.link || "#";
       slide.target = "_blank";
