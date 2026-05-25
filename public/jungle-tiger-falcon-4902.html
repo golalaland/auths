@@ -941,8 +941,8 @@ async function applyRewards() {
         if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
         let message = level === 1 
-          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's ${rippleParts.join(' + ')} , your share of the win!`
-          : `Someone from ${chainPersonName}'s network won!\nHere's ${rippleParts.join(' + ')},  your ripple reward!`;
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's ${rippleParts.join(' + ')} — your share of the win!`
+          : `Someone from ${chainPersonName}'s cube won!\nHere's ${rippleParts.join(' + ')} — your ripple reward!`;
 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
