@@ -659,28 +659,14 @@ async function loadAndRenderPromos() {
     if (!snap.exists()) return;
 
     const promos = snap.data().promoSlides || [];
-
     const track = document.querySelector("#leaderboardImageSlider .slider-track");
 
-    if (!track) {
-      console.warn("Slider track not found. Did you add HTML?");
-      return;
-    }
+    if (!track) return;
 
     track.innerHTML = "";
 
     promos.forEach((promo) => {
-    const slide = document.createElement("img");
-
-slide.src = promo.imageUrl;
-slide.className = "leaderboard-slide";
-
-slide.style.cssText = `
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  flex-shrink:0;
-`;
+      const slide = document.createElement("a");
 
       slide.href = promo.link || "#";
       slide.target = "_blank";
@@ -694,21 +680,26 @@ slide.style.cssText = `
         justify-content:center;
       `;
 
-      slide.innerHTML = `
-        <img src="${promo.imageUrl}"
-          style="width:100%;height:100%;object-fit:contain;">
+      const img = document.createElement("img");
+      img.src = promo.imageUrl;
+      img.className = "leaderboard-slide";
+      img.style.cssText = `
+        width:100%;
+        height:100%;
+        object-fit:contain;
       `;
 
+      slide.appendChild(img);
       track.appendChild(slide);
     });
 
-  currentSlide = 0;
+    currentSlide = 0;
 
-setTimeout(() => {
-  showSlide(0);
-  startSlider();
-}, 150);
-    
+    setTimeout(() => {
+      showSlide(0);
+      startSlider();
+    }, 150);
+
   } catch (err) {
     console.error("Promo load failed:", err);
   }
