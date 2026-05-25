@@ -882,14 +882,14 @@ async function applyRewards() {
     if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
-    const rankText = w.rank === 1 ? "CHAMPION!" :
-                     w.rank === 2 ? "2ND PLACE — TAP IN!" :
-                     w.rank === 3 ? "3RD PLACE — TAP IN!" : `TOP ${w.rank}`;
+    const rankText = w.rank === 1 ? "#1 CHAMPION! 🥇" :
+                     w.rank === 2 ? "2ND PLACE 🥈 — TAP IN!" :
+                     w.rank === 3 ? "3RD PLACE 🥉— TAP IN!" : `TOP ${w.rank}`;
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title: isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
-      message: `${rankText}\nYou won ${rewardParts.join(' + ')}!`,
+      message: `${rankText}\nYYour tap score today earned you ${rewardParts.join(' + ')}!`,
       type: isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank: w.rank,
       cash: directCash,
@@ -941,8 +941,8 @@ async function applyRewards() {
         if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
         let message = level === 1 
-          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nHere's ${rippleParts.join(' + ')} — your share of the win!`
-          : `Someone from ${chainPersonName}'s cube won!\nHere's ${rippleParts.join(' + ')} — your ripple reward!`;
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nHYou earned ${rippleParts.join(' + ')} bonus — your share of their win!`
+          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win!`;
 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
