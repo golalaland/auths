@@ -882,14 +882,16 @@ async function applyRewards() {
     if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
-    const rankText = w.rank === 1 ? "#1 CHAMPION! 🥇" :
+    const rankText = w.rank === 1 ? "1ST PLACE 🥇 — TAP IN!" :
                      w.rank === 2 ? "2ND PLACE 🥈 — TAP IN!" :
                      w.rank === 3 ? "3RD PLACE 🥉— TAP IN!" : `TOP ${w.rank}`;
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title: isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
-      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}! 🤩`,
+     message: `${rankText}
+Your tap score today earned you ${rewardParts.join(' + ')}! 🤩
+Your rewards have been added to your balance 💸`,
       type: isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank: w.rank,
       cash: directCash,
