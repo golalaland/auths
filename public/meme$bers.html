@@ -543,9 +543,36 @@
 
   fetchUpcomingBtn.onclick = loadAndRenderEvents;
 
-  let currentSlide = 0;
+let currentSlide = 0;
 let slideInterval = null;
-let slideCount = 0;
+
+function showSlide(index) {
+  const track = document.querySelector("#leaderboardImageSlider .slider-track");
+  const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
+
+  if (!track || slides.length === 0) return;
+
+  const slideCount = slides.length;
+
+  currentSlide = (index + slideCount) % slideCount;
+
+  track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
+}
+
+function startSlider() {
+  const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
+
+  if (slideInterval || slides.length <= 1) return;
+
+  slideInterval = setInterval(() => {
+    showSlide(currentSlide + 1);
+  }, 5000);
+}
+
+function stopSlider() {
+  clearInterval(slideInterval);
+  slideInterval = null;
+}
 
 
 async function loadAndRenderPromos() {
@@ -587,13 +614,13 @@ async function loadAndRenderPromos() {
       track.appendChild(slide);
     });
 
-    currentSlide = 0;
+  currentSlide = 0;
 
-    setTimeout(() => {
-      showSlide(0);
-      startSlider();
-    }, 200);
-
+setTimeout(() => {
+  showSlide(0);
+  startSlider();
+}, 150);
+    
   } catch (err) {
     console.error("Promo load failed:", err);
   }
