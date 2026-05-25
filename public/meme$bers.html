@@ -542,6 +542,14 @@
   };
 
   fetchUpcomingBtn.onclick = loadAndRenderEvents;
+  const promosContainer = document.getElementById("promos-container");
+const fetchPromosBtn = document.getElementById("fetch-promos");
+const addPromoBtn = document.getElementById("add-new-promo");
+const promoTemplate = document.getElementById("promo-form-template");
+  fetchPromosBtn.onclick = () => {
+  renderPromosList();
+  loadAndRenderPromos();
+};
 
 let currentSlide = 0;
 let slideInterval = null;
@@ -553,7 +561,6 @@ function showSlide(index) {
   if (!track || slides.length === 0) return;
 
   const slideCount = slides.length;
-
   currentSlide = (index + slideCount) % slideCount;
 
   track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
@@ -574,6 +581,77 @@ function stopSlider() {
   slideInterval = null;
 }
 
+  async function getPromos() {
+  const snap = await getDoc(doc(db, "settings", "live"));
+  return snap.exists() ? (snap.data().promoSlides || []) : [];
+}
+
+async function renderPromosList() {
+  const promos = await getPromos();
+
+  promosContainer.innerHTML = "";
+
+  if (!promos.length) {
+    promosContainer.innerHTML = "<p style='color:#888'>No promos yet</p>";
+    return;
+  }
+
+  promos.forEach((p, index) => {
+    const card = document.createElement("div");
+    card.className = "card-preview";
+
+    card.innerHTML = `
+      <h4>Slide ${index + 1}</h4>
+      <p><a href="${p.imageUrl}" target="_blank">Image</a></p>
+      <div class="actions">
+        <button class="delete-promo">Delete</button>
+      </div>
+    `;
+
+    card.querySelector(".delete-promo").onclick = async () => {
+      promos.splice(index, 1);
+      await saveData("promoSlides", promos);
+      showDopeAlert("Deleted", "Promo removed");
+      renderPromosList();
+      loadAndRenderPromos();
+    };
+
+    promosContainer.appendChild(card);
+  });
+}
+
+  addPromoBtn.onclick = () => {
+  const form = promoTemplate.content.cloneNode(true).querySelector("div");
+
+  form.querySelector(".save-promo-btn").onclick = async () => {
+    const newPromo = {
+      imageUrl: form.querySelector(".promo-image").value.trim(),
+      link: form.querySelector(".promo-link").value.trim()
+    };
+
+    if (!newPromo.imageUrl) {
+      alert("Image URL required");
+      return;
+    }
+
+    const promos = await getPromos();
+    promos.push(newPromo);
+
+    await saveData("promoSlides", promos);
+
+    showDopeAlert("Added", "Promo slide added");
+
+    form.remove();
+
+    renderPromosList();
+    loadAndRenderPromos();
+  };
+
+  form.querySelector(".cancel-promo-btn").onclick = () => form.remove();
+
+  promosContainer.prepend(form);
+};
+  
 
 async function loadAndRenderPromos() {
   try {
