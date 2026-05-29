@@ -150,6 +150,21 @@
         <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
         <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
         <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
+        <!-- EVENT TYPE -->
+<select class="event-type" style="width:100%; margin-bottom:8px;">
+  <option value="event">Event</option>
+  <option value="live">Live</option>
+  <option value="video">Video</option>
+  <option value="promo">Promo</option>
+</select>
+
+<!-- CUSTOM CTA LABEL -->
+<input
+  type="text"
+  placeholder="CTA Label (e.g. Watch Now, Join Live)"
+  class="event-cta"
+  style="width:100%; margin-bottom:12px;"
+>
         <label style="
   display:flex;
   align-items:center;
@@ -547,6 +562,8 @@ updatedEvents[index] = {
     form.querySelector('.event-desc').value = event.desc || '';
     form.querySelector('.event-image').value = event.imageUrl || '';
     form.querySelector('.event-link').value = event.link || '';
+    form.querySelector('.event-type').value = event.type || "event";
+    form.querySelector('.event-cta').value = event.ctaLabel || "";
     form.querySelector('.event-live-toggle').checked = event.isLive || false;
 
     form.querySelector('.save-event-btn').onclick = async () => {
@@ -589,14 +606,16 @@ updatedEvents[index] = {
     const form = eventFormTemplate.content.cloneNode(true).querySelector('div');
 
     form.querySelector('.save-event-btn').onclick = async () => {
-      const newEvent = {
-        title: form.querySelector('.event-title').value.trim(),
-        time: form.querySelector('.event-time').value.trim(),
-        desc: form.querySelector('.event-desc').value.trim(),
-        imageUrl: form.querySelector('.event-image').value.trim(),
-        link: form.querySelector('.event-link').value.trim(),
-            isLive: false
-      };
+       const newEvent = {
+  title: form.querySelector('.event-title').value.trim(),
+  time: form.querySelector('.event-time').value.trim(),
+  desc: form.querySelector('.event-desc').value.trim(),
+  imageUrl: form.querySelector('.event-image').value.trim(),
+  link: form.querySelector('.event-link').value.trim(),
+
+  type: form.querySelector('.event-type').value,
+  ctaLabel: form.querySelector('.event-cta').value.trim()
+};
 
       if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
         alert("Title, Time, Description and Image URL are required.");
