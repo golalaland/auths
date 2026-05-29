@@ -510,10 +510,12 @@
       card.querySelector('.delete-event').onclick = () => deleteEvent(index);
       card.querySelector('.toggle-live-event').onclick = async () => {
 
-  const updatedEvents = events.map((ev, i) => ({
-    ...ev,
-    isLive: i === index ? !ev.isLive : false
-  }));
+ const updatedEvents = [...events];
+
+updatedEvents[index] = {
+  ...updatedEvents[index],
+  isLive: !updatedEvents[index].isLive
+};
 
   await saveData("upcomingEvents", updatedEvents);
 
