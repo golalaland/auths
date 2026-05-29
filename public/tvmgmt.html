@@ -79,7 +79,28 @@
       border: 1px solid #333;
     }
     .card-preview h4 { margin: 0 0 8px; color: #c3f60c; }
-    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; }
+    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; 
+    .live-badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  z-index:30;
+
+  display:flex;
+  align-items:center;
+  gap:7px;
+
+  background:rgba(0,0,0,0.75);
+  padding:6px 12px;
+  border-radius:999px;
+
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
+
+  backdrop-filter:blur(10px);
+}
   </style>
 </head>
 <body>
@@ -129,6 +150,23 @@
         <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
         <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
         <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
+        <label style="
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:12px 0;
+  color:#fff;
+  font-size:14px;
+">
+
+  <input
+    type="checkbox"
+    class="event-live-toggle"
+  >
+
+  Event is LIVE now
+
+</label>
         <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
         <button class="cancel-event-btn">Cancel</button>
       </div>
@@ -449,14 +487,45 @@
         <p><strong>Desc:</strong> ${event.desc?.substring(0,80)}${event.desc?.length > 80 ? '...' : ''}</p>
         <p><strong>Image:</strong> <a href="${event.imageUrl}" target="_blank">view</a></p>
         ${event.link ? `<p><strong>Link:</strong> <a href="${event.link}" target="_blank">open</a></p>` : ''}
-        <div class="actions">
-          <button class="edit-event" data-index="${index}">Edit</button>
-          <button class="delete-event" data-index="${index}">Delete</button>
-        </div>
+       <div class="actions">
+  <button class="edit-event" data-index="${index}">
+    Edit
+  </button>
+
+  <button class="delete-event" data-index="${index}">
+    Delete
+  </button>
+
+  <button class="toggle-live-event" data-index="${index}"
+    style="
+      background:${event.isLive ? '#ff2b2b' : '#333'};
+      color:${event.isLive ? '#fff' : '#ccc'};
+    ">
+    ${event.isLive ? 'LIVE NOW' : 'GO LIVE'}
+  </button>
+</div>
       `;
 
       card.querySelector('.edit-event').onclick = () => editEvent(index);
       card.querySelector('.delete-event').onclick = () => deleteEvent(index);
+      card.querySelector('.toggle-live-event').onclick = async () => {
+
+  const updatedEvents = events.map((ev, i) => ({
+    ...ev,
+    isLive: i === index ? !ev.isLive : false
+  }));
+
+  await saveData("upcomingEvents", updatedEvents);
+
+  showDopeAlert(
+    updatedEvents[index].isLive ? "LIVE STARTED" : "LIVE ENDED",
+    updatedEvents[index].isLive
+      ? `${updatedEvents[index].title} is now live`
+      : `Live session stopped`
+  );
+
+  loadAndRenderEvents();
+};
       eventsContainer.appendChild(card);
     });
   }
@@ -476,9 +545,11 @@
     form.querySelector('.event-desc').value = event.desc || '';
     form.querySelector('.event-image').value = event.imageUrl || '';
     form.querySelector('.event-link').value = event.link || '';
+    form.querySelector('.event-live-toggle').checked = event.isLive || false;
 
     form.querySelector('.save-event-btn').onclick = async () => {
       const updated = {
+        isLive: form.querySelector('.event-live-toggle').checked,
         title: form.querySelector('.event-title').value.trim(),
         time: form.querySelector('.event-time').value.trim(),
         desc: form.querySelector('.event-desc').value.trim(),
@@ -521,7 +592,8 @@
         time: form.querySelector('.event-time').value.trim(),
         desc: form.querySelector('.event-desc').value.trim(),
         imageUrl: form.querySelector('.event-image').value.trim(),
-        link: form.querySelector('.event-link').value.trim()
+        link: form.querySelector('.event-link').value.trim(),
+            isLive: false
       };
 
       if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
