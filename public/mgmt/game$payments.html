@@ -181,6 +181,9 @@
         <tbody></tbody>
       </table>
       <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack Format)</button>
+      <button id="export-withdrawals-nomba-csv">
+    Export Nomba CSV
+</button>
     </div>
     <div id="hostWithdrawals" class="section">
       <h2>Host Withdrawals Management</h2>
@@ -381,6 +384,8 @@
             return "";
         }
 
+      
+
         // ==================== ADMIN AUTH ====================
         adminCheckBtn.addEventListener("click", async () => {
             const email = adminEmailInput.value.trim().toLowerCase();
@@ -450,6 +455,9 @@
             adminEmailInput.value = "";
             adminGateMsg.textContent = "";
         });
+
+      document.getElementById('export-withdrawals-nomba-csv')
+  .addEventListener('click', exportWithdrawalsCSV_Nomba);
 
         // ==================== TABS ====================
         function initTabs() {
@@ -727,76 +735,187 @@
             container.appendChild(rule);
         }
 
-        function formatNumber(num) {
-            if (!num || isNaN(num)) return '0';
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+  function formatNumber(num) {
+    if (!num || isNaN(num)) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  
+async function applyRewards() {
+  const date = document.getElementById('reward-winners-date').value;
+  if (!date) return dopeAlert('Please select a date', 'Error');
 
-        async function applyRewards() {
-            const date = document.getElementById('reward-winners-date').value;
-            if (!date) return dopeAlert('Please select a date', 'Error');
+  const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
+  const isHosts = rewardType === 'hosts';
 
-            const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
-            const isHosts = rewardType === 'hosts';
-            const winnersRef = doc(db, isHosts ? 'hostWinners' : 'winners', date);
-            const snap = await getDoc(winnersRef);
+  const winnersRef = isHosts 
+    ? doc(db, 'hostWinners', date) 
+    : doc(db, 'winners', date);
 
-            if (!snap.exists()) return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found`, 'Error');
+  const snap = await getDoc(winnersRef);
+  if (!snap.exists()) {
+    return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for this date`, 'Error');
+  }
 
-            let winners = snap.data().winners || [];
+  const winnersDoc = snap.data();
+  let winners = winnersDoc.winners || [];
 
-            const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
-                start: parseInt(div.querySelector('.rule-start').value) || 1,
-                end: parseInt(div.querySelector('.rule-end').value) || 999,
-                cash: parseInt(div.querySelector('.rule-cash').value) || 0,
-                stars: parseInt(div.querySelector('.rule-stars').value) || 0
-            }));
+  // Load reward rules from UI
+  const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
+    start: parseInt(div.querySelector('.rule-start').value) || 1,
+    end: parseInt(div.querySelector('.rule-end').value) || 999,
+    cash: parseInt(div.querySelector('.rule-cash').value) || 0,
+    stars: parseInt(div.querySelector('.rule-stars').value) || 0
+  }));
 
-            winners.forEach(w => {
-                w.rewards = { cash: 0, stars: 0 };
-                for (let rule of rules) {
-                    if (w.rank >= rule.start && w.rank <= rule.end) {
-                        w.rewards = { cash: rule.cash, stars: rule.stars };
-                        break;
-                    }
-                }
-            });
+  // Assign rewards
+  winners.forEach(w => {
+    w.rewards = { cash: 0, stars: 0 };
+    for (let rule of rules) {
+      if (w.rank >= rule.start && w.rank <= rule.end) {
+        w.rewards = { cash: rule.cash, stars: rule.stars };
+        break;
+      }
+    }
+  });
 
-            await updateDoc(winnersRef, { winners });
+  await updateDoc(winnersRef, { winners });
 
-            // Ripple logic remains as in original (kept full for completeness)
-            const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
-            const config = referralSnap.exists() ? referralSnap.data() : { level1_cash_percent: 10, level1_stars_percent: 5, level2_cash_percent: 5, level2_stars_percent: 2, max_levels: 2 };
+  // Load ripple config
+  const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
+  const config = referralSnap.exists() ? referralSnap.data() : {
+    level1_cash_percent: 10,
+    level1_stars_percent: 5,
+    level2_cash_percent: 5,
+    level2_stars_percent: 2,
+    max_levels: 2
+  };
 
-            const l1Cash = config.level1_cash_percent / 100;
-            const l1Stars = config.level1_stars_percent / 100;
-            const l2Cash = config.level2_cash_percent / 100;
-            const l2Stars = config.level2_stars_percent / 100;
+  const l1Cash = config.level1_cash_percent / 100;
+  const l1Stars = config.level1_stars_percent / 100;
+  const l2Cash = config.level2_cash_percent / 100;
+  const l2Stars = config.level2_stars_percent / 100;
 
-            for (let w of winners) {
-                const directCash = w.rewards.cash || 0;
-                const directStars = w.rewards.stars || 0;
-                if (directCash + directStars === 0) continue;
+  // Process each winner
+  for (let w of winners) {
+    const directCash = w.rewards.cash || 0;
+    const directStars = w.rewards.stars || 0;
+    if (directCash + directStars === 0) continue;
 
-                const winnerRef = doc(db, 'users', w.uid);
+    const winnerRef = doc(db, 'users', w.uid);
 
-                await runTransaction(db, async (t) => {
-                    const userSnap = await t.get(winnerRef);
-                    if (userSnap.exists()) {
-                        t.update(winnerRef, {
-                            cash: increment(directCash),
-                            stars: increment(directStars)
-                        });
-                    }
-                });
+    // Direct reward
+    await runTransaction(db, async (t) => {
+      const userSnap = await t.get(winnerRef);
+      if (!userSnap.exists()) return;
+      t.update(winnerRef, {
+        cash: increment(directCash),
+        stars: increment(directStars)
+      });
+    });
 
-                // Notification and ripple code (preserved from original)
-                // ... (full ripple logic from your original code is kept intact here)
-                // For brevity in this response, assume it's the same as provided
-            }
+    // Winner Notification
+    const rewardParts = [];
+    if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
+    if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
-            dopeAlert(isHosts ? "HOSTS REWARDS SENT!" : "GENERAL REWARDS SENT!", "SUCCESS");
-        }
+    const rankText = w.rank === 1 ? "1ST PLACE 🥇 — TAP IN!" :
+                     w.rank === 2 ? "2ND PLACE 🥈 — TAP IN!" :
+                     w.rank === 3 ? "3RD PLACE 🥉— TAP IN!" : `TOP ${w.rank}`;
+
+    await addDoc(collection(db, "notifications"), {
+      recipientId: w.uid,
+      title: isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
+     message: `${rankText}
+Your tap score today earned you ${rewardParts.join(' + ')}!
+your reward is now live in your balance. 💸`,
+      type: isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
+      rank: w.rank,
+      cash: directCash,
+      stars: directStars,
+      createdAt: serverTimestamp(),
+      read: false
+    });
+
+    // ==================== RIPPLE REWARDS (Fixed for Hosts) ====================
+    let invitedBy = w.invitedBy;
+
+    // Fallback: Fetch invitedBy from user document if not stored in winner
+    if (!invitedBy && w.uid) {
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      if (userSnap.exists()) {
+        invitedBy = userSnap.data().invitedBy;
+      }
+    }
+
+    let currentUid = invitedBy;
+    let level = 1;
+    let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
+
+    while (currentUid && level <= config.max_levels) {
+      const uplineRef = doc(db, 'users', currentUid);
+      const uplineSnap = await getDoc(uplineRef);
+      if (!uplineSnap.exists()) break;
+
+      const uplineData = uplineSnap.data();
+
+      const cashPercent = level === 1 ? l1Cash : l2Cash;
+      const starsPercent = level === 1 ? l1Stars : l2Stars;
+
+      const rippleCash = Math.floor(directCash * cashPercent);
+      const rippleStars = Math.floor(directStars * starsPercent);
+
+      if (rippleCash + rippleStars > 0) {
+        await runTransaction(db, async (t) => {
+          const snap = await t.get(uplineRef);
+          if (!snap.exists()) return;
+          t.update(uplineRef, {
+            cash: increment(rippleCash),
+            stars: increment(rippleStars)
+          });
+        });
+
+        const rippleParts = [];
+        if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
+        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
+
+        let message = level === 1 
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus — your share of their win! 🤩`
+          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win! 🤩`;
+
+        await addDoc(collection(db, "notifications"), {
+          recipientId: currentUid,
+          title: isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
+          message,
+          type: `ripple_level${level}`,
+          fromUser: w.uid,
+          fromName: chainPersonName,
+          amountCash: rippleCash,
+          amountStars: rippleStars,
+          createdAt: serverTimestamp(),
+          read: false
+        });
+      }
+
+      chainPersonName = uplineData.chatId || uplineData.username || "a player";
+      currentUid = uplineData.invitedBy;
+      level++;
+    }
+  }
+  
+    // FORCE SHOW RED ASTERISK ON HOST BUTTON
+  const badge = document.getElementById("hostNotifBadge");
+  if (badge) {
+    badge.style.display = "flex";
+  }
+
+  dopeAlert(
+    isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!",
+    "SUCCESS",
+    "Crown",
+    8000
+
+  );
+}
 
         // ==================== CONFIGS ====================
         async function loadConfigs() {
