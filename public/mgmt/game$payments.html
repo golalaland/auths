@@ -1240,7 +1240,8 @@ your reward is now live in your balance. 💸`,
       'Account Name (Optional)',
       'Email Address (Optional)'
     ];
-    const rows = [headers];
+    
+
     const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
     const snap = await getDocs(q);
     for (const d of snap.docs) {
@@ -1284,7 +1285,8 @@ your reward is now live in your balance. 💸`,
       'Account Name (Optional)',
       'Email Address (Optional)'
     ];
-    const rows = [headers];
+
+    
     const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
     const snap = await getDocs(q);
     for (const d of snap.docs) {
@@ -1549,7 +1551,6 @@ async function exportTmHostWithdrawalsCSV() {
     'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
   ];
 
-  const rows = [headers];
 
 const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
 const snap = await getDocs(q);
@@ -1579,7 +1580,7 @@ for (const d of snap.docs) {
   ]);
 }
   
-  const rows = [headers];
+
   const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
   const snap = await getDocs(q);
 
