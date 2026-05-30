@@ -82,6 +82,9 @@
   <input id="winners-to" type="date" placeholder="To Date">
   <button id="fetch-winners">Fetch Winners</button>
   <button id="export-csv">Export as CSV</button>
+  <button id="export-withdrawals-nomba-csv">
+  Export Nomba CSV
+</button>
   <button id="clear-winners">Clear All Winners</button>
 
   <table id="winners-table">
@@ -447,6 +450,33 @@ logoutBtn.addEventListener("click", () => {
   adminEmailInput.value = "";
   adminGateMsg.textContent = "";
 });
+
+
+function resolveBankForProvider(user, provider) {
+  if (!user) return "";
+
+  const bankName = user.bankName || "";
+
+  // Paystack prefers slug/name fallback
+  if (provider === "paystack") {
+    return user.bankSlug || bankName || "";
+  }
+
+  // Nomba requires STRICT bank code (from your unified mapping)
+  if (provider === "nomba") {
+    const bank = nigeriaBanks.find(b => b.name === bankName);
+    return bank?.code || "";
+  }
+
+  // Moniepoint fallback
+  if (provider === "moniepoint") {
+    const bank = nigeriaBanks.find(b => b.name === bankName);
+    return bank?.code || "";
+  }
+
+  return "";
+}
+  
 
 // ====================== EVENT LISTENERS ======================
 
@@ -1135,6 +1165,70 @@ your reward is now live in your balance. 💸`,
     }
   }
 
+  async function exportWithdrawalsCSV_Dual() {
+  await exportWithdrawalsCSV();        // Paystack
+  await exportWithdrawalsCSV_Nomba();  // Nomba
+}
+
+
+  async function exportWithdrawalsCSV_Nomba() {
+ const headers = [
+  "Amount",
+  "Account Number",
+  "Bank Code",
+  "Account Name",
+  "Narration",
+  "Reference",
+  "Email"
+];
+
+  const rows = [headers];
+
+  const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+  const snap = await getDocs(q);
+
+  for (const d of snap.docs) {
+    const w = d.data();
+    const userSnap = await getDoc(doc(db, 'users', w.uid));
+    const user = userSnap.data() || {};
+
+    const bankCode = resolveBankForProvider(user, "nomba");
+
+    // SAFE GUARDS (prevents crash)
+    if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
+
+    rows.push([
+      w.bankAccountNumber,
+      bankCode,
+      w.amount,
+      "PROMOTIONAL CASH GIFT"
+    ]);
+  }
+
+  const dateStr = getTodayDateString();
+  downloadCSV(`withdrawals_${dateStr}_nomba.csv`, rows);
+
+  const count = rows.length - 1;
+  if (count > 0) {
+    const ok = await showConfirm(
+      'Mark Paid',
+      `Mark all ${count} exported withdrawals as paid (Nomba)?`
+    );
+
+    if (ok) {
+      showLoader('Marking paid...');
+      for (const d of snap.docs) {
+        await updateDoc(d.ref, {
+          status: 'paid',
+          paidAt: serverTimestamp()
+        });
+      }
+      hideLoader();
+      loadWithdrawals();
+    }
+  }
+}
+
   async function exportWithdrawalsCSV() {
     const headers = [
       'Transfer Amount',
@@ -1454,6 +1548,37 @@ async function exportTmHostWithdrawalsCSV() {
     'Recipient Code (This overrides all other details if available)',
     'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
   ];
+
+  const rows = [headers];
+
+const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+const snap = await getDocs(q);
+
+for (const d of snap.docs) {
+  const w = d.data();
+
+  const userSnap = await getDoc(doc(db, 'users', w.uid));
+  const user = userSnap.data() || {};
+
+  const amount = w.amount || 0;
+
+  const accountNumber = user.bankAccountNumber || w.bankAccountNumber || "";
+  const accountName = user.fullName || w.username || "";
+  const email = user.email || "";
+
+  const bankCode = resolveBankForProvider(user, "nomba");
+
+  rows.push([
+    amount,
+    accountNumber,
+    bankCode,
+    accountName,
+    "PROMO CASH WITHDRAWAL",
+    `NOMBA-${d.id}`,
+    email
+  ]);
+}
+  
   const rows = [headers];
   const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
   const snap = await getDocs(q);
