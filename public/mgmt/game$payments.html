@@ -192,6 +192,7 @@
         <tbody></tbody>
       </table>
       <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
+        <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba Format)</button>
     </div>
   </div>
   <!-- NEW SECTION -->
@@ -1423,9 +1424,14 @@ your reward is now live in your balance. 💸`,
         document.getElementById('apply-rewards').addEventListener('click', applyRewards);
         document.getElementById('save-configs').addEventListener('click', saveConfigs);
 
-        document.getElementById('export-withdrawals-csv').addEventListener('click', exportWithdrawalsCSV);
-        document.getElementById('export-host-withdrawals-csv').addEventListener('click', exportHostWithdrawalsCSV);
-        document.getElementById('export-tmhost-withdrawals-csv').addEventListener('click', exportTmHostWithdrawalsCSV);
+       document.getElementById('export-withdrawals-csv')
+  ?.addEventListener('click', exportWithdrawalsCSV);
+
+document.getElementById('export-host-withdrawals-csv')
+  ?.addEventListener('click', exportHostWithdrawalsCSV);
+
+document.getElementById('export-host-withdrawals-nomba-csv')
+  ?.addEventListener('click', exportTmHostWithdrawalsCSV);
 
         // Host LB
         document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
