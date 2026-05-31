@@ -174,37 +174,28 @@
   <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
 </div>
     </div>
-    <div id="withdrawals" class="section">
-      <h2>TapMaster Withdrawals Management</h2>
-      <table id="withdrawals-table">
-        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack Format)</button>
-      <button id="export-withdrawals-nomba-csv">
-    Export Nomba CSV
-</button>
-    </div>
+   <div id="withdrawals" class="section">
+    <h2>TapMaster Withdrawals Management</h2>
+    <table id="withdrawals-table">...</table>
+    <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack)</button>
+    <button id="export-withdrawals-nomba-csv">Export Withdrawals CSV (Nomba)</button>
+  </div>
     <div id="hostWithdrawals" class="section">
-      <h2>Host Withdrawals Management</h2>
-      <table id="host-withdrawals-table">
-        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
-        <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba Format)</button>
-    </div>
+    <h2>Host Withdrawals Management</h2>
+    <table id="host-withdrawals-table">...</table>
+    <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack)</button>
+    <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba)</button>
+  </div>
   </div>
   <!-- NEW SECTION -->
-    <div id="tmhostWithdrawals" class="section">
-      <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
-      <table id="tmhost-withdrawals-table">
-        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Type</th><th>Action</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack Format)</button>
-    </div>
+   <div id="tmhostWithdrawals" class="section">
+    <h2>TM Host Withdrawals</h2>
+    <table id="tmhost-withdrawals-table">...</table>
+    <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack)</button>
+    <button id="export-tmhost-withdrawals-nomba-csv">Export TM Host Withdrawals CSV (Nomba)</button>
   </div>
+  </div>
+  
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import {
@@ -1287,6 +1278,45 @@ your reward is now live in your balance. 💸`,
             }
         }
 
+      async function exportHostWithdrawalsCSV_Nomba() {
+      const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+      const rows = [headers];
+
+      const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+      const snap = await getDocs(q);
+
+      for (const d of snap.docs) {
+        const w = d.data();
+        const userSnap = await getDoc(doc(db, 'users', w.uid));
+        const user = userSnap.data() || {};
+
+        const bankCode = resolveBankForProvider(user, "nomba");
+        if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
+
+        rows.push([
+          w.amount,
+          w.bankAccountNumber,
+          bankCode,
+          user.fullName || w.username || '',
+          "HOSTS PROMOTIONAL CASH GIFT",
+          `NOMBA-H-${d.id}`,
+          user.email || ''
+        ]);
+      }
+
+      downloadCSV(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+
+      if (rows.length > 1) {
+        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} host withdrawals as paid?`);
+        if (ok) {
+          showLoader();
+          for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+          hideLoader();
+          loadHostWithdrawals();
+        }
+      }
+    }
+
         async function exportTmHostWithdrawalsCSV() {
             const headers = [
                 'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
@@ -1332,6 +1362,52 @@ your reward is now live in your balance. 💸`,
                 dopeAlert("No pending TM Host withdrawals");
             }
         }
+
+
+      async function exportTmHostWithdrawalsCSV_Nomba() {
+      const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+      const rows = [headers];
+
+      const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+      const snap = await getDocs(q);
+
+      for (const d of snap.docs) {
+        const w = d.data();
+        const userSnap = await getDoc(doc(db, 'users', w.uid));
+        const user = userSnap.data() || {};
+
+        const bankCode = resolveBankForProvider(user, "nomba");
+        if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
+
+        const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
+
+        rows.push([
+          w.amount,
+          w.bankAccountNumber,
+          bankCode,
+          user.fullName || w.username || '',
+          note,
+          `NOMBA-TMH-${d.id}`,
+          user.email || ''
+        ]);
+      }
+
+      downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+
+      if (rows.length > 1) {
+        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host withdrawals as paid?`);
+        if (ok) {
+          showLoader();
+          for (const d of snap.docs) {
+            await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+          }
+          hideLoader();
+          loadTmHostWithdrawals();
+        }
+      } else {
+        dopeAlert("No pending TM Host withdrawals");
+      }
+    }
 
         // ==================== HOST LEADERBOARD ====================
         async function loadHostsLeaderboard() {
@@ -1403,15 +1479,19 @@ your reward is now live in your balance. 💸`,
             loadWinnerDates();
         }
 
-        // ==================== EVENT LISTENERS (Cleaned) ====================
+               // ==================== EVENT LISTENERS (Cleaned) ====================
+        
+        // Leaderboards
         document.getElementById('lb-type').addEventListener('change', startLbListener);
         document.getElementById('lb-limit').addEventListener('change', startLbListener);
         document.getElementById('bid-round').addEventListener('change', startLbListener);
         document.getElementById('fetch-lb').addEventListener('click', startLbListener);
 
+        // Winners Management
         document.getElementById('save-winners').addEventListener('click', saveWinners);
         document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
         document.getElementById('export-csv').addEventListener('click', exportCSV);
+        
         document.getElementById('clear-winners').addEventListener('click', async () => {
             if (await showConfirm("Clear Winners", "Are you sure?")) {
                 showLoader();
@@ -1420,29 +1500,43 @@ your reward is now live in your balance. 💸`,
             }
         });
 
+        // Rewards Management
         document.getElementById('add-rule').addEventListener('click', addRewardRule);
         document.getElementById('apply-rewards').addEventListener('click', applyRewards);
+
+        // Game Configs
         document.getElementById('save-configs').addEventListener('click', saveConfigs);
 
-       document.getElementById('export-withdrawals-csv')
-  ?.addEventListener('click', exportWithdrawalsCSV);
+        // ====================== WITHDRAWALS EXPORTS ======================
+        
+        // Regular Player Withdrawals
+        document.getElementById('export-withdrawals-csv')
+            ?.addEventListener('click', exportWithdrawalsCSV);
+        document.getElementById('export-withdrawals-nomba-csv')
+            ?.addEventListener('click', exportWithdrawalsCSV_Nomba);
 
-document.getElementById('export-host-withdrawals-csv')
-  ?.addEventListener('click', exportHostWithdrawalsCSV);
+        // Host Withdrawals
+        document.getElementById('export-host-withdrawals-csv')
+            ?.addEventListener('click', exportHostWithdrawalsCSV);
+        document.getElementById('export-host-withdrawals-nomba-csv')
+            ?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
 
-document.getElementById('export-host-withdrawals-nomba-csv')
-  ?.addEventListener('click', exportTmHostWithdrawalsCSV);
+        // TM Host Withdrawals
+        document.getElementById('export-tmhost-withdrawals-csv')
+            ?.addEventListener('click', exportTmHostWithdrawalsCSV);
+        document.getElementById('export-tmhost-withdrawals-nomba-csv')
+            ?.addEventListener('click', exportTmHostWithdrawalsCSV_Nomba);
 
-        // Host LB
+        // Host Leaderboard
         document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
         document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
 
-        // History type change
+        // Winners History Filters
         document.querySelectorAll('input[name="historyType"]').forEach(radio => {
             radio.addEventListener('change', fetchWinnersHistory);
         });
 
-        // Fallback for window.alert
+        // Global Alert Override
         window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
 </script>
 </body>
