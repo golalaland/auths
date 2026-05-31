@@ -1521,20 +1521,21 @@ your reward is now live in your balance. 💸`,
             dopeAlert(`Hosts winners saved for ${date}`);
             loadWinnerDates();
         }
-        // ==================== EVENT LISTENERS (Cleaned & Fixed) ====================
-        
+      
+     // ==================== EVENT LISTENERS (FINAL - CLEAN) ====================
+    function initAllEventListeners() {
         // Leaderboards
-        document.getElementById('lb-type').addEventListener('change', startLbListener);
-        document.getElementById('lb-limit').addEventListener('change', startLbListener);
-        document.getElementById('bid-round').addEventListener('change', startLbListener);
-        document.getElementById('fetch-lb').addEventListener('click', startLbListener);
+        document.getElementById('lb-type')?.addEventListener('change', startLbListener);
+        document.getElementById('lb-limit')?.addEventListener('change', startLbListener);
+        document.getElementById('bid-round')?.addEventListener('change', startLbListener);
+        document.getElementById('fetch-lb')?.addEventListener('click', startLbListener);
 
         // Winners
-        document.getElementById('save-winners').addEventListener('click', saveWinners);
-        document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
-        document.getElementById('export-csv').addEventListener('click', exportCSV);
-        
-        document.getElementById('clear-winners').addEventListener('click', async () => {
+        document.getElementById('save-winners')?.addEventListener('click', saveWinners);
+        document.getElementById('fetch-winners')?.addEventListener('click', fetchWinnersHistory);
+        document.getElementById('export-csv')?.addEventListener('click', exportCSV);
+
+        document.getElementById('clear-winners')?.addEventListener('click', async () => {
             if (await showConfirm("Clear Winners", "Are you sure?")) {
                 showLoader();
                 await clearWinners();
@@ -1543,29 +1544,26 @@ your reward is now live in your balance. 💸`,
         });
 
         // Rewards & Configs
-        document.getElementById('add-rule').addEventListener('click', addRewardRule);
-        document.getElementById('apply-rewards').addEventListener('click', applyRewards);
-        document.getElementById('save-configs').addEventListener('click', saveConfigs);
+        document.getElementById('add-rule')?.addEventListener('click', addRewardRule);
+        document.getElementById('apply-rewards')?.addEventListener('click', applyRewards);
+        document.getElementById('save-configs')?.addEventListener('click', saveConfigs);
 
-        // ====================== WITHDRAWALS EXPORTS ======================
-        document.getElementById('export-withdrawals-csv')
-            ?.addEventListener('click', exportWithdrawalsCSV);
-        document.getElementById('export-withdrawals-nomba-csv')
-            ?.addEventListener('click', exportWithdrawalsCSV_Nomba);
+        // ====================== ALL WITHDRAWAL EXPORTS ======================
+        // Regular Withdrawals
+        document.getElementById('export-withdrawals-csv')?.addEventListener('click', exportWithdrawalsCSV);
+        document.getElementById('export-withdrawals-nomba-csv')?.addEventListener('click', exportWithdrawalsCSV_Nomba);
 
-        document.getElementById('export-host-withdrawals-csv')
-            ?.addEventListener('click', exportHostWithdrawalsCSV);
-        document.getElementById('export-host-withdrawals-nomba-csv')
-            ?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
+        // Host Withdrawals
+        document.getElementById('export-host-withdrawals-csv')?.addEventListener('click', exportHostWithdrawalsCSV);
+        document.getElementById('export-host-withdrawals-nomba-csv')?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
 
-        document.getElementById('export-tmhost-withdrawals-csv')
-            ?.addEventListener('click', exportTmHostWithdrawalsCSV);
-        document.getElementById('export-tmhost-withdrawals-nomba-csv')
-            ?.addEventListener('click', exportTmHostWithdrawalsCSV_Nomba);
+        // TM Host Withdrawals
+        document.getElementById('export-tmhost-withdrawals-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV);
+        document.getElementById('export-tmhost-withdrawals-nomba-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV_Nomba);
 
         // Host Leaderboard
-        document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
-        document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
+        document.getElementById('fetch-host-lb')?.addEventListener('click', loadHostsLeaderboard);
+        document.getElementById('save-host-winners')?.addEventListener('click', saveHostWinners);
 
         // History Type Toggle
         document.querySelectorAll('input[name="historyType"]').forEach(radio => {
@@ -1574,6 +1572,7 @@ your reward is now live in your balance. 💸`,
 
         // Global Alert Override
         window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
+    }
 </script>
 </body>
 </html>
