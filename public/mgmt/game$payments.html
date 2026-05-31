@@ -1,4 +1,3 @@
-Admin dashboard fixed · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -335,6 +334,25 @@ Admin dashboard fixed · HTML
             a.click();
         }
  
+        // Nomba requires ="XXX" bank codes (Excel formula style) — must NOT be double-quoted
+        function downloadNombaCSV(filename, rows) {
+            const csv = rows.map((r, rowIdx) => r.map((c, colIdx) => {
+                // Header row — plain text
+                if (rowIdx === 0) return `"${String(c ?? "").replace(/"/g, '""')}"`;
+                // bankCode column (index 1) — raw formula cell, no outer quotes
+                if (colIdx === 1 && String(c).startsWith('="')) return String(c);
+                // amount column (index 2) — plain number, no quotes
+                if (colIdx === 2) return String(c ?? 0);
+                // everything else — quoted string
+                return `"${String(c ?? "").replace(/"/g, '""')}"`;
+            }).join(",")).join("\n");
+            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+ 
         function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
             const alertBox = document.getElementById("dopeAlert");
             if (!alertBox) return console.log(message);
@@ -434,7 +452,8 @@ function resolveBankForProvider(user, provider) {
             );
         }
  
-        return bank?.code || "";
+        // Return Nomba's required ="CODE" format (prevents Excel/Sheets stripping leading zeros)
+        return bank ? `="${bank.code}"` : "";
     }
  
     return "";
@@ -1203,7 +1222,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
@@ -1215,31 +1234,29 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !accountNumber || !w.amount) continue;
  
                 rows.push([
-                    w.amount,
-                    w.bankAccountNumber,
+                    accountNumber,
                     bankCode,
-                    user.fullName || w.username || '',
-                    "PROMOTIONAL CASH GIFT",
-                    `NOMBA-${d.id}`,
-                    user.email || ''
+                    w.amount,
+                    "PROMOTIONAL CASH GIFT"
                 ]);
             }
  
-            downloadCSV(`withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+            downloadNombaCSV(`withdrawals_${getTodayDateString()}_nomba.csv`, rows);
  
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Nomba withdrawals as paid?`);
                 if (ok) {
                     showLoader();
-                    for (const d of snap.docs) {
-                        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-                    }
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
                     hideLoader();
                     loadWithdrawals();
                 }
+            } else {
+                dopeAlert("No pending withdrawals with valid Nomba bank details", "Info");
             }
         }
  
@@ -1330,7 +1347,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportHostWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
@@ -1342,20 +1359,18 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !accountNumber || !w.amount) continue;
  
                 rows.push([
-                    w.amount,
-                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    accountNumber,
                     bankCode,
-                    user.fullName || w.username || '',
-                    "HOSTS PROMOTIONAL CASH GIFT",
-                    `NOMBA-HPR-${d.id}`,
-                    user.email || ''
+                    w.amount,
+                    "HOSTS PROMOTIONAL CASH GIFT"
                 ]);
             }
  
-            downloadCSV(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+            downloadNombaCSV(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
  
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Host Nomba withdrawals as paid?`);
@@ -1371,7 +1386,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportTmHostWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
@@ -1383,22 +1398,20 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !accountNumber || !w.amount) continue;
  
-                const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
+                const narration = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
  
                 rows.push([
-                    w.amount,
-                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    accountNumber,
                     bankCode,
-                    user.fullName || w.username || '',
-                    note,
-                    `NOMBA-TMH-${d.id}`,
-                    user.email || ''
+                    w.amount,
+                    narration
                 ]);
             }
  
-            downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+            downloadNombaCSV(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
  
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host Nomba withdrawals as paid?`);
@@ -1500,10 +1513,10 @@ your reward is now live in your balance. 💸`,
             }
         });
  
-        // Winners tab — Nomba export (exports current winners data as Nomba-format payment file)
+        // Winners tab — Nomba export
         document.getElementById('export-winners-nomba-csv')?.addEventListener('click', async () => {
             if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
             for (const w of currentWinnersData) {
                 if (!w.uid || !(w.rewards?.cash > 0)) continue;
@@ -1513,19 +1526,17 @@ your reward is now live in your balance. 💸`,
                     if (userSnap.exists()) user = userSnap.data();
                 } catch(e) {}
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !user.bankAccountNumber) continue;
+                const accountNumber = user.bankAccountNumber || '';
+                if (!bankCode || !accountNumber) continue;
                 rows.push([
-                    w.rewards.cash,
-                    user.bankAccountNumber,
+                    accountNumber,
                     bankCode,
-                    user.fullName || w.username || '',
-                    "TAPMASTER WINNER REWARD",
-                    `NOMBA-WIN-${w.uid}-${w.date}`,
-                    user.email || ''
+                    w.rewards.cash,
+                    "TAPMASTER WINNER REWARD"
                 ]);
             }
-            downloadCSV(`winners_${getTodayDateString()}_nomba.csv`, rows);
-            if (rows.length <= 1) dopeAlert("No eligible winners with Nomba bank details found", "Info");
+            downloadNombaCSV(`winners_${getTodayDateString()}_nomba.csv`, rows);
+            if (rows.length <= 1) dopeAlert("No eligible winners with valid Nomba bank details found", "Info");
         });
  
         document.getElementById('add-rule').addEventListener('click', addRewardRule);
@@ -1589,5 +1600,3 @@ your reward is now live in your balance. 💸`,
         // Fallback for window.alert
         window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
 </script>
-</body>
-</html>
