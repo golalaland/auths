@@ -78,12 +78,14 @@
     <label><input type="radio" name="historyType" value="hosts"> Hosts Winners</label>
   </div>
  
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <button id="export-csv">Export as CSV</button>
+    <button id="export-winners-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+    <button id="clear-winners" style="background:#ff3333;color:#fff;">Clear All Winners</button>
+  </div>
   <input id="winners-from" type="date" placeholder="From Date">
   <input id="winners-to" type="date" placeholder="To Date">
   <button id="fetch-winners">Fetch Winners</button>
-  <button id="export-csv">Export as CSV</button>
-  <button id="export-winners-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
-  <button id="clear-winners">Clear All Winners</button>
  
   <table id="winners-table">
     <thead>
@@ -174,33 +176,37 @@
     </div>
     <div id="withdrawals" class="section">
       <h2>TapMaster Withdrawals Management</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
       <table id="withdrawals-table">
         <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack Format)</button>
-      <button id="export-withdrawals-nomba-csv">
-    Export Nomba CSV
-</button>
     </div>
     <div id="hostWithdrawals" class="section">
       <h2>Host Withdrawals Management</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-host-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-host-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
       <table id="host-withdrawals-table">
         <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
-      <button id="export-host-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Host Withdrawals CSV (Nomba Format)</button>
     </div>
     <!-- TM HOST WITHDRAWALS SECTION (inside adminPanel) -->
     <div id="tmhostWithdrawals" class="section">
       <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-tmhost-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-tmhost-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
       <table id="tmhost-withdrawals-table">
         <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Type</th><th>Action</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack Format)</button>
-      <button id="export-tmhost-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export TM Host Withdrawals CSV (Nomba Format)</button>
     </div>
   </div>
     <script type="module">
@@ -1024,9 +1030,15 @@ your reward is now live in your balance. 💸`,
         // ==================== WITHDRAWALS ====================
         async function loadWithdrawals() {
             const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
-            tableBody.innerHTML = '';
-            const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
+            tableBody.innerHTML = '<tr><td colspan="8" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "withdrawals"), where("status", "==", "pending"), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
+            tableBody.innerHTML = '';
+ 
+            if (snap.empty) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;">No pending withdrawals</td></tr>';
+                return;
+            }
  
             for (const d of snap.docs) {
                 const w = d.data();
@@ -1051,29 +1063,32 @@ your reward is now live in your balance. 💸`,
                     <td>${w.bankName || "—"}</td>
                     <td>${w.bankAccountNumber || "—"}</td>
                     <td>${w.status || "pending"}</td>
-                    <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
+                    <td><button class="mark-paid-withdraw">Mark Paid</button></td>
                 `;
  
-                const btn = row.querySelector('.mark-paid-withdraw');
-                if (btn) {
-                    btn.addEventListener('click', async () => {
-                        if (await showConfirm('Mark Paid', 'Mark this withdrawal as paid?')) {
-                            showLoader();
-                            await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
-                            hideLoader();
-                            loadWithdrawals();
-                        }
-                    });
-                }
+                row.querySelector('.mark-paid-withdraw').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark this withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadWithdrawals();
+                    }
+                });
                 tableBody.appendChild(row);
             }
         }
  
         async function loadHostWithdrawals() {
             const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
-            tableBody.innerHTML = '';
-            const q = query(collection(db, "hostWithdrawal"), orderBy("requestedAt", "desc"));
+            tableBody.innerHTML = '<tr><td colspan="8" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "hostWithdrawal"), where("status", "==", "pending"), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
+            tableBody.innerHTML = '';
+ 
+            if (snap.empty) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;">No pending host withdrawals</td></tr>';
+                return;
+            }
  
             for (const d of snap.docs) {
                 const w = d.data();
@@ -1095,33 +1110,30 @@ your reward is now live in your balance. 💸`,
                     <td>${w.bankName || "—"}</td>
                     <td>${w.bankAccountNumber || "—"}</td>
                     <td>${w.status || "pending"}</td>
-                    <td>${w.status === "pending" ? '<button class="mark-paid-host">Mark Paid</button>' : 'Done'}</td>
+                    <td><button class="mark-paid-host">Mark Paid</button></td>
                 `;
  
-                const btn = row.querySelector('.mark-paid-host');
-                if (btn) {
-                    btn.addEventListener('click', async () => {
-                        if (await showConfirm('Mark Paid', 'Mark this host withdrawal as paid?')) {
-                            showLoader();
-                            await updateDoc(doc(db, 'hostWithdrawal', d.id), { status: 'paid', paidAt: serverTimestamp() });
-                            hideLoader();
-                            loadHostWithdrawals();
-                        }
-                    });
-                }
+                row.querySelector('.mark-paid-host').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark this host withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'hostWithdrawal', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadHostWithdrawals();
+                    }
+                });
                 tableBody.appendChild(row);
             }
         }
  
         async function loadTmHostWithdrawals() {
             const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
-            tableBody.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
-            const q = query(collection(db, "tmhostswithdrawals"), orderBy("requestedAt", "desc"));
+            tableBody.innerHTML = '<tr><td colspan="9" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "tmhostswithdrawals"), where("status", "in", ["pending", "fast_track"]), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
             tableBody.innerHTML = '';
  
             if (snap.empty) {
-                tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;">No TM Host withdrawals</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;">No pending TM Host withdrawals</td></tr>';
                 return;
             }
  
@@ -1149,20 +1161,17 @@ your reward is now live in your balance. 💸`,
                     <td>${w.bankAccountNumber || "—"}</td>
                     <td>${w.status || "pending"}</td>
                     <td>${w.isFastTrack ? '<span style="color:#0f9">Fast Track</span>' : 'Standard'}</td>
-                    <td>${(w.status === "pending" || w.status === "fast_track") ? '<button class="mark-paid-tmhost">Mark Paid</button>' : 'Done'}</td>
+                    <td><button class="mark-paid-tmhost">Mark Paid</button></td>
                 `;
  
-                const btn = row.querySelector('.mark-paid-tmhost');
-                if (btn) {
-                    btn.addEventListener('click', async () => {
-                        if (await showConfirm('Mark Paid', 'Mark TM Host withdrawal as paid?')) {
-                            showLoader();
-                            await updateDoc(doc(db, 'tmhostswithdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
-                            hideLoader();
-                            loadTmHostWithdrawals();
-                        }
-                    });
-                }
+                row.querySelector('.mark-paid-tmhost').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark TM Host withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'tmhostswithdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadTmHostWithdrawals();
+                    }
+                });
                 tableBody.appendChild(row);
             }
         }
