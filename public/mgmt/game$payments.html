@@ -174,27 +174,71 @@
   <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
 </div>
   
-   <div id="withdrawals" class="section">
+    <div id="withdrawals" class="section">
     <h2>TapMaster Withdrawals Management</h2>
-    <table id="withdrawals-table">...</table>
+    <table id="withdrawals-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Username</th>
+          <th>UID</th>
+          <th>Amount</th>
+          <th>Bank</th>
+          <th>Account</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
     <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack)</button>
     <button id="export-withdrawals-nomba-csv">Export Withdrawals CSV (Nomba)</button>
   </div>
+
     <div id="hostWithdrawals" class="section">
-    <h2>Host Withdrawals Management</h2>
-    <table id="host-withdrawals-table">...</table>
-    <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack)</button>
-    <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba)</button>
+      <h2>Host Withdrawals Management</h2>
+      <table id="host-withdrawals-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Username</th>
+            <th>UID</th>
+            <th>Amount</th>
+            <th>Bank</th>
+            <th>Account</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack)</button>
+      <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba)</button>
+    </div>
+
+    <!-- TM Host Withdrawals -->
+    <div id="tmhostWithdrawals" class="section">
+      <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
+      <table id="tmhost-withdrawals-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Username</th>
+            <th>UID</th>
+            <th>Amount</th>
+            <th>Bank</th>
+            <th>Account</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack)</button>
+      <button id="export-tmhost-withdrawals-nomba-csv">Export TM Host Withdrawals CSV (Nomba)</button>
+    </div>
   </div>
-  <!-- NEW SECTION -->
-   <div id="tmhostWithdrawals" class="section">
-    <h2>TM Host Withdrawals</h2>
-    <table id="tmhost-withdrawals-table">...</table>
-    <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack)</button>
-    <button id="export-tmhost-withdrawals-nomba-csv">Export TM Host Withdrawals CSV (Nomba)</button>
-  </div>
-  </div>
-  
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import {
