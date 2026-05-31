@@ -1212,7 +1212,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
@@ -1224,16 +1224,14 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
  
                 rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
                     w.amount,
-                    w.bankAccountNumber,
-                    bankCode,
-                    user.fullName || w.username || '',
-                    "PROMOTIONAL CASH GIFT",
-                    `NOMBA-${d.id}`,
-                    user.email || ''
+                    "PROMOTIONAL CASH GIFT"
                 ]);
             }
  
@@ -1249,6 +1247,8 @@ your reward is now live in your balance. 💸`,
                     hideLoader();
                     loadWithdrawals();
                 }
+            } else {
+                dopeAlert("No pending withdrawals for Nomba export", "Info");
             }
         }
  
@@ -1339,7 +1339,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportHostWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
@@ -1351,16 +1351,14 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
  
                 rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
                     w.amount,
-                    user.bankAccountNumber || w.bankAccountNumber || '',
-                    bankCode,
-                    user.fullName || w.username || '',
-                    "HOSTS PROMOTIONAL CASH GIFT",
-                    `NOMBA-HPR-${d.id}`,
-                    user.email || ''
+                    "HOSTS PROMOTIONAL CASH GIFT"
                 ]);
             }
  
@@ -1380,7 +1378,7 @@ your reward is now live in your balance. 💸`,
         }
  
         async function exportTmHostWithdrawalsCSV_Nomba() {
-            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
             const rows = [headers];
  
             const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
@@ -1392,18 +1390,16 @@ your reward is now live in your balance. 💸`,
                 const user = userSnap.data() || {};
  
                 const bankCode = resolveBankForProvider(user, "nomba");
-                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
  
                 const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
  
                 rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
                     w.amount,
-                    user.bankAccountNumber || w.bankAccountNumber || '',
-                    bankCode,
-                    user.fullName || w.username || '',
-                    note,
-                    `NOMBA-TMH-${d.id}`,
-                    user.email || ''
+                    note
                 ]);
             }
  
