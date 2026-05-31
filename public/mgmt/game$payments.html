@@ -173,7 +173,7 @@
   </div>
   <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
 </div>
-    </div>
+  
    <div id="withdrawals" class="section">
     <h2>TapMaster Withdrawals Management</h2>
     <table id="withdrawals-table">...</table>
@@ -185,7 +185,6 @@
     <table id="host-withdrawals-table">...</table>
     <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack)</button>
     <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba)</button>
-  </div>
   </div>
   <!-- NEW SECTION -->
    <div id="tmhostWithdrawals" class="section">
@@ -1478,8 +1477,7 @@ your reward is now live in your balance. 💸`,
             dopeAlert(`Hosts winners saved for ${date}`);
             loadWinnerDates();
         }
-
-               // ==================== EVENT LISTENERS (Cleaned) ====================
+        // ==================== EVENT LISTENERS (Cleaned & Fixed) ====================
         
         // Leaderboards
         document.getElementById('lb-type').addEventListener('change', startLbListener);
@@ -1487,7 +1485,7 @@ your reward is now live in your balance. 💸`,
         document.getElementById('bid-round').addEventListener('change', startLbListener);
         document.getElementById('fetch-lb').addEventListener('click', startLbListener);
 
-        // Winners Management
+        // Winners
         document.getElementById('save-winners').addEventListener('click', saveWinners);
         document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
         document.getElementById('export-csv').addEventListener('click', exportCSV);
@@ -1500,28 +1498,22 @@ your reward is now live in your balance. 💸`,
             }
         });
 
-        // Rewards Management
+        // Rewards & Configs
         document.getElementById('add-rule').addEventListener('click', addRewardRule);
         document.getElementById('apply-rewards').addEventListener('click', applyRewards);
-
-        // Game Configs
         document.getElementById('save-configs').addEventListener('click', saveConfigs);
 
         // ====================== WITHDRAWALS EXPORTS ======================
-        
-        // Regular Player Withdrawals
         document.getElementById('export-withdrawals-csv')
             ?.addEventListener('click', exportWithdrawalsCSV);
         document.getElementById('export-withdrawals-nomba-csv')
             ?.addEventListener('click', exportWithdrawalsCSV_Nomba);
 
-        // Host Withdrawals
         document.getElementById('export-host-withdrawals-csv')
             ?.addEventListener('click', exportHostWithdrawalsCSV);
         document.getElementById('export-host-withdrawals-nomba-csv')
             ?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
 
-        // TM Host Withdrawals
         document.getElementById('export-tmhost-withdrawals-csv')
             ?.addEventListener('click', exportTmHostWithdrawalsCSV);
         document.getElementById('export-tmhost-withdrawals-nomba-csv')
@@ -1531,7 +1523,7 @@ your reward is now live in your balance. 💸`,
         document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
         document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
 
-        // Winners History Filters
+        // History Type Toggle
         document.querySelectorAll('input[name="historyType"]').forEach(radio => {
             radio.addEventListener('change', fetchWinnersHistory);
         });
