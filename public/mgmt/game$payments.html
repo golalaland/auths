@@ -1,3 +1,4 @@
+Admin dashboard fixed · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,20 +74,18 @@
   <h2>Winners History</h2>
   
   <div style="margin-bottom:15px;">
-    <strong>Show:</strong>  
-    <label><input type="radio" name="historyType" value="general" checked> General Winners</label>  
+    <strong>Show:</strong>  
+    <label><input type="radio" name="historyType" value="general" checked> General Winners</label>  
     <label><input type="radio" name="historyType" value="hosts"> Hosts Winners</label>
   </div>
-
+ 
   <input id="winners-from" type="date" placeholder="From Date">
   <input id="winners-to" type="date" placeholder="To Date">
   <button id="fetch-winners">Fetch Winners</button>
   <button id="export-csv">Export as CSV</button>
-  <button id="export-withdrawals-nomba-csv">
-  Export Nomba CSV
-</button>
+  <button id="export-winners-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
   <button id="clear-winners">Clear All Winners</button>
-
+ 
   <table id="winners-table">
     <thead>
       <tr>
@@ -101,7 +100,7 @@
     <tbody></tbody>
   </table>
 </div>
-
+ 
     <!-- NEW: HOSTS LEADERBOARD SECTION -->
 <div id="hostsLeaderboard" class="section">
   <h2>Hosts Leaderboard (Separate Scores)</h2>
@@ -111,7 +110,7 @@
     <option value="weekly">Weekly Hosts</option>
     <option value="monthly">Monthly Hosts</option>
   </select>
-
+ 
   <!-- Inside <div id="hostsLeaderboard" class="section">, after the table -->
 <button id="save-host-winners" style="margin-top:15px; background:#ff00aa; color:#fff;">
   Save Current Hosts Leaderboard as Winners
@@ -119,7 +118,7 @@
   
   <input id="host-lb-limit" type="number" placeholder="Top N" value="50">
   <button id="fetch-host-lb">Refresh Hosts Leaderboard</button>
-
+ 
   <table id="host-lb-table">
     <thead>
       <tr>
@@ -137,21 +136,21 @@
   <h2>Rewards Management</h2>
   
   <div style="margin-bottom:20px;">
-    <strong>Reward Type:</strong>  
-    <label><input type="radio" name="rewardType" value="general" checked> General Players</label>  
+    <strong>Reward Type:</strong>  
+    <label><input type="radio" name="rewardType" value="general" checked> General Players</label>  
     <label><input type="radio" name="rewardType" value="hosts"> Hosts Only</label>
   </div>
-
+ 
   <p>Set batch rewards (e.g., top 1-10: cash 5000, stars 0)</p>
   
   <div id="reward-rules"></div>
   <button id="add-rule">Add Reward Rule</button>
-
+ 
   <div style="margin:20px 0;">
     <select id="reward-winners-date"></select>
     <button id="apply-rewards">Apply & Mass Send Rewards</button>
   </div>
-
+ 
   <button id="send-notifs">Send Custom Notifications</button>
   <textarea id="notif-message" placeholder="Custom notification message" style="width:100%;height:80px;margin-top:10px;"></textarea>
 </div>
@@ -173,70 +172,36 @@
   </div>
   <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
 </div>
-  
+    </div>
     <div id="withdrawals" class="section">
-    <h2>TapMaster Withdrawals Management</h2>
-    <table id="withdrawals-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Username</th>
-          <th>UID</th>
-          <th>Amount</th>
-          <th>Bank</th>
-          <th>Account</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack)</button>
-    <button id="export-withdrawals-nomba-csv">Export Withdrawals CSV (Nomba)</button>
-  </div>
-
+      <h2>TapMaster Withdrawals Management</h2>
+      <table id="withdrawals-table">
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button id="export-withdrawals-csv">Export Withdrawals CSV (Paystack Format)</button>
+      <button id="export-withdrawals-nomba-csv">
+    Export Nomba CSV
+</button>
+    </div>
     <div id="hostWithdrawals" class="section">
       <h2>Host Withdrawals Management</h2>
       <table id="host-withdrawals-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Username</th>
-            <th>UID</th>
-            <th>Amount</th>
-            <th>Bank</th>
-            <th>Account</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack)</button>
-      <button id="export-host-withdrawals-nomba-csv">Export Host Withdrawals CSV (Nomba)</button>
+      <button id="export-host-withdrawals-csv">Export Host Withdrawals CSV (Paystack Format)</button>
+      <button id="export-host-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Host Withdrawals CSV (Nomba Format)</button>
     </div>
-
-    <!-- TM Host Withdrawals -->
+    <!-- TM HOST WITHDRAWALS SECTION (inside adminPanel) -->
     <div id="tmhostWithdrawals" class="section">
       <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
       <table id="tmhost-withdrawals-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Username</th>
-            <th>UID</th>
-            <th>Amount</th>
-            <th>Bank</th>
-            <th>Account</th>
-            <th>Status</th>
-            <th>Type</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Type</th><th>Action</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack)</button>
-      <button id="export-tmhost-withdrawals-nomba-csv">Export TM Host Withdrawals CSV (Nomba)</button>
+      <button id="export-tmhost-withdrawals-csv">Export TM Host Withdrawals CSV (Paystack Format)</button>
+      <button id="export-tmhost-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export TM Host Withdrawals CSV (Nomba Format)</button>
     </div>
   </div>
     <script type="module">
@@ -244,7 +209,7 @@
         import {
             getFirestore, doc, getDoc, setDoc, increment, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp, runTransaction, addDoc, deleteDoc, onSnapshot
         } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
+ 
         const firebaseConfig = {
             apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
             authDomain: "dettyverse.firebaseapp.com",
@@ -254,10 +219,10 @@
             appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
             measurementId: "G-NX2KWZW85V"
         };
-
+ 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
+ 
         // DOM Elements
         const adminGate = document.getElementById("adminGate");
         const adminPanel = document.getElementById("adminPanel");
@@ -267,24 +232,24 @@
         const logoutBtn = document.getElementById("logoutBtn");
         const loaderOverlay = document.getElementById("loaderOverlay");
         const loaderText = document.getElementById("loaderText");
-
+ 
         // Global state
         let currentAdmin = null;
         let currentLbData = [];
         let currentWinnersData = [];
         let currentHostLbData = [];
         let lbUnsub = null;
-
+ 
         // ==================== UTILITY FUNCTIONS ====================
         function showLoader(text = "Working...") {
             loaderText.textContent = text;
             loaderOverlay.style.display = "flex";
         }
-
+ 
         function hideLoader() {
             loaderOverlay.style.display = "none";
         }
-
+ 
         function showConfirm(title = "Confirm", msg = "Are you sure?") {
             return new Promise(resolve => {
                 const overlay = document.createElement("div");
@@ -327,7 +292,7 @@
                         </div>
                     </div>
                 `;
-
+ 
                 const style = document.createElement("style");
                 style.textContent = `
                     @keyframes shine { 0% { transform: translateX(-150%) translateY(-150%) rotate(30deg); } 100% { transform: translateX(150%) translateY(150%) rotate(30deg); } }
@@ -335,12 +300,12 @@
                 `;
                 document.head.appendChild(style);
                 document.body.appendChild(overlay);
-
+ 
                 setTimeout(() => {
                     overlay.style.opacity = "1";
                     overlay.querySelector("div > div").style.transform = "scale(1)";
                 }, 50);
-
+ 
                 overlay.querySelector("#no").onclick = () => {
                     overlay.style.opacity = "0";
                     setTimeout(() => { overlay.remove(); style.remove(); }, 500);
@@ -356,11 +321,11 @@
                 };
             });
         }
-
+ 
         function getTodayDateString() {
             return new Date().toISOString().split('T')[0];
         }
-
+ 
         function downloadCSV(filename, rows) {
             const csv = rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
             const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -369,7 +334,7 @@
             a.download = filename;
             a.click();
         }
-
+ 
         function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
             const alertBox = document.getElementById("dopeAlert");
             if (!alertBox) return console.log(message);
@@ -386,7 +351,7 @@
             setTimeout(() => {
                 alertBox.style.opacity = "1";
             }, 50);
-
+ 
             const autoClose = setTimeout(() => closeDope(), duration);
             const closeBtn = document.getElementById("dopeClose");
             if (closeBtn) {
@@ -395,13 +360,13 @@
                     closeDope();
                 };
             }
-
+ 
             function closeDope() {
                 alertBox.style.opacity = "0";
                 setTimeout(() => alertBox.style.display = "none", 400);
             }
         }
-
+ 
       // Define this ONCE at the top level (outside any function)
 const NIGERIA_BANKS = [
     { name: "Access Bank", code: "044" },
@@ -446,17 +411,17 @@ const NIGERIA_BANKS = [
     { name: "Wema Bank", code: "035" },
     { name: "Zenith Bank", code: "057" }
 ];
-
+ 
 // Clean Bank Resolver Function
 function resolveBankForProvider(user, provider) {
     if (!user || !user.bankName) return "";
-
+ 
     const bankName = user.bankName.trim();
-
+ 
     if (provider === "paystack") {
         return user.bankSlug || user.bankName || "";
     }
-
+ 
     if (provider === "nomba" || provider === "moniepoint") {
         // Try exact match first
         let bank = NIGERIA_BANKS.find(b => b.name === bankName);
@@ -468,14 +433,14 @@ function resolveBankForProvider(user, provider) {
                 bankName.toLowerCase().includes(b.name.toLowerCase())
             );
         }
-
+ 
         return bank?.code || "";
     }
-
+ 
     return "";
 }
       
-
+ 
         // ==================== ADMIN AUTH ====================
         adminCheckBtn.addEventListener("click", async () => {
             const email = adminEmailInput.value.trim().toLowerCase();
@@ -483,32 +448,32 @@ function resolveBankForProvider(user, provider) {
                 adminGateMsg.textContent = "Please enter an email";
                 return;
             }
-
+ 
             showLoader("Verifying admin access...");
             try {
                 const q = query(collection(db, "users"), where("email", "==", email));
                 const snap = await getDocs(q);
                 hideLoader();
-
+ 
                 if (snap.empty) {
                     adminGateMsg.textContent = "User not found";
                     return;
                 }
-
+ 
                 const data = snap.docs[0].data();
                 if (!data.isAdmin) {
                     adminGateMsg.textContent = "Access denied: Not an admin";
                     return;
                 }
-
+ 
                 currentAdmin = {
                     id: snap.docs[0].id,
                     email: data.email || email
                 };
-
+ 
                 adminGate.style.display = "none";
                 adminPanel.style.display = "block";
-
+ 
                 initTabs();
                 
                 await Promise.all([
@@ -516,15 +481,15 @@ function resolveBankForProvider(user, provider) {
                     loadWinnerDates(),
                     loadConfigs()
                 ]);
-
+ 
                 initRewardRules();
-
+ 
                 await Promise.all([
                     loadWithdrawals(),
                     loadHostWithdrawals(),
                     loadTmHostWithdrawals()
                 ]);
-
+ 
                 await startLbListener();
                 await loadHostsLeaderboard();
             } catch (error) {
@@ -533,7 +498,7 @@ function resolveBankForProvider(user, provider) {
                 adminGateMsg.textContent = "Login error. Check console.";
             }
         });
-
+ 
         logoutBtn.addEventListener("click", () => {
             if (lbUnsub) {
                 lbUnsub();
@@ -545,21 +510,18 @@ function resolveBankForProvider(user, provider) {
             adminEmailInput.value = "";
             adminGateMsg.textContent = "";
         });
-
-      document.getElementById('export-withdrawals-nomba-csv')
-  .addEventListener('click', exportWithdrawalsCSV_Nomba);
-
+ 
         // ==================== TABS ====================
         function initTabs() {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-
+ 
                     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
                     const targetSection = document.getElementById(tab.dataset.tab);
                     if (targetSection) targetSection.classList.add('active');
-
+ 
                     switch (tab.dataset.tab) {
                         case 'leaderboards':
                             startLbListener();
@@ -580,7 +542,7 @@ function resolveBankForProvider(user, provider) {
                             loadTmHostWithdrawals();
                             break;
                     }
-
+ 
                     if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
                         lbUnsub();
                         lbUnsub = null;
@@ -588,7 +550,7 @@ function resolveBankForProvider(user, provider) {
                 });
             });
         }
-
+ 
         // ==================== LEADERBOARDS ====================
         async function startLbListener() {
             if (lbUnsub) lbUnsub();
@@ -598,7 +560,7 @@ function resolveBankForProvider(user, provider) {
             const tableBody = document.getElementById('lb-table').querySelector('tbody');
             tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
             currentLbData = [];
-
+ 
             try {
                 if (type === 'bid') {
                     const roundId = document.getElementById('bid-round').value;
@@ -642,7 +604,7 @@ function resolveBankForProvider(user, provider) {
                 console.error(e);
             }
         }
-
+ 
         function renderLbTable() {
             const tableBody = document.getElementById('lb-table').querySelector('tbody');
             tableBody.innerHTML = '';
@@ -652,14 +614,14 @@ function resolveBankForProvider(user, provider) {
                 tableBody.appendChild(row);
             });
         }
-
+ 
         function getLeaderboardKey(period) {
             const now = new Date();
             if (period === 'daily') return now.toISOString().split('T')[0];
             if (period === 'weekly') return `${now.getFullYear()}-W${getWeekNumber(now)}`;
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         }
-
+ 
         function getWeekNumber(date) {
             const d = new Date(date);
             d.setHours(0, 0, 0, 0);
@@ -667,7 +629,7 @@ function resolveBankForProvider(user, provider) {
             const yearStart = new Date(d.getFullYear(), 0, 1);
             return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
         }
-
+ 
         // ==================== WINNERS ====================
         async function loadBidRounds() {
             const bids = await getDocs(collection(db, 'bids'));
@@ -675,26 +637,26 @@ function resolveBankForProvider(user, provider) {
             const select = document.getElementById('bid-round');
             select.innerHTML = uniqueRounds.map(r => `<option value="${r}">${r}</option>`).join('');
         }
-
+ 
         async function loadWinnerDates() {
             const [winnersSnap, hostWinnersSnap] = await Promise.all([
                 getDocs(collection(db, 'winners')),
                 getDocs(collection(db, 'hostWinners'))
             ]);
-
+ 
             const dates = [];
             winnersSnap.docs.forEach(d => dates.push({ date: d.id, type: 'general' }));
             hostWinnersSnap.docs.forEach(d => dates.push({ date: d.id, type: 'hosts' }));
-
+ 
             dates.sort((a, b) => b.date.localeCompare(a.date));
-
+ 
             const select = document.getElementById('reward-winners-date');
             select.innerHTML = dates.map(item => {
                 const label = item.type === 'hosts' ? `Hosts - ${item.date}` : item.date;
                 return `<option value="${item.date}" data-type="${item.type}">${label}</option>`;
             }).join('');
         }
-
+ 
         async function saveWinners() {
             if (currentLbData.length === 0) return dopeAlert('No data');
             const date = new Date().toISOString().split('T')[0];
@@ -708,7 +670,7 @@ function resolveBankForProvider(user, provider) {
             dopeAlert('Saved');
             loadWinnerDates();
         }
-
+ 
         async function fetchWinnersHistory() {
             const from = document.getElementById('winners-from').value;
             const to = document.getElementById('winners-to').value;
@@ -716,24 +678,24 @@ function resolveBankForProvider(user, provider) {
             const tableBody = document.getElementById('winners-table').querySelector('tbody');
             tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
             currentWinnersData = [];
-
+ 
             try {
                 let q = query(
                     collection(db, historyType === 'hosts' ? 'hostWinners' : 'winners'),
                     orderBy('date', 'desc')
                 );
-
+ 
                 if (from) q = query(q, where('date', '>=', from));
                 if (to) q = query(q, where('date', '<=', to));
-
+ 
                 const snaps = await getDocs(q);
                 tableBody.innerHTML = '';
-
+ 
                 if (snaps.empty) {
                     tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;">No winners found</td></tr>`;
                     return;
                 }
-
+ 
                 snaps.docs.forEach(doc => {
                     const data = doc.data();
                     data.winners.forEach(w => {
@@ -748,7 +710,7 @@ function resolveBankForProvider(user, provider) {
                             <td>${rewardsStr}</td>
                         `;
                         tableBody.appendChild(row);
-
+ 
                         currentWinnersData.push({
                             date: data.date,
                             type: historyType,
@@ -766,15 +728,15 @@ function resolveBankForProvider(user, provider) {
                 tableBody.innerHTML = '<tr><td colspan="6" style="color:#ff6b6b">Error loading winners</td></tr>';
             }
         }
-
+ 
         async function exportCSV() {
             if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
-
+ 
             const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
             const prefix = historyType === 'hosts' ? 'hosts_winners' : 'winners';
             const headers = ['Date', 'Type', 'Rank', 'User', 'Taps', 'Cash', 'Stars', 'Email'];
             const rows = [headers];
-
+ 
             for (const w of currentWinnersData) {
                 let email = w.email || '';
                 if (!email && w.uid) {
@@ -794,11 +756,11 @@ function resolveBankForProvider(user, provider) {
                     email
                 ]);
             }
-
+ 
             downloadCSV(`${prefix}_${getTodayDateString()}.csv`, rows);
             dopeAlert(`Exported ${rows.length - 1} winners`);
         }
-
+ 
         async function clearWinners() {
             const winners = await getDocs(collection(db, 'winners'));
             for (const d of winners.docs) await deleteDoc(d.ref);
@@ -806,13 +768,13 @@ function resolveBankForProvider(user, provider) {
             document.getElementById('winners-table').querySelector('tbody').innerHTML = '';
             loadWinnerDates();
         }
-
+ 
         // ==================== REWARDS ====================
         function initRewardRules() {
             const container = document.getElementById('reward-rules');
             if (container.children.length === 0) addRewardRule();
         }
-
+ 
         function addRewardRule() {
             const container = document.getElementById('reward-rules');
             const rule = document.createElement('div');
@@ -824,7 +786,7 @@ function resolveBankForProvider(user, provider) {
             `;
             container.appendChild(rule);
         }
-
+ 
   function formatNumber(num) {
     if (!num || isNaN(num)) return '0';
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -833,22 +795,22 @@ function resolveBankForProvider(user, provider) {
 async function applyRewards() {
   const date = document.getElementById('reward-winners-date').value;
   if (!date) return dopeAlert('Please select a date', 'Error');
-
+ 
   const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
   const isHosts = rewardType === 'hosts';
-
+ 
   const winnersRef = isHosts 
     ? doc(db, 'hostWinners', date) 
     : doc(db, 'winners', date);
-
+ 
   const snap = await getDoc(winnersRef);
   if (!snap.exists()) {
     return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for this date`, 'Error');
   }
-
+ 
   const winnersDoc = snap.data();
   let winners = winnersDoc.winners || [];
-
+ 
   // Load reward rules from UI
   const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
     start: parseInt(div.querySelector('.rule-start').value) || 1,
@@ -856,7 +818,7 @@ async function applyRewards() {
     cash: parseInt(div.querySelector('.rule-cash').value) || 0,
     stars: parseInt(div.querySelector('.rule-stars').value) || 0
   }));
-
+ 
   // Assign rewards
   winners.forEach(w => {
     w.rewards = { cash: 0, stars: 0 };
@@ -867,9 +829,9 @@ async function applyRewards() {
       }
     }
   });
-
+ 
   await updateDoc(winnersRef, { winners });
-
+ 
   // Load ripple config
   const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
   const config = referralSnap.exists() ? referralSnap.data() : {
@@ -879,20 +841,20 @@ async function applyRewards() {
     level2_stars_percent: 2,
     max_levels: 2
   };
-
+ 
   const l1Cash = config.level1_cash_percent / 100;
   const l1Stars = config.level1_stars_percent / 100;
   const l2Cash = config.level2_cash_percent / 100;
   const l2Stars = config.level2_stars_percent / 100;
-
+ 
   // Process each winner
   for (let w of winners) {
     const directCash = w.rewards.cash || 0;
     const directStars = w.rewards.stars || 0;
     if (directCash + directStars === 0) continue;
-
+ 
     const winnerRef = doc(db, 'users', w.uid);
-
+ 
     // Direct reward
     await runTransaction(db, async (t) => {
       const userSnap = await t.get(winnerRef);
@@ -902,16 +864,16 @@ async function applyRewards() {
         stars: increment(directStars)
       });
     });
-
+ 
     // Winner Notification
     const rewardParts = [];
     if (directCash > 0) rewardParts.push(`₦${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
-
+ 
     const rankText = w.rank === 1 ? "1ST PLACE 🥇 — TAP IN!" :
                      w.rank === 2 ? "2ND PLACE 🥈 — TAP IN!" :
                      w.rank === 3 ? "3RD PLACE 🥉— TAP IN!" : `TOP ${w.rank}`;
-
+ 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title: isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
@@ -925,10 +887,10 @@ your reward is now live in your balance. 💸`,
       createdAt: serverTimestamp(),
       read: false
     });
-
+ 
     // ==================== RIPPLE REWARDS (Fixed for Hosts) ====================
     let invitedBy = w.invitedBy;
-
+ 
     // Fallback: Fetch invitedBy from user document if not stored in winner
     if (!invitedBy && w.uid) {
       const userSnap = await getDoc(doc(db, 'users', w.uid));
@@ -936,24 +898,24 @@ your reward is now live in your balance. 💸`,
         invitedBy = userSnap.data().invitedBy;
       }
     }
-
+ 
     let currentUid = invitedBy;
     let level = 1;
     let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
-
+ 
     while (currentUid && level <= config.max_levels) {
       const uplineRef = doc(db, 'users', currentUid);
       const uplineSnap = await getDoc(uplineRef);
       if (!uplineSnap.exists()) break;
-
+ 
       const uplineData = uplineSnap.data();
-
+ 
       const cashPercent = level === 1 ? l1Cash : l2Cash;
       const starsPercent = level === 1 ? l1Stars : l2Stars;
-
+ 
       const rippleCash = Math.floor(directCash * cashPercent);
       const rippleStars = Math.floor(directStars * starsPercent);
-
+ 
       if (rippleCash + rippleStars > 0) {
         await runTransaction(db, async (t) => {
           const snap = await t.get(uplineRef);
@@ -963,15 +925,15 @@ your reward is now live in your balance. 💸`,
             stars: increment(rippleStars)
           });
         });
-
+ 
         const rippleParts = [];
         if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
         if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
-
+ 
         let message = level === 1 
           ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus — your share of their win! 🤩`
           : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win! 🤩`;
-
+ 
         await addDoc(collection(db, "notifications"), {
           recipientId: currentUid,
           title: isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
@@ -985,7 +947,7 @@ your reward is now live in your balance. 💸`,
           read: false
         });
       }
-
+ 
       chainPersonName = uplineData.chatId || uplineData.username || "a player";
       currentUid = uplineData.invitedBy;
       level++;
@@ -997,23 +959,23 @@ your reward is now live in your balance. 💸`,
   if (badge) {
     badge.style.display = "flex";
   }
-
+ 
   dopeAlert(
     isHosts ? "HOSTS REWARDS + RIPPLE SUCCESSFULLY SENT!" : "GENERAL REWARDS + RIPPLE SUCCESSFULLY SENT!",
     "SUCCESS",
     "Crown",
     8000
-
+ 
   );
 }
-
+ 
         // ==================== CONFIGS ====================
         async function loadConfigs() {
             const [gameSnap, referralSnap] = await Promise.all([
                 getDoc(doc(db, 'configs', 'game')),
                 getDoc(doc(db, 'configs', 'referral'))
             ]);
-
+ 
             if (gameSnap.exists()) {
                 const d = gameSnap.data();
                 document.getElementById('bid-cost').value = d.BID_COST || '';
@@ -1021,7 +983,7 @@ your reward is now live in your balance. 💸`,
                 document.getElementById('base-pool').value = d.BASE_PRIZE_POOL || '';
                 document.getElementById('max-pool').value = d.MAX_PRIZE_POOL || '';
             }
-
+ 
             if (referralSnap.exists()) {
                 const r = referralSnap.data();
                 document.getElementById('l1-cash').value = r.level1_cash_percent || 10;
@@ -1030,7 +992,7 @@ your reward is now live in your balance. 💸`,
                 document.getElementById('l2-stars').value = r.level2_stars_percent || 2;
             }
         }
-
+ 
         async function saveConfigs() {
             await Promise.all([
                 setDoc(doc(db, 'configs', 'game'), {
@@ -1049,19 +1011,19 @@ your reward is now live in your balance. 💸`,
             ]);
             dopeAlert('Configurations saved');
         }
-
+ 
         // ==================== WITHDRAWALS ====================
         async function loadWithdrawals() {
             const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
             tableBody.innerHTML = '';
             const q = query(collection(db, "withdrawals"), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
                 let displayName = "—";
-
+ 
                 if (w.uid) {
                     const userSnap = await getDoc(doc(db, "users", w.uid));
                     if (userSnap.exists()) {
@@ -1069,7 +1031,7 @@ your reward is now live in your balance. 💸`,
                         displayName = ud.fullName || w.username || "—";
                     }
                 }
-
+ 
                 const row = document.createElement('tr');
                 row.dataset.id = d.id;
                 row.innerHTML = `
@@ -1082,7 +1044,7 @@ your reward is now live in your balance. 💸`,
                     <td>${w.status || "pending"}</td>
                     <td>${w.status === "pending" ? '<button class="mark-paid-withdraw">Mark Paid</button>' : 'Done'}</td>
                 `;
-
+ 
                 const btn = row.querySelector('.mark-paid-withdraw');
                 if (btn) {
                     btn.addEventListener('click', async () => {
@@ -1097,23 +1059,23 @@ your reward is now live in your balance. 💸`,
                 tableBody.appendChild(row);
             }
         }
-
+ 
         async function loadHostWithdrawals() {
             const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
             tableBody.innerHTML = '';
             const q = query(collection(db, "hostWithdrawal"), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
                 let displayName = "—";
-
+ 
                 if (w.uid) {
                     const userSnap = await getDoc(doc(db, "users", w.uid));
                     if (userSnap.exists()) displayName = userSnap.data().fullName || w.username || "—";
                 }
-
+ 
                 const row = document.createElement('tr');
                 row.dataset.id = d.id;
                 row.innerHTML = `
@@ -1126,7 +1088,7 @@ your reward is now live in your balance. 💸`,
                     <td>${w.status || "pending"}</td>
                     <td>${w.status === "pending" ? '<button class="mark-paid-host">Mark Paid</button>' : 'Done'}</td>
                 `;
-
+ 
                 const btn = row.querySelector('.mark-paid-host');
                 if (btn) {
                     btn.addEventListener('click', async () => {
@@ -1141,24 +1103,24 @@ your reward is now live in your balance. 💸`,
                 tableBody.appendChild(row);
             }
         }
-
+ 
         async function loadTmHostWithdrawals() {
             const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
             tableBody.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
             const q = query(collection(db, "tmhostswithdrawals"), orderBy("requestedAt", "desc"));
             const snap = await getDocs(q);
             tableBody.innerHTML = '';
-
+ 
             if (snap.empty) {
                 tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;">No TM Host withdrawals</td></tr>';
                 return;
             }
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
                 let displayName = w.username || "—";
-
+ 
                 if (w.uid) {
                     const userSnap = await getDoc(doc(db, "users", w.uid));
                     if (userSnap.exists()) {
@@ -1166,7 +1128,7 @@ your reward is now live in your balance. 💸`,
                         displayName = ud.fullName || ud.chatId || w.username || "—";
                     }
                 }
-
+ 
                 const row = document.createElement('tr');
                 row.dataset.id = d.id;
                 row.innerHTML = `
@@ -1180,7 +1142,7 @@ your reward is now live in your balance. 💸`,
                     <td>${w.isFastTrack ? '<span style="color:#0f9">Fast Track</span>' : 'Standard'}</td>
                     <td>${(w.status === "pending" || w.status === "fast_track") ? '<button class="mark-paid-tmhost">Mark Paid</button>' : 'Done'}</td>
                 `;
-
+ 
                 const btn = row.querySelector('.mark-paid-tmhost');
                 if (btn) {
                     btn.addEventListener('click', async () => {
@@ -1195,7 +1157,7 @@ your reward is now live in your balance. 💸`,
                 tableBody.appendChild(row);
             }
         }
-
+ 
         // ==================== CSV EXPORTS ====================
         async function exportWithdrawalsCSV() { // Paystack
             const headers = [
@@ -1204,15 +1166,15 @@ your reward is now live in your balance. 💸`,
                 'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
             ];
             const rows = [headers];
-
+ 
             const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 const userSnap = await getDoc(doc(db, 'users', w.uid));
                 const user = userSnap.data() || {};
-
+ 
                 rows.push([
                     w.amount || 0,
                     "PROMOTIONAL CASH GIFT",
@@ -1224,9 +1186,9 @@ your reward is now live in your balance. 💸`,
                     user.email || ''
                 ]);
             }
-
+ 
             downloadCSV(`withdrawals_${getTodayDateString()}_paystack.csv`, rows);
-
+ 
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} withdrawals as paid?`);
                 if (ok) {
@@ -1239,22 +1201,22 @@ your reward is now live in your balance. 💸`,
                 }
             }
         }
-
+ 
         async function exportWithdrawalsCSV_Nomba() {
             const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
             const rows = [headers];
-
+ 
             const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 const userSnap = await getDoc(doc(db, 'users', w.uid));
                 const user = userSnap.data() || {};
-
+ 
                 const bankCode = resolveBankForProvider(user, "nomba");
                 if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
-
+ 
                 rows.push([
                     w.amount,
                     w.bankAccountNumber,
@@ -1265,9 +1227,9 @@ your reward is now live in your balance. 💸`,
                     user.email || ''
                 ]);
             }
-
+ 
             downloadCSV(`withdrawals_${getTodayDateString()}_nomba.csv`, rows);
-
+ 
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Nomba withdrawals as paid?`);
                 if (ok) {
@@ -1280,22 +1242,22 @@ your reward is now live in your balance. 💸`,
                 }
             }
         }
-
+ 
         async function exportHostWithdrawalsCSV() {
             const headers = [
                 'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
                 'Recipient Code', 'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
             ];
             const rows = [headers];
-
+ 
             const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 const userSnap = await getDoc(doc(db, 'users', w.uid));
                 const user = userSnap.data() || {};
-
+ 
                 rows.push([
                     w.amount || 0,
                     "HOSTS PROMOTIONAL CASH GIFT",
@@ -1307,9 +1269,9 @@ your reward is now live in your balance. 💸`,
                     user.email || ''
                 ]);
             }
-
+ 
             downloadCSV(`host_withdrawals_${getTodayDateString()}_paystack.csv`, rows);
-
+ 
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} host withdrawals as paid?`);
                 if (ok) {
@@ -1320,63 +1282,24 @@ your reward is now live in your balance. 💸`,
                 }
             }
         }
-
-      async function exportHostWithdrawalsCSV_Nomba() {
-      const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
-      const rows = [headers];
-
-      const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
-      const snap = await getDocs(q);
-
-      for (const d of snap.docs) {
-        const w = d.data();
-        const userSnap = await getDoc(doc(db, 'users', w.uid));
-        const user = userSnap.data() || {};
-
-        const bankCode = resolveBankForProvider(user, "nomba");
-        if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
-
-        rows.push([
-          w.amount,
-          w.bankAccountNumber,
-          bankCode,
-          user.fullName || w.username || '',
-          "HOSTS PROMOTIONAL CASH GIFT",
-          `NOMBA-H-${d.id}`,
-          user.email || ''
-        ]);
-      }
-
-      downloadCSV(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
-
-      if (rows.length > 1) {
-        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} host withdrawals as paid?`);
-        if (ok) {
-          showLoader();
-          for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-          hideLoader();
-          loadHostWithdrawals();
-        }
-      }
-    }
-
+ 
         async function exportTmHostWithdrawalsCSV() {
             const headers = [
                 'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
                 'Recipient Code', 'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
             ];
             const rows = [headers];
-
+ 
             const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
             const snap = await getDocs(q);
-
+ 
             for (const d of snap.docs) {
                 const w = d.data();
                 const userSnap = await getDoc(doc(db, 'users', w.uid));
                 const user = userSnap.data() || {};
-
+ 
                 const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
-
+ 
                 rows.push([
                     w.amount || 0,
                     note,
@@ -1388,9 +1311,9 @@ your reward is now live in your balance. 💸`,
                     user.email || ''
                 ]);
             }
-
+ 
             downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_paystack.csv`, rows);
-
+ 
             if (rows.length > 1) {
                 const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host withdrawals as paid?`);
                 if (ok) {
@@ -1405,78 +1328,116 @@ your reward is now live in your balance. 💸`,
                 dopeAlert("No pending TM Host withdrawals");
             }
         }
-
-
-      async function exportTmHostWithdrawalsCSV_Nomba() {
-      const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
-      const rows = [headers];
-
-      const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
-      const snap = await getDocs(q);
-
-      for (const d of snap.docs) {
-        const w = d.data();
-        const userSnap = await getDoc(doc(db, 'users', w.uid));
-        const user = userSnap.data() || {};
-
-        const bankCode = resolveBankForProvider(user, "nomba");
-        if (!bankCode || !w.amount || !w.bankAccountNumber) continue;
-
-        const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
-
-        rows.push([
-          w.amount,
-          w.bankAccountNumber,
-          bankCode,
-          user.fullName || w.username || '',
-          note,
-          `NOMBA-TMH-${d.id}`,
-          user.email || ''
-        ]);
-      }
-
-      downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
-
-      if (rows.length > 1) {
-        const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host withdrawals as paid?`);
-        if (ok) {
-          showLoader();
-          for (const d of snap.docs) {
-            await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
-          }
-          hideLoader();
-          loadTmHostWithdrawals();
+ 
+        async function exportHostWithdrawalsCSV_Nomba() {
+            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const rows = [headers];
+ 
+            const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+ 
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+ 
+                const bankCode = resolveBankForProvider(user, "nomba");
+                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+ 
+                rows.push([
+                    w.amount,
+                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    bankCode,
+                    user.fullName || w.username || '',
+                    "HOSTS PROMOTIONAL CASH GIFT",
+                    `NOMBA-HPR-${d.id}`,
+                    user.email || ''
+                ]);
+            }
+ 
+            downloadCSV(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+ 
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Host Nomba withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    hideLoader();
+                    loadHostWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending Host withdrawals for Nomba export", "Info");
+            }
         }
-      } else {
-        dopeAlert("No pending TM Host withdrawals");
-      }
-    }
-
+ 
+        async function exportTmHostWithdrawalsCSV_Nomba() {
+            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const rows = [headers];
+ 
+            const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+            const snap = await getDocs(q);
+ 
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+ 
+                const bankCode = resolveBankForProvider(user, "nomba");
+                if (!bankCode || !w.amount || !(user.bankAccountNumber || w.bankAccountNumber)) continue;
+ 
+                const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
+ 
+                rows.push([
+                    w.amount,
+                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    bankCode,
+                    user.fullName || w.username || '',
+                    note,
+                    `NOMBA-TMH-${d.id}`,
+                    user.email || ''
+                ]);
+            }
+ 
+            downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+ 
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host Nomba withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    hideLoader();
+                    loadTmHostWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending TM Host withdrawals for Nomba export", "Info");
+            }
+        }
+ 
         // ==================== HOST LEADERBOARD ====================
         async function loadHostsLeaderboard() {
             const type = document.getElementById('host-lb-type')?.value || 'daily';
             const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
             const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
             if (!tableBody) return;
-
+ 
             tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-
+ 
             try {
                 const key = getLeaderboardKey(type);
                 const fieldPath = `hostTaps${type.charAt(0).toUpperCase() + type.slice(1)}.${key}`;
-
+ 
                 const q = query(collection(db, "users"), orderBy(fieldPath, "desc"), limit(Math.min(limitInput, 100)));
                 const snap = await getDocs(q);
-
+ 
                 tableBody.innerHTML = '';
                 currentHostLbData = [];
-
+ 
                 let rank = 1;
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
                     const taps = data[`hostTaps${type.charAt(0).toUpperCase() + type.slice(1)}`]?.[key] ?? 0;
                     if (taps <= 0) return;
-
+ 
                     const entry = {
                         uid: docSnap.id,
                         username: data.chatId || data.username || 'Host',
@@ -1485,7 +1446,7 @@ your reward is now live in your balance. 💸`,
                         invitedBy: data.invitedBy
                     };
                     currentHostLbData.push(entry);
-
+ 
                     const row = document.createElement('tr');
                     row.innerHTML = `<td>${rank}</td><td>${entry.username}</td><td>${taps.toLocaleString()}</td><td>${entry.email}</td>`;
                     tableBody.appendChild(row);
@@ -1496,10 +1457,10 @@ your reward is now live in your balance. 💸`,
                 tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error loading hosts leaderboard</td></tr>`;
             }
         }
-
+ 
         async function saveHostWinners() {
             if (!currentHostLbData.length) return dopeAlert("No hosts data. Refresh leaderboard first.", "Error");
-
+ 
             const date = new Date().toISOString().split('T')[0];
             const winnersToSave = currentHostLbData.map((u, i) => ({
                 rank: i + 1,
@@ -1509,7 +1470,7 @@ your reward is now live in your balance. 💸`,
                 invitedBy: u.invitedBy,
                 rewards: { cash: 0, stars: 0 }
             }));
-
+ 
             await setDoc(doc(db, 'hostWinners', date), {
                 date,
                 type: "hosts",
@@ -1517,62 +1478,116 @@ your reward is now live in your balance. 💸`,
                 winners: winnersToSave,
                 timestamp: serverTimestamp()
             });
-
+ 
             dopeAlert(`Hosts winners saved for ${date}`);
             loadWinnerDates();
         }
-      
-     // ==================== EVENT LISTENERS (FINAL - CLEAN) ====================
-    function initAllEventListeners() {
-        // Leaderboards
-        document.getElementById('lb-type')?.addEventListener('change', startLbListener);
-        document.getElementById('lb-limit')?.addEventListener('change', startLbListener);
-        document.getElementById('bid-round')?.addEventListener('change', startLbListener);
-        document.getElementById('fetch-lb')?.addEventListener('click', startLbListener);
-
-        // Winners
-        document.getElementById('save-winners')?.addEventListener('click', saveWinners);
-        document.getElementById('fetch-winners')?.addEventListener('click', fetchWinnersHistory);
-        document.getElementById('export-csv')?.addEventListener('click', exportCSV);
-
-        document.getElementById('clear-winners')?.addEventListener('click', async () => {
+ 
+        // ==================== EVENT LISTENERS (Cleaned) ====================
+        document.getElementById('lb-type').addEventListener('change', startLbListener);
+        document.getElementById('lb-limit').addEventListener('change', startLbListener);
+        document.getElementById('bid-round').addEventListener('change', startLbListener);
+        document.getElementById('fetch-lb').addEventListener('click', startLbListener);
+ 
+        document.getElementById('save-winners').addEventListener('click', saveWinners);
+        document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
+        document.getElementById('export-csv').addEventListener('click', exportCSV);
+        document.getElementById('clear-winners').addEventListener('click', async () => {
             if (await showConfirm("Clear Winners", "Are you sure?")) {
                 showLoader();
                 await clearWinners();
                 hideLoader();
             }
         });
-
-        // Rewards & Configs
-        document.getElementById('add-rule')?.addEventListener('click', addRewardRule);
-        document.getElementById('apply-rewards')?.addEventListener('click', applyRewards);
-        document.getElementById('save-configs')?.addEventListener('click', saveConfigs);
-
-        // ====================== ALL WITHDRAWAL EXPORTS ======================
-        // Regular Withdrawals
+ 
+        // Winners tab — Nomba export (exports current winners data as Nomba-format payment file)
+        document.getElementById('export-winners-nomba-csv')?.addEventListener('click', async () => {
+            if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
+            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const rows = [headers];
+            for (const w of currentWinnersData) {
+                if (!w.uid || !(w.rewards?.cash > 0)) continue;
+                let user = {};
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', w.uid));
+                    if (userSnap.exists()) user = userSnap.data();
+                } catch(e) {}
+                const bankCode = resolveBankForProvider(user, "nomba");
+                if (!bankCode || !user.bankAccountNumber) continue;
+                rows.push([
+                    w.rewards.cash,
+                    user.bankAccountNumber,
+                    bankCode,
+                    user.fullName || w.username || '',
+                    "TAPMASTER WINNER REWARD",
+                    `NOMBA-WIN-${w.uid}-${w.date}`,
+                    user.email || ''
+                ]);
+            }
+            downloadCSV(`winners_${getTodayDateString()}_nomba.csv`, rows);
+            if (rows.length <= 1) dopeAlert("No eligible winners with Nomba bank details found", "Info");
+        });
+ 
+        document.getElementById('add-rule').addEventListener('click', addRewardRule);
+        document.getElementById('apply-rewards').addEventListener('click', applyRewards);
+        document.getElementById('save-configs').addEventListener('click', saveConfigs);
+ 
+        // Send custom notifications
+        document.getElementById('send-notifs')?.addEventListener('click', async () => {
+            const msg = document.getElementById('notif-message').value.trim();
+            if (!msg) return dopeAlert('Please enter a message', 'Error');
+            if (!await showConfirm('Send Notification', `Send this to all users?`)) return;
+            showLoader('Sending notifications...');
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                let count = 0;
+                for (const d of usersSnap.docs) {
+                    await addDoc(collection(db, 'notifications'), {
+                        recipientId: d.id,
+                        title: 'ANNOUNCEMENT',
+                        message: msg,
+                        type: 'admin_broadcast',
+                        createdAt: serverTimestamp(),
+                        read: false
+                    });
+                    count++;
+                }
+                hideLoader();
+                dopeAlert(`Sent to ${count} users!`, 'Success');
+                document.getElementById('notif-message').value = '';
+            } catch(e) {
+                hideLoader();
+                console.error(e);
+                dopeAlert('Failed to send notifications. Check console.', 'Error');
+            }
+        });
+ 
+        // Withdrawals (Paystack)
         document.getElementById('export-withdrawals-csv')?.addEventListener('click', exportWithdrawalsCSV);
+        // Withdrawals (Nomba)
         document.getElementById('export-withdrawals-nomba-csv')?.addEventListener('click', exportWithdrawalsCSV_Nomba);
-
-        // Host Withdrawals
+ 
+        // Host Withdrawals (Paystack)
         document.getElementById('export-host-withdrawals-csv')?.addEventListener('click', exportHostWithdrawalsCSV);
+        // Host Withdrawals (Nomba)
         document.getElementById('export-host-withdrawals-nomba-csv')?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
-
-        // TM Host Withdrawals
+ 
+        // TM Host Withdrawals (Paystack)
         document.getElementById('export-tmhost-withdrawals-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV);
+        // TM Host Withdrawals (Nomba)
         document.getElementById('export-tmhost-withdrawals-nomba-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV_Nomba);
-
-        // Host Leaderboard
-        document.getElementById('fetch-host-lb')?.addEventListener('click', loadHostsLeaderboard);
-        document.getElementById('save-host-winners')?.addEventListener('click', saveHostWinners);
-
-        // History Type Toggle
+ 
+        // Host LB
+        document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
+        document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
+ 
+        // History type change
         document.querySelectorAll('input[name="historyType"]').forEach(radio => {
             radio.addEventListener('change', fetchWinnersHistory);
         });
-
-        // Global Alert Override
+ 
+        // Fallback for window.alert
         window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
-    }
 </script>
 </body>
 </html>
