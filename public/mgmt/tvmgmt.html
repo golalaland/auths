@@ -5,725 +5,912 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CUBEOLOGY ADMIN</title>
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      padding: 20px;
-      margin: 0;
-    }
-    .tab-container { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-    .tab { padding: 12px 24px; background: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background: #0a0a0a; color: #fff; padding: 20px; margin: 0; }
+
+    .tab-container { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; background: #333; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
     .tab:hover { background: #444; }
     .tab.active { background: #c3f60c; color: #000; font-weight: bold; }
+
     .section { display: none; background: #1a1a1a; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
     .section.active { display: block; }
 
-    input, textarea, select, button {
-      padding: 10px; margin: 6px 6px 12px 0;
-      border-radius: 8px; border: none; font-size: 1rem;
-    }
-    button { background: #c3f60c; color: #000; cursor: pointer; font-weight: bold; }
-    button:hover { transform: scale(1.05); }
+    input, textarea, select { padding: 10px; margin: 0 0 10px; border-radius: 8px; border: 1px solid #333; font-size: 0.95rem; background: #111; color: #fff; width: 100%; }
+    select option { background: #111; }
+    button { padding: 9px 16px; border-radius: 8px; border: none; font-size: 0.9rem; cursor: pointer; font-weight: 700; transition: all 0.15s; }
+    button:hover { filter: brightness(1.15); transform: scale(1.03); }
 
-    #loaderOverlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-      display: none; align-items: center; justify-content: center; z-index: 9999;
-    }
-    #dopeAlert {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(16px); display: none; align-items: center;
-      justify-content: center; z-index: 999999;
-    }
-    #dopeAlertContent {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%;
-      text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4);
-      border: 2px solid #c3f60c;
-    }
+    .btn-primary  { background: #c3f60c; color: #000; }
+    .btn-danger   { background: #c62828; color: #fff; }
+    .btn-ghost    { background: #2a2a2a; color: #ccc; border: 1px solid #333; }
+    .btn-copy     { background: #1e3a5f; color: #7ec8f7; border: 1px solid #2d5a8e; }
+    .btn-pin      { background: #1a3a1a; color: #6fcf6f; border: 1px solid #2d5e2d; }
+    .btn-sm       { padding: 5px 11px !important; font-size: 0.78rem !important; }
 
-    .card-preview {
-      background: #111; border-radius: 12px; padding: 15px; margin: 12px 0;
-      border: 1px solid #333;
-    }
+    #loaderOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 12px; }
+    #loaderText { color: #c3f60c; font-size: 16px; }
+
+    #dopeAlert { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(16px); display: none; align-items: center; justify-content: center; z-index: 999999; }
+    #dopeAlertContent { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4); border: 2px solid #c3f60c; }
+
+    .card-preview { background: #111; border-radius: 12px; padding: 15px; margin: 12px 0; border: 1px solid #2a2a2a; }
     .card-preview h4 { margin: 0 0 8px; color: #c3f60c; }
-    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
-    /* ── Channel card ── */
-    .channel-card {
-      background: #161616;
-      border: 1px solid #2a2a2a;
-      border-radius: 14px;
-      padding: 18px;
-      margin: 16px 0;
-    }
-    .channel-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .channel-title-badge {
-      background: #c3f60c;
-      color: #000;
-      font-weight: 700;
-      font-size: 13px;
-      padding: 4px 12px;
-      border-radius: 999px;
-    }
+    /* ── Channel cards ── */
+    .channel-card { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 18px; margin: 16px 0; }
+    .channel-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+    .channel-title-badge { background: #c3f60c; color: #000; font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 999px; }
     .channel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-danger  { background: #c62828 !important; color: #fff !important; }
-    .btn-ghost   { background: #333 !important; color: #fff !important; }
-    .btn-sm      { padding: 5px 12px !important; font-size: 0.82rem !important; }
 
-    /* ── Video queue inside a channel ── */
     .video-queue { display: flex; flex-direction: column; gap: 8px; }
-    .video-queue-item {
-      background: #1e1e1e;
-      border: 1px solid #2e2e2e;
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .video-queue-item .vid-info { flex: 1; min-width: 0; }
-    .video-queue-item .vid-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .video-queue-item .vid-url   { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
-    .vid-order { color: #555; font-size: 12px; min-width: 24px; text-align: center; font-weight: 700; }
-    .video-queue-item .vid-actions { display: flex; gap: 6px; }
+    .video-queue-item { background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .vid-info { flex: 1; min-width: 0; }
+    .vid-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vid-url { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+    .vid-order { color: #555; font-size: 12px; min-width: 22px; text-align: center; font-weight: 700; }
+    .vid-actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
-    /* ── Add video inline form ── */
-    .add-video-form {
-      background: #202020;
-      border: 1px dashed #333;
-      border-radius: 10px;
-      padding: 14px;
-      margin-top: 10px;
-      display: none;
-    }
+    .add-video-form { background: #202020; border: 1px dashed #333; border-radius: 10px; padding: 14px; margin-top: 10px; display: none; }
     .add-video-form.open { display: block; }
-    .add-video-form input {
-      width: calc(100% - 20px);
-      background: #111;
-      color: #fff;
-      border: 1px solid #333;
-      display: block;
-      margin-bottom: 8px;
-    }
-    .add-video-form .form-row { display: flex; gap: 8px; }
+    .form-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    /* ── New Channel form ── */
-    .new-channel-form {
-      background: #1e1e1e;
-      border: 1px dashed #444;
-      border-radius: 12px;
-      padding: 18px;
-      margin: 16px 0;
-      display: none;
+    .inline-form { background: #1e1e1e; border: 1px dashed #444; border-radius: 12px; padding: 18px; margin: 16px 0; display: none; }
+    .inline-form.open { display: block; }
+    .inline-form h4 { margin: 0 0 14px; color: #c3f60c; }
+
+    /* ── Banner section ── */
+    .banner-preview {
+      background: #000; border-radius: 10px; padding: 14px;
+      margin: 16px 0; overflow: hidden; position: relative; height: 46px;
+      border: 1px solid #222;
     }
-    .new-channel-form.open { display: block; }
-    .new-channel-form input {
-      width: calc(100% - 20px);
-      background: #111;
-      color: #fff;
-      border: 1px solid #333;
-      display: block;
-      margin-bottom: 10px;
+    .banner-scroll-track {
+      display: flex; align-items: center; height: 100%;
+      white-space: nowrap;
+      animation: bannerScroll 30s linear infinite;
     }
+    @keyframes bannerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .msg-row {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px;
+      padding: 10px 14px; margin: 8px 0;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .msg-row .msg-text-preview { flex: 1; font-size: 13px; font-weight: 700; min-width: 120px; }
+    .msg-row .msg-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .color-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; border: 2px solid #333; }
+
+    .banner-msg-editor { background: #1e1e1e; border: 1px dashed #444; border-radius: 12px; padding: 18px; margin: 12px 0; display: none; }
+    .banner-msg-editor.open { display: block; }
+    .color-options { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 12px; }
+    .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border 0.15s; }
+    .color-swatch.selected { border-color: #fff; transform: scale(1.2); }
+
+    /* ── Promo slider preview ── */
+    #promoPreviewSlider {
+      position: relative; width: 100%; height: 200px; border-radius: 12px;
+      overflow: hidden; background: #111; border: 1px solid #2a2a2a; margin: 16px 0;
+    }
+    #promoPreviewTrack { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease; }
+    .promo-slide-img { width: 100%; height: 100%; object-fit: contain; flex-shrink: 0; }
+    .promo-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); border: none; color: #fff; font-size: 20px; padding: 6px 12px; cursor: pointer; border-radius: 6px; z-index: 5; }
+    #promoPrev { left: 8px; } #promoNext { right: 8px; }
+    .promo-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+    .promo-dot { width: 7px; height: 7px; border-radius: 50%; background: #555; cursor: pointer; transition: background 0.2s; }
+    .promo-dot.active { background: #c3f60c; }
+
+    .promo-card { background: #111; border-radius: 10px; padding: 12px; margin: 8px 0; border: 1px solid #2a2a2a; display: flex; align-items: center; gap: 12px; }
+    .promo-thumb { width: 60px; height: 44px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #222; }
+    .promo-card-info { flex: 1; min-width: 0; font-size: 13px; color: #888; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .promo-card-actions { display: flex; gap: 6px; }
+
+    /* ── Pinned badge ── */
+    .pinned-badge { background: #2d5e2d; color: #6fcf6f; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-left: 8px; }
   </style>
 </head>
 <body>
 
-  <div id="loaderOverlay"><div id="loaderText">Working...</div></div>
+<div id="loaderOverlay"><div id="loaderText">Working...</div></div>
 
-  <h1>CUBEOLOGY ADMIN - TV CNTNT MGMT</h1>
+<h1 style="margin-bottom:6px;">CUBEOLOGY ADMIN</h1>
+<p style="color:#555;margin:0 0 20px;font-size:13px;">TV Content Management Dashboard</p>
 
-  <div class="tab-container">
-    <div class="tab active" data-tab="upcoming">Upcoming Events</div>
-    <div class="tab" data-tab="tvshows">TV Shows</div>
-    <div class="tab" data-tab="promos">Promo Slider</div>
+<div class="tab-container">
+  <div class="tab active" data-tab="upcoming">📅 Upcoming Events</div>
+  <div class="tab" data-tab="tvshows">📺 TV Shows</div>
+  <div class="tab" data-tab="promos">🖼 Promo Slider</div>
+  <div class="tab" data-tab="banner">📣 Live Banner</div>
+</div>
+
+<!-- Dope Alert -->
+<div id="dopeAlert">
+  <div id="dopeAlertContent">
+    <div id="dopeIcon" style="font-size:36px;margin-bottom:10px;">✅</div>
+    <h2 id="dopeTitle">Success!</h2>
+    <p id="dopeMessage">Operation completed.</p>
+    <button id="dopeClose" class="btn-primary" style="margin-top:10px;">GOT IT</button>
+  </div>
+</div>
+
+<!-- ═══════════════ UPCOMING EVENTS ═══════════════ -->
+<div id="upcoming" class="section active">
+  <h2>Manage Upcoming Events</h2>
+  <p style="color:#888;font-size:14px;">These appear in the Live Modal → Explore tab. Pin any event to force it to the top.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="fetch-upcoming" class="btn-ghost">🔄 Refresh</button>
+    <button id="add-new-event" class="btn-primary">＋ Add New Event</button>
+  </div>
+  <div id="events-container"></div>
+
+  <template id="event-form-template">
+    <div style="background:#222;padding:16px;border-radius:12px;margin:16px 0;">
+      <input type="text" placeholder="Title" class="event-title">
+      <input type="text" placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time">
+      <textarea placeholder="Description" class="event-desc" style="height:80px;"></textarea>
+      <input type="url" placeholder="Image URL" class="event-image">
+      <input type="url" placeholder="Link (optional)" class="event-link">
+      <select class="event-type">
+        <option value="event">Event</option>
+        <option value="live">Live</option>
+        <option value="video">Video</option>
+        <option value="promo">Promo</option>
+      </select>
+      <input type="text" placeholder="CTA Label (e.g. Watch Now, Join Live)" class="event-cta">
+      <label style="display:flex;align-items:center;gap:10px;margin:10px 0;color:#fff;font-size:14px;">
+        <input type="checkbox" class="event-live-toggle" style="width:auto;margin:0;"> Event is LIVE now
+      </label>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="save-event-btn btn-primary">Save Event</button>
+        <button class="cancel-event-btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </template>
+</div>
+
+<!-- ═══════════════ TV SHOWS ═══════════════ -->
+<div id="tvshows" class="section">
+  <h2>Manage TV Shows (Video Lounge)</h2>
+  <p style="color:#888;font-size:14px;">Each channel holds multiple videos that play in sequence. Prev/Next switches channels.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="fetch-tvshows" class="btn-ghost">🔄 Refresh</button>
+    <button id="add-new-channel" class="btn-primary">＋ Add New Channel</button>
   </div>
 
-  <!-- Dope Alert -->
-  <div id="dopeAlert">
-    <div id="dopeAlertContent">
-      <div id="dopeIcon">✅</div>
-      <h2 id="dopeTitle">Success!</h2>
-      <p id="dopeMessage">Operation completed successfully.</p>
-      <button id="dopeClose">GOT IT</button>
+  <div class="inline-form" id="new-channel-form">
+    <h4>New Channel</h4>
+    <input type="text" id="new-channel-name" placeholder="Channel name (e.g. CH 3, Sports, Music)">
+    <div class="form-row">
+      <button id="save-new-channel" class="btn-primary">Save Channel</button>
+      <button id="cancel-new-channel" class="btn-ghost">Cancel</button>
     </div>
   </div>
 
-  <!-- UPCOMING EVENTS SECTION -->
-  <div id="upcoming" class="section active">
-    <h2>Manage Upcoming Events</h2>
-    <p>These will appear in the Live Modal → Explore tab.</p>
-    <button id="fetch-upcoming">Refresh List</button>
-    <button id="add-new-event">+ Add New Event</button>
-    <div id="events-container" style="margin-top: 20px;"></div>
+  <div id="tvshows-container"></div>
+</div>
 
-    <template id="event-form-template">
-      <div style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
-        <input type="text" placeholder="Title" class="event-title" style="width:100%; margin-bottom:8px;">
-        <input type="text" placeholder="Time (e.g. Tonight @ 10PM EST)" class="event-time" style="width:100%; margin-bottom:8px;">
-        <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
-        <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
-        <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
-        <select class="event-type" style="width:100%; margin-bottom:8px;">
-          <option value="event">Event</option>
-          <option value="live">Live</option>
-          <option value="video">Video</option>
-          <option value="promo">Promo</option>
-        </select>
-        <input type="text" placeholder="CTA Label (e.g. Watch Now, Join Live)" class="event-cta" style="width:100%; margin-bottom:12px;">
-        <label style="display:flex;align-items:center;gap:10px;margin:12px 0;color:#fff;font-size:14px;">
-          <input type="checkbox" class="event-live-toggle"> Event is LIVE now
-        </label>
-        <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
-        <button class="cancel-event-btn">Cancel</button>
-      </div>
-    </template>
+<!-- ═══════════════ PROMO SLIDER ═══════════════ -->
+<div id="promos" class="section">
+  <h2>Manage Promo Slider</h2>
+  <p style="color:#888;font-size:14px;">These images appear inside TapMaster leaderboard slider. Slides auto-advance every 5s.</p>
+
+  <!-- Live preview of the actual slider -->
+  <div id="promoPreviewSlider">
+    <div id="promoPreviewTrack"></div>
+    <button class="promo-nav" id="promoPrev">‹</button>
+    <button class="promo-nav" id="promoNext">›</button>
+    <div class="promo-dots" id="promoDots"></div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       TV SHOWS SECTION — multi-video channels
-  ════════════════════════════════════════════ -->
-  <div id="tvshows" class="section">
-    <h2>Manage TV Shows (Video Lounge)</h2>
-    <p>Each channel can hold <strong>multiple videos</strong> that play one after another. Prev/Next buttons switch channels.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="fetch-promos" class="btn-ghost">🔄 Refresh</button>
+    <button id="add-new-promo" class="btn-primary">＋ Add New Slide</button>
+  </div>
 
-    <button id="fetch-tvshows">🔄 Refresh</button>
-    <button id="add-new-channel">＋ Add New Channel</button>
+  <div id="promos-container"></div>
 
-    <!-- New-channel inline form -->
-    <div class="new-channel-form" id="new-channel-form">
-      <h4 style="margin:0 0 12px;color:#c3f60c;">New Channel</h4>
-      <input type="text" id="new-channel-name" placeholder="Channel name (e.g. CH 3, Sports, Music)">
-      <div style="display:flex;gap:8px;">
-        <button id="save-new-channel">Save Channel</button>
-        <button id="cancel-new-channel" style="background:#333;color:#fff;">Cancel</button>
+  <template id="promo-form-template">
+    <div style="background:#222;padding:16px;border-radius:12px;margin:16px 0;">
+      <input type="url" placeholder="Image URL (.jpg, .png, .webp)" class="promo-image">
+      <input type="url" placeholder="Click Link URL (optional)" class="promo-link">
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="save-promo-btn btn-primary">Save Slide</button>
+        <button class="cancel-promo-btn btn-ghost">Cancel</button>
       </div>
     </div>
+  </template>
+</div>
 
-    <div id="tvshows-container" style="margin-top: 20px;"></div>
+<!-- ═══════════════ LIVE BANNER ═══════════════ -->
+<div id="banner" class="section">
+  <h2>📣 Live Banner Messages</h2>
+  <p style="color:#888;font-size:14px;">
+    These ticker messages scroll across the top of TapMaster. Edit text, color, glow, and rotation speed — then publish.
+    Dynamic placeholders (<code style="color:#c3f60c;">{{top1}}</code>, <code style="color:#c3f60c;">{{top2}}</code>, <code style="color:#c3f60c;">{{top3}}</code>) are filled in live from the leaderboard.
+  </p>
+
+  <!-- Timer setting -->
+  <div style="background:#161616;border-radius:10px;padding:14px;margin:14px 0;border:1px solid #2a2a2a;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <label style="font-size:14px;color:#aaa;white-space:nowrap;">🕐 Rotate every</label>
+    <input type="number" id="banner-interval" min="5" max="120" value="21" style="width:80px;margin:0;">
+    <span style="color:#666;font-size:14px;">seconds</span>
+    <label style="font-size:14px;color:#aaa;white-space:nowrap;margin-left:16px;">🔀 Shuffle order</label>
+    <input type="checkbox" id="banner-shuffle" checked style="width:auto;margin:0;cursor:pointer;">
   </div>
 
-  <!-- PROMO SLIDER SECTION -->
-  <div id="promos" class="section">
-    <h2>Manage Promo Slider</h2>
-    <p>These images will appear inside TapMaster leaderboard slider.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button id="fetch-banner" class="btn-ghost">🔄 Load from Firebase</button>
+    <button id="add-banner-msg" class="btn-primary">＋ Add Message</button>
+    <button id="save-banner" class="btn-primary" style="background:#00FFA3;color:#000;">🚀 Publish Banner</button>
+  </div>
 
-    <div id="leaderboardImageSlider" style="position:relative;width:100%;height:240px;margin:20px 0;overflow:hidden;border-radius:14px;background:#111;">
-      <div class="slider-track" style="display:flex;width:100%;height:100%;transition:transform 0.6s ease;"></div>
+  <!-- Live preview -->
+  <div class="banner-preview">
+    <div class="banner-scroll-track" id="bannerPreviewTrack">
+      <span style="color:#555;font-size:13px;">← messages will preview here after loading</span>
     </div>
-
-    <button id="fetch-promos">Refresh List</button>
-    <button id="add-new-promo">+ Add New Slide</button>
-    <div id="promos-container" style="margin-top:20px;"></div>
-
-    <template id="promo-form-template">
-      <div style="background:#222;padding:16px;border-radius:12px;margin:16px 0;">
-        <input type="url" placeholder="Image URL" class="promo-image" style="width:100%;margin-bottom:8px;">
-        <input type="url" placeholder="Link URL (optional)" class="promo-link" style="width:100%;margin-bottom:12px;">
-        <button class="save-promo-btn" style="background:#c3f60c;color:#000;">Save Slide</button>
-        <button class="cancel-promo-btn">Cancel</button>
-      </div>
-    </template>
   </div>
 
+  <!-- Add message editor -->
+  <div class="banner-msg-editor" id="banner-add-editor">
+    <h4 style="margin:0 0 12px;color:#c3f60c;">New Message</h4>
+    <input type="text" id="new-msg-text" placeholder="Message text — use {{top1}} {{top2}} {{top3}} for live names">
+    <div style="font-size:12px;color:#666;margin:-6px 0 10px;">Tip: ALL CAPS looks best in the ticker.</div>
+    <div style="font-size:13px;color:#aaa;margin-bottom:8px;">Color:</div>
+    <div class="color-options" id="new-msg-colors">
+      <div class="color-swatch selected" data-color="#00FFA3" style="background:#00FFA3;"></div>
+      <div class="color-swatch" data-color="#FF2D55" style="background:#FF2D55;"></div>
+      <div class="color-swatch" data-color="#FFD700" style="background:#FFD700;"></div>
+      <div class="color-swatch" data-color="#c3f60c" style="background:#c3f60c;"></div>
+      <div class="color-swatch" data-color="#7ec8f7" style="background:#7ec8f7;"></div>
+      <div class="color-swatch" data-color="#ff9f43" style="background:#ff9f43;"></div>
+      <div class="color-swatch" data-color="#ffffff" style="background:#ffffff;"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#aaa;margin-bottom:14px;">
+      <input type="checkbox" id="new-msg-glow" checked style="width:auto;margin:0;"> Glow effect
+    </label>
+    <div class="form-row">
+      <button id="save-new-msg" class="btn-primary">Add Message</button>
+      <button id="cancel-new-msg" class="btn-ghost">Cancel</button>
+    </div>
+  </div>
+
+  <div id="banner-msgs-container"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
-    authDomain: "dettyverse.firebaseapp.com",
-    projectId: "dettyverse",
-    storageBucket: "dettyverse.firebasestorage.app",
-    messagingSenderId: "1036459652488",
-    appId: "1:1036459652488:web:e8910172ed16e9cac9b63d"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+  authDomain: "dettyverse.firebaseapp.com",
+  projectId: "dettyverse",
+  storageBucket: "dettyverse.firebasestorage.app",
+  messagingSenderId: "1036459652488",
+  appId: "1:1036459652488:web:e8910172ed16e9cac9b63d"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
-  const loaderOverlay = document.getElementById("loaderOverlay");
-  const loaderText    = document.getElementById("loaderText");
-  const dopeAlert     = document.getElementById("dopeAlert");
-  const dopeTitle     = document.getElementById("dopeTitle");
-  const dopeMessage   = document.getElementById("dopeMessage");
-  const dopeClose     = document.getElementById("dopeClose");
+// ── UI helpers ──
+const loaderOverlay = document.getElementById("loaderOverlay");
+const loaderText    = document.getElementById("loaderText");
+function showLoader(t="Working...") { loaderText.textContent=t; loaderOverlay.style.display="flex"; }
+function hideLoader()               { loaderOverlay.style.display="none"; }
 
-  function showLoader(text = "Working...") { loaderText.textContent = text; loaderOverlay.style.display = "flex"; }
-  function hideLoader()                    { loaderOverlay.style.display = "none"; }
+const dopeAlert   = document.getElementById("dopeAlert");
+const dopeTitle   = document.getElementById("dopeTitle");
+const dopeMessage = document.getElementById("dopeMessage");
+const dopeIcon    = document.getElementById("dopeIcon");
+document.getElementById("dopeClose").onclick = () => {
+  dopeAlert.style.opacity="0";
+  setTimeout(()=>dopeAlert.style.display="none",300);
+};
+function showDopeAlert(title, message, icon="✅") {
+  dopeIcon.textContent=icon; dopeTitle.textContent=title; dopeMessage.textContent=message;
+  dopeAlert.style.opacity="0"; dopeAlert.style.display="flex";
+  setTimeout(()=>dopeAlert.style.opacity="1",30);
+}
 
-  function showDopeAlert(title, message) {
-    dopeTitle.textContent   = title;
-    dopeMessage.textContent = message;
-    dopeAlert.style.display = "flex";
-    setTimeout(() => dopeAlert.style.opacity = "1", 50);
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Firebase save ──
+async function saveData(field, data) {
+  try {
+    await setDoc(doc(db,"settings","live"),{[field]:data},{merge:true});
+    return true;
+  } catch(err) {
+    console.error(err); alert("Save failed: "+err.message); return false;
   }
-  dopeClose.onclick = () => {
-    dopeAlert.style.opacity = "0";
-    setTimeout(() => dopeAlert.style.display = "none", 400);
-  };
+}
 
-  // Tab Switching
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tab.dataset.tab).classList.add('active');
+// ══════════════════════════════════════════════════════════
+//  UPCOMING EVENTS
+// ══════════════════════════════════════════════════════════
+const eventsContainer  = document.getElementById('events-container');
+const eventFormTpl     = document.getElementById('event-form-template');
+
+async function getUpcomingEvents() {
+  showLoader("Loading events…");
+  const snap = await getDoc(doc(db,"settings","live"));
+  hideLoader();
+  return snap.exists() ? (snap.data().upcomingEvents||[]) : [];
+}
+
+function renderEvents(events) {
+  eventsContainer.innerHTML='';
+  if(!events.length){ eventsContainer.innerHTML='<p style="color:#888;">No events yet. Add one!</p>'; return; }
+
+  events.forEach((event,index) => {
+    const card = document.createElement('div');
+    card.className='card-preview';
+    const pinnedBadge = event.pinned ? '<span class="pinned-badge">📌 PINNED</span>' : '';
+    card.innerHTML=`
+      <h4>${event.title}${pinnedBadge}</h4>
+      <p style="color:#888;font-size:13px;margin:4px 0;"><strong style="color:#aaa;">Time:</strong> ${event.time}</p>
+      <p style="color:#888;font-size:13px;margin:4px 0;">${event.desc}</p>
+      <div class="actions">
+        <button class="btn-sm btn-pin pin-event">${event.pinned ? '📌 Unpin' : '📌 Pin to Top'}</button>
+        <button class="btn-sm btn-ghost edit-event">✏️ Edit</button>
+        <button class="btn-sm btn-danger delete-event">🗑 Delete</button>
+      </div>
+    `;
+    card.querySelector('.pin-event').onclick  = () => pinEvent(index, events);
+    card.querySelector('.edit-event').onclick  = () => editEvent(index);
+    card.querySelector('.delete-event').onclick = () => deleteEvent(index);
+    eventsContainer.appendChild(card);
+  });
+}
+
+async function loadAndRenderEvents() {
+  const events = await getUpcomingEvents();
+  renderEvents(events);
+}
+
+// Pin = move to index 0, unpin = remove pinned flag but keep position
+async function pinEvent(index, events) {
+  if(events[index].pinned) {
+    events[index].pinned = false;
+  } else {
+    events.forEach(e=>e.pinned=false);
+    events[index].pinned = true;
+    const [pinned] = events.splice(index,1);
+    events.unshift(pinned);
+  }
+  if(await saveData('upcomingEvents', events)) {
+    showDopeAlert("Pinned!", events[0].pinned ? `"${events[0].title}" pinned to top.` : "Event unpinned.", "📌");
+    loadAndRenderEvents();
+  }
+}
+
+async function editEvent(index) {
+  const events = await getUpcomingEvents();
+  const event  = events[index];
+  const form   = eventFormTpl.content.cloneNode(true).querySelector('div');
+  form.querySelector('.event-title').value         = event.title    ||'';
+  form.querySelector('.event-time').value          = event.time     ||'';
+  form.querySelector('.event-desc').value          = event.desc     ||'';
+  form.querySelector('.event-image').value         = event.imageUrl ||'';
+  form.querySelector('.event-link').value          = event.link     ||'';
+  form.querySelector('.event-type').value          = event.type     ||'event';
+  form.querySelector('.event-cta').value           = event.ctaLabel ||'';
+  form.querySelector('.event-live-toggle').checked = event.isLive   ||false;
+
+  form.querySelector('.save-event-btn').onclick = async()=>{
+    const updated={
+      isLive:   form.querySelector('.event-live-toggle').checked,
+      title:    form.querySelector('.event-title').value.trim(),
+      time:     form.querySelector('.event-time').value.trim(),
+      desc:     form.querySelector('.event-desc').value.trim(),
+      imageUrl: form.querySelector('.event-image').value.trim(),
+      link:     form.querySelector('.event-link').value.trim(),
+      type:     form.querySelector('.event-type').value,
+      ctaLabel: form.querySelector('.event-cta').value.trim(),
+      pinned:   event.pinned||false
+    };
+    if(!updated.title||!updated.time||!updated.desc||!updated.imageUrl){ alert("Title, Time, Description and Image URL are required."); return; }
+    events[index]=updated;
+    if(await saveData('upcomingEvents',events)){ showDopeAlert("Updated","Event updated!"); loadAndRenderEvents(); }
+  };
+  form.querySelector('.cancel-event-btn').onclick=()=>form.remove();
+  eventsContainer.prepend(form);
+}
+
+async function deleteEvent(index) {
+  if(!confirm("Delete this event?")) return;
+  const events = await getUpcomingEvents();
+  events.splice(index,1);
+  if(await saveData('upcomingEvents',events)){ showDopeAlert("Deleted","Event removed.","🗑"); loadAndRenderEvents(); }
+}
+
+document.getElementById('add-new-event').onclick = () => {
+  const form = eventFormTpl.content.cloneNode(true).querySelector('div');
+  form.querySelector('.save-event-btn').onclick = async()=>{
+    const newEvent={
+      title:    form.querySelector('.event-title').value.trim(),
+      time:     form.querySelector('.event-time').value.trim(),
+      desc:     form.querySelector('.event-desc').value.trim(),
+      imageUrl: form.querySelector('.event-image').value.trim(),
+      link:     form.querySelector('.event-link').value.trim(),
+      type:     form.querySelector('.event-type').value,
+      ctaLabel: form.querySelector('.event-cta').value.trim(),
+      pinned:   false
+    };
+    if(!newEvent.title||!newEvent.time||!newEvent.desc||!newEvent.imageUrl){ alert("Title, Time, Description and Image URL are required."); return; }
+    const current = await getUpcomingEvents();
+    current.push(newEvent);
+    if(await saveData('upcomingEvents',current)){ showDopeAlert("Added","New event created!"); loadAndRenderEvents(); }
+  };
+  form.querySelector('.cancel-event-btn').onclick=()=>form.remove();
+  eventsContainer.prepend(form);
+};
+document.getElementById('fetch-upcoming').onclick = loadAndRenderEvents;
+
+// ══════════════════════════════════════════════════════════
+//  TV SHOWS
+// ══════════════════════════════════════════════════════════
+async function getTVShows() {
+  showLoader("Loading TV Shows…");
+  const snap = await getDoc(doc(db,"settings","live"));
+  hideLoader();
+  if(!snap.exists()) return [];
+  const raw = snap.data().tvShows||[];
+  if(raw.length>0 && !Array.isArray(raw[0].videos)) return groupLegacy(raw);
+  return raw;
+}
+
+function groupLegacy(flat) {
+  const map={},order=[];
+  flat.forEach(s=>{ const ch=s.channel||"CH 1"; if(!map[ch]){map[ch]=[];order.push(ch);} map[ch].push({title:s.title,url:s.url}); });
+  return order.map(ch=>({channel:ch,videos:map[ch]}));
+}
+
+function renderTVShows(channels) {
+  const container = document.getElementById('tvshows-container');
+  container.innerHTML='';
+  if(!channels.length){ container.innerHTML='<p style="color:#888;">No channels yet. Add one!</p>'; return; }
+
+  channels.forEach((ch,chIdx)=>{
+    const card=document.createElement('div');
+    card.className='channel-card';
+    card.innerHTML=`
+      <div class="channel-card-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="channel-title-badge">${ch.channel}</span>
+          <span style="color:#555;font-size:13px;">${ch.videos.length} video${ch.videos.length!==1?'s':''}</span>
+        </div>
+        <div class="channel-actions">
+          <button class="btn-sm btn-ghost rename-ch-btn">✏️ Rename</button>
+          <button class="btn-sm btn-danger delete-ch-btn">🗑 Delete</button>
+        </div>
+      </div>
+      <div class="video-queue" id="queue-${chIdx}"></div>
+      <button class="btn-sm btn-ghost add-video-btn" style="margin-top:10px;">＋ Add Video</button>
+      <div class="add-video-form" id="add-video-form-${chIdx}">
+        <input type="text" class="new-vid-title" placeholder="Video Title">
+        <input type="url" class="new-vid-url" placeholder="Direct MP4 Video URL">
+        <div class="form-row" style="margin-top:4px;">
+          <button class="save-vid-btn btn-primary">Save</button>
+          <button class="cancel-vid-btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    `;
+
+    const queue = card.querySelector(`#queue-${chIdx}`);
+    ch.videos.forEach((vid,vidIdx)=>{
+      const item=document.createElement('div');
+      item.className='video-queue-item';
+      item.innerHTML=`
+        <span class="vid-order">${vidIdx+1}</span>
+        <div class="vid-info">
+          <div class="vid-title">${vid.title}</div>
+          <div class="vid-url">${vid.url}</div>
+        </div>
+        <div class="vid-actions">
+          <button class="btn-sm btn-copy copy-vid-btn" title="Copy URL">📋</button>
+          ${vidIdx>0?`<button class="btn-sm btn-ghost move-up-btn" data-vid="${vidIdx}">↑</button>`:''}
+          ${vidIdx<ch.videos.length-1?`<button class="btn-sm btn-ghost move-down-btn" data-vid="${vidIdx}">↓</button>`:''}
+          <button class="btn-sm btn-danger delete-vid-btn" data-vid="${vidIdx}">✕</button>
+        </div>
+      `;
+
+      // Copy URL
+      item.querySelector('.copy-vid-btn').onclick = () => {
+        navigator.clipboard.writeText(vid.url).then(()=>{
+          showDopeAlert("Copied!",`URL for "${vid.title}" copied to clipboard.`,"📋");
+        }).catch(()=>{
+          prompt("Copy this URL:", vid.url);
+        });
+      };
+
+      queue.appendChild(item);
+    });
+
+    container.appendChild(card);
+
+    // Delete channel
+    card.querySelector('.delete-ch-btn').onclick = async()=>{
+      if(!confirm(`Delete entire channel "${ch.channel}" and all its videos?`)) return;
+      const all=await getTVShows(); all.splice(chIdx,1);
+      if(await saveData('tvShows',all)){ showDopeAlert("Deleted",`Channel "${ch.channel}" removed.`,"🗑"); loadAndRenderTVShows(); }
+    };
+
+    // Rename channel
+    card.querySelector('.rename-ch-btn').onclick = async()=>{
+      const newName=prompt("New channel name:",ch.channel);
+      if(!newName||!newName.trim()) return;
+      const all=await getTVShows(); all[chIdx].channel=newName.trim();
+      if(await saveData('tvShows',all)){ showDopeAlert("Renamed",`Channel renamed to "${newName.trim()}"`); loadAndRenderTVShows(); }
+    };
+
+    // Add video form
+    const addForm=card.querySelector(`#add-video-form-${chIdx}`);
+    card.querySelector('.add-video-btn').onclick=()=>addForm.classList.toggle('open');
+    card.querySelector('.cancel-vid-btn').onclick=()=>addForm.classList.remove('open');
+    card.querySelector('.save-vid-btn').onclick=async()=>{
+      const title=addForm.querySelector('.new-vid-title').value.trim();
+      const url=addForm.querySelector('.new-vid-url').value.trim();
+      if(!title||!url){ alert("Title and URL are required."); return; }
+      const all=await getTVShows(); all[chIdx].videos.push({title,url});
+      if(await saveData('tvShows',all)){ showDopeAlert("Added",`"${title}" added to ${ch.channel}`); loadAndRenderTVShows(); }
+    };
+
+    // Delete / move video
+    queue.querySelectorAll('.delete-vid-btn').forEach(btn=>{
+      btn.onclick=async()=>{
+        const vi=parseInt(btn.dataset.vid);
+        if(!confirm(`Delete "${ch.videos[vi].title}"?`)) return;
+        const all=await getTVShows(); all[chIdx].videos.splice(vi,1);
+        if(await saveData('tvShows',all)){ showDopeAlert("Deleted","Video removed.","🗑"); loadAndRenderTVShows(); }
+      };
+    });
+    queue.querySelectorAll('.move-up-btn').forEach(btn=>{
+      btn.onclick=async()=>{
+        const vi=parseInt(btn.dataset.vid);
+        const all=await getTVShows(); const v=all[chIdx].videos;
+        [v[vi-1],v[vi]]=[v[vi],v[vi-1]];
+        if(await saveData('tvShows',all)) loadAndRenderTVShows();
+      };
+    });
+    queue.querySelectorAll('.move-down-btn').forEach(btn=>{
+      btn.onclick=async()=>{
+        const vi=parseInt(btn.dataset.vid);
+        const all=await getTVShows(); const v=all[chIdx].videos;
+        [v[vi],v[vi+1]]=[v[vi+1],v[vi]];
+        if(await saveData('tvShows',all)) loadAndRenderTVShows();
+      };
     });
   });
+}
 
-  // ================== COMMON SAVE ==================
-  async function saveData(field, data) {
-    try {
-      await setDoc(doc(db, "settings", "live"), { [field]: data }, { merge: true });
-      return true;
-    } catch (err) {
-      console.error(err);
-      alert("Save failed: " + err.message);
-      return false;
-    }
+async function loadAndRenderTVShows() {
+  const channels=await getTVShows(); renderTVShows(channels);
+}
+
+const newChannelForm=document.getElementById('new-channel-form');
+document.getElementById('add-new-channel').onclick=()=>newChannelForm.classList.toggle('open');
+document.getElementById('cancel-new-channel').onclick=()=>newChannelForm.classList.remove('open');
+document.getElementById('save-new-channel').onclick=async()=>{
+  const name=document.getElementById('new-channel-name').value.trim();
+  if(!name){ alert("Please enter a channel name."); return; }
+  const all=await getTVShows();
+  if(all.find(c=>c.channel.toLowerCase()===name.toLowerCase())){ alert(`Channel "${name}" already exists.`); return; }
+  all.push({channel:name,videos:[]});
+  if(await saveData('tvShows',all)){
+    showDopeAlert("Created",`Channel "${name}" created! Add videos to it.`,"📺");
+    document.getElementById('new-channel-name').value='';
+    newChannelForm.classList.remove('open');
+    loadAndRenderTVShows();
   }
+};
+document.getElementById('fetch-tvshows').onclick=loadAndRenderTVShows;
 
-  // ═══════════════════════════════════════════════════════
-  //  TV SHOWS — new channel-based structure
-  //  Firebase shape: tvShows = [{ channel, videos:[{title,url}] }]
-  // ═══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  PROMO SLIDER  (fixed — uses <img> tags like the game)
+// ══════════════════════════════════════════════════════════
+let promoSlides    = [];
+let promoIndex     = 0;
+let promoTimer     = null;
+const previewTrack = document.getElementById('promoPreviewTrack');
+const promoDots    = document.getElementById('promoDots');
 
-  async function getTVShows() {
-    showLoader("Loading TV Shows...");
-    const snap = await getDoc(doc(db, "settings", "live"));
-    hideLoader();
-    if (!snap.exists()) return [];
-    const raw = snap.data().tvShows || [];
-
-    // Migrate old flat shape on-the-fly if needed
-    if (raw.length > 0 && !Array.isArray(raw[0].videos)) {
-      return groupLegacy(raw);
-    }
-    return raw;
+function renderPromoPreview() {
+  previewTrack.innerHTML=''; promoDots.innerHTML='';
+  if(!promoSlides.length){
+    previewTrack.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:14px;">No slides yet</div>';
+    return;
   }
+  promoSlides.forEach((p,i)=>{
+    const img=document.createElement('img');
+    img.src=p.imageUrl; img.className='promo-slide-img';
+    img.onerror=()=>img.style.opacity='0.3';
+    previewTrack.appendChild(img);
 
-  function groupLegacy(flat) {
-    const map = {}, order = [];
-    flat.forEach(s => {
-      const ch = s.channel || "CH 1";
-      if (!map[ch]) { map[ch] = []; order.push(ch); }
-      map[ch].push({ title: s.title, url: s.url });
-    });
-    return order.map(ch => ({ channel: ch, videos: map[ch] }));
+    const dot=document.createElement('div');
+    dot.className='promo-dot'+(i===0?' active':'');
+    dot.onclick=()=>goToPromoSlide(i);
+    promoDots.appendChild(dot);
+  });
+  goToPromoSlide(0);
+  startPromoAutoPlay();
+}
+
+function goToPromoSlide(i) {
+  promoIndex=(i+promoSlides.length)%promoSlides.length;
+  previewTrack.style.transform=`translateX(-${promoIndex*100}%)`;
+  promoDots.querySelectorAll('.promo-dot').forEach((d,idx)=>d.classList.toggle('active',idx===promoIndex));
+}
+function startPromoAutoPlay() {
+  clearInterval(promoTimer);
+  if(promoSlides.length>1) promoTimer=setInterval(()=>goToPromoSlide(promoIndex+1),5000);
+}
+
+document.getElementById('promoPrev').onclick=()=>goToPromoSlide(promoIndex-1);
+document.getElementById('promoNext').onclick=()=>goToPromoSlide(promoIndex+1);
+
+async function getPromos() {
+  const snap=await getDoc(doc(db,"settings","live"));
+  return snap.exists()?(snap.data().promoSlides||[]):[];
+}
+
+async function renderPromosList() {
+  promoSlides=await getPromos();
+  renderPromoPreview();
+  const container=document.getElementById('promos-container');
+  container.innerHTML='';
+  if(!promoSlides.length){ container.innerHTML="<p style='color:#888'>No slides yet</p>"; return; }
+
+  promoSlides.forEach((p,index)=>{
+    const card=document.createElement('div');
+    card.className='promo-card';
+    card.innerHTML=`
+      <img class="promo-thumb" src="${p.imageUrl}" onerror="this.style.opacity='0.2'">
+      <div class="promo-card-info">
+        ${p.link?`<a href="${p.link}" target="_blank" style="color:#7ec8f7;">${p.link}</a>`:'<span style="color:#555;">No link</span>'}
+        <div style="color:#444;font-size:11px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;">${p.imageUrl}</div>
+      </div>
+      <div class="promo-card-actions">
+        <button class="btn-sm btn-copy copy-promo-btn" title="Copy image URL">📋</button>
+        ${index>0?`<button class="btn-sm btn-ghost move-promo-up" data-i="${index}">↑</button>`:''}
+        ${index<promoSlides.length-1?`<button class="btn-sm btn-ghost move-promo-down" data-i="${index}">↓</button>`:''}
+        <button class="btn-sm btn-danger delete-promo" data-i="${index}">✕</button>
+      </div>
+    `;
+    card.querySelector('.copy-promo-btn').onclick=()=>{
+      navigator.clipboard.writeText(p.imageUrl).then(()=>showDopeAlert("Copied!","Image URL copied.","📋")).catch(()=>prompt("Copy:",p.imageUrl));
+    };
+    const delBtn=card.querySelector('.delete-promo');
+    if(delBtn) delBtn.onclick=async()=>{
+      promoSlides.splice(index,1);
+      await saveData("promoSlides",promoSlides);
+      showDopeAlert("Deleted","Promo removed.","🗑"); renderPromosList();
+    };
+    const upBtn=card.querySelector('.move-promo-up');
+    if(upBtn) upBtn.onclick=async()=>{
+      const i=parseInt(upBtn.dataset.i);
+      [promoSlides[i-1],promoSlides[i]]=[promoSlides[i],promoSlides[i-1]];
+      await saveData("promoSlides",promoSlides); renderPromosList();
+    };
+    const downBtn=card.querySelector('.move-promo-down');
+    if(downBtn) downBtn.onclick=async()=>{
+      const i=parseInt(downBtn.dataset.i);
+      [promoSlides[i],promoSlides[i+1]]=[promoSlides[i+1],promoSlides[i]];
+      await saveData("promoSlides",promoSlides); renderPromosList();
+    };
+    container.appendChild(card);
+  });
+}
+
+document.getElementById('fetch-promos').onclick=renderPromosList;
+document.getElementById('add-new-promo').onclick=()=>{
+  const tpl=document.getElementById('promo-form-template');
+  const form=tpl.content.cloneNode(true).querySelector('div');
+  form.querySelector('.save-promo-btn').onclick=async()=>{
+    const newPromo={ imageUrl:form.querySelector('.promo-image').value.trim(), link:form.querySelector('.promo-link').value.trim() };
+    if(!newPromo.imageUrl){ alert("Image URL required"); return; }
+    const promos=await getPromos(); promos.push(newPromo);
+    await saveData("promoSlides",promos);
+    showDopeAlert("Added","Promo slide added!","🖼"); form.remove(); renderPromosList();
+  };
+  form.querySelector('.cancel-promo-btn').onclick=()=>form.remove();
+  document.getElementById('promos-container').prepend(form);
+};
+
+// ══════════════════════════════════════════════════════════
+//  LIVE BANNER
+// ══════════════════════════════════════════════════════════
+// Default messages — kept from your code + extras you can tweak
+const DEFAULT_BANNER_MSGS = [
+  { text:"LIVE • ₦2.5M POT • TAP MASTER",                        color:"#00FFA3", glow:true  },
+  { text:"1ST TAKES ₦250K • TAP NOW",                             color:"#FF2D55", glow:true  },
+  { text:"{{top1}} IS GOOOALS",                                    color:"#00FFA3", glow:true  },
+  { text:"#2 {{top2}} IS CATCHING UP",                             color:"#FFD700", glow:false },
+  { text:"#3 {{top3}} IS HUNTING",                                 color:"#FFD700", glow:false },
+  { text:"₦1.4M PAID THIS WEEK • REAL CASH",                      color:"#00FFA3", glow:true  },
+  { text:"LAST CASH OUT ₦159K • 11 MINS AGO",                     color:"#FF2D55", glow:false },
+  { text:"TOP 100 REWARDED DAILY • PROMOTIONS",                    color:"#FFD700", glow:true  },
+  { text:"RESET IN ~24H • TAP!",                                   color:"#FF2D55", glow:true  },
+  { text:"ON THE LEADERBOARD YET? KEEP GOING",                    color:"#00FFA3", glow:true  },
+  { text:"YO MAMA CAN'T SAVE YOU NOW",                             color:"#FF2D55", glow:true  },
+  { text:"TAP OR TAP OUT • CHOOSE",                                color:"#FFD700", glow:true  },
+  { text:"LEADERBOARD DOESN'T LIE • MOVE!",                       color:"#00FFA3", glow:true  },
+  { text:"ONLY THE TOP SURVIVE • ARE YOU BUILT FOR THIS?",        color:"#FF2D55", glow:true  },
+  { text:"YOUR FINGERS ARE SLACKING • CATCH UP",                  color:"#FFD700", glow:false },
+  { text:"NO SHORTCUTS. JUST TAPS.",                               color:"#00FFA3", glow:false },
+  { text:"THE POT IS REAL. THE GRIND IS REALER.",                 color:"#c3f60c", glow:true  },
+  { text:"DAILY RESET COMING — TAP EVERYTHING",                   color:"#FF2D55", glow:true  },
+  { text:"PRIZES DROP AT MIDNIGHT • HOW MANY TAPS TODAY?",        color:"#FFD700", glow:false },
+  { text:"CUBEOLOGY TV IS LIVE • WATCH & TAP",                    color:"#7ec8f7", glow:true  },
+];
+
+let bannerMsgs = [];
+
+async function getBannerConfig() {
+  const snap=await getDoc(doc(db,"settings","live"));
+  if(!snap.exists()) return null;
+  return snap.data().bannerConfig||null;
+}
+
+async function loadBannerFromFirebase() {
+  showLoader("Loading banner config…");
+  const cfg=await getBannerConfig();
+  hideLoader();
+  if(cfg) {
+    bannerMsgs=[...cfg.messages];
+    document.getElementById('banner-interval').value=cfg.intervalSecs||21;
+    document.getElementById('banner-shuffle').checked=cfg.shuffle!==false;
+  } else {
+    bannerMsgs=[...DEFAULT_BANNER_MSGS];
   }
+  renderBannerMsgs();
+  updateBannerPreview();
+}
 
-  // ─── Render all channels ───
-  function renderTVShows(channels) {
-    const container = document.getElementById('tvshows-container');
-    container.innerHTML = '';
+function renderBannerMsgs() {
+  const container=document.getElementById('banner-msgs-container');
+  container.innerHTML='';
+  if(!bannerMsgs.length){ container.innerHTML='<p style="color:#888;">No messages. Add some!</p>'; return; }
 
-    if (!channels.length) {
-      container.innerHTML = '<p style="color:#888;">No channels yet. Add one!</p>';
-      return;
-    }
+  bannerMsgs.forEach((msg,idx)=>{
+    const row=document.createElement('div');
+    row.className='msg-row';
+    row.innerHTML=`
+      <div class="color-dot" style="background:${msg.color};${msg.glow?'box-shadow:0 0 8px '+msg.color:''};"></div>
+      <div class="msg-text-preview" style="color:${msg.color};${msg.glow?'text-shadow:0 0 8px '+msg.color:''}">${msg.text}</div>
+      <div class="msg-controls">
+        ${idx>0?`<button class="btn-sm btn-ghost move-msg-up" data-i="${idx}">↑</button>`:''}
+        ${idx<bannerMsgs.length-1?`<button class="btn-sm btn-ghost move-msg-down" data-i="${idx}">↓</button>`:''}
+        <button class="btn-sm btn-ghost edit-msg-btn" data-i="${idx}">✏️</button>
+        <button class="btn-sm btn-danger delete-msg-btn" data-i="${idx}">✕</button>
+      </div>
+    `;
 
-    channels.forEach((ch, chIdx) => {
-      const card = document.createElement('div');
-      card.className = 'channel-card';
-      card.dataset.chIdx = chIdx;
+    const upBtn=row.querySelector('.move-msg-up');
+    if(upBtn) upBtn.onclick=()=>{ [bannerMsgs[idx-1],bannerMsgs[idx]]=[bannerMsgs[idx],bannerMsgs[idx-1]]; renderBannerMsgs(); updateBannerPreview(); };
+    const downBtn=row.querySelector('.move-msg-down');
+    if(downBtn) downBtn.onclick=()=>{ [bannerMsgs[idx],bannerMsgs[idx+1]]=[bannerMsgs[idx+1],bannerMsgs[idx]]; renderBannerMsgs(); updateBannerPreview(); };
 
-      card.innerHTML = `
-        <div class="channel-card-header">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="channel-title-badge">${ch.channel}</span>
-            <span style="color:#888;font-size:13px;">${ch.videos.length} video${ch.videos.length !== 1 ? 's' : ''}</span>
-          </div>
-          <div class="channel-actions">
-            <button class="btn-sm btn-ghost rename-ch-btn">✏️ Rename</button>
-            <button class="btn-sm btn-danger delete-ch-btn">🗑 Delete Channel</button>
-          </div>
-        </div>
+    row.querySelector('.delete-msg-btn').onclick=()=>{ bannerMsgs.splice(idx,1); renderBannerMsgs(); updateBannerPreview(); };
 
-        <div class="video-queue" id="queue-${chIdx}"></div>
+    row.querySelector('.edit-msg-btn').onclick=()=>openEditMsgEditor(idx);
 
-        <button class="btn-sm btn-ghost add-video-btn" style="margin-top:10px;">＋ Add Video to ${ch.channel}</button>
+    container.appendChild(row);
+  });
+}
 
-        <div class="add-video-form" id="add-video-form-${chIdx}">
-          <input type="text" class="new-vid-title" placeholder="Video Title">
-          <input type="url"  class="new-vid-url"   placeholder="Direct MP4 Video URL">
-          <div class="form-row">
-            <button class="save-vid-btn">Save</button>
-            <button class="cancel-vid-btn" style="background:#333;color:#fff;">Cancel</button>
-          </div>
-        </div>
-      `;
+function updateBannerPreview() {
+  const track=document.getElementById('bannerPreviewTrack');
+  if(!bannerMsgs.length){ track.innerHTML='<span style="color:#555;">No messages</span>'; return; }
+  let html='';
+  bannerMsgs.forEach(m=>{
+    html+=`<span style="color:${m.color};font-weight:900;margin-right:24px;${m.glow?'text-shadow:0 0 14px '+m.color:''}">${m.text}</span><span style="color:#444;margin-right:24px;">•</span>`;
+  });
+  track.innerHTML=html+html; // doubled for seamless loop
+}
 
-      // Render video queue items
-      const queue = card.querySelector(`#queue-${chIdx}`);
-      ch.videos.forEach((vid, vidIdx) => {
-        const item = document.createElement('div');
-        item.className = 'video-queue-item';
-        item.innerHTML = `
-          <span class="vid-order">${vidIdx + 1}</span>
-          <div class="vid-info">
-            <div class="vid-title">${vid.title}</div>
-            <div class="vid-url"><a href="${vid.url}" target="_blank" style="color:#666;">${vid.url}</a></div>
-          </div>
-          <div class="vid-actions">
-            ${vidIdx > 0 ? `<button class="btn-sm btn-ghost move-up-btn" data-vid="${vidIdx}">↑</button>` : ''}
-            ${vidIdx < ch.videos.length - 1 ? `<button class="btn-sm btn-ghost move-down-btn" data-vid="${vidIdx}">↓</button>` : ''}
-            <button class="btn-sm btn-danger delete-vid-btn" data-vid="${vidIdx}">✕</button>
-          </div>
-        `;
-        queue.appendChild(item);
-      });
+// Add message
+const addEditor=document.getElementById('banner-add-editor');
+let selectedAddColor='#00FFA3';
 
-      container.appendChild(card);
+document.getElementById('add-banner-msg').onclick=()=>addEditor.classList.toggle('open');
+document.getElementById('cancel-new-msg').onclick=()=>addEditor.classList.remove('open');
 
-      // ── Wire up channel buttons ──
+document.querySelectorAll('#new-msg-colors .color-swatch').forEach(sw=>{
+  sw.onclick=()=>{
+    document.querySelectorAll('#new-msg-colors .color-swatch').forEach(s=>s.classList.remove('selected'));
+    sw.classList.add('selected'); selectedAddColor=sw.dataset.color;
+  };
+});
 
-      // Delete channel
-      card.querySelector('.delete-ch-btn').onclick = async () => {
-        if (!confirm(`Delete entire channel "${ch.channel}" and all its videos?`)) return;
-        const all = await getTVShows();
-        all.splice(chIdx, 1);
-        if (await saveData('tvShows', all)) {
-          showDopeAlert("Deleted", `Channel "${ch.channel}" removed.`);
-          loadAndRenderTVShows();
-        }
-      };
+document.getElementById('save-new-msg').onclick=()=>{
+  const text=document.getElementById('new-msg-text').value.trim();
+  if(!text){ alert("Message text required."); return; }
+  bannerMsgs.push({ text, color:selectedAddColor, glow:document.getElementById('new-msg-glow').checked });
+  document.getElementById('new-msg-text').value='';
+  addEditor.classList.remove('open');
+  renderBannerMsgs(); updateBannerPreview();
+};
 
-      // Rename channel
-      card.querySelector('.rename-ch-btn').onclick = async () => {
-        const newName = prompt("New channel name:", ch.channel);
-        if (!newName || !newName.trim()) return;
-        const all = await getTVShows();
-        all[chIdx].channel = newName.trim();
-        if (await saveData('tvShows', all)) {
-          showDopeAlert("Renamed", `Channel renamed to "${newName.trim()}"`);
-          loadAndRenderTVShows();
-        }
-      };
+// Inline edit existing message
+function openEditMsgEditor(idx) {
+  // Remove any existing edit forms
+  document.querySelectorAll('.inline-edit-form').forEach(f=>f.remove());
+  const msg=bannerMsgs[idx];
+  const container=document.getElementById('banner-msgs-container');
+  const rows=container.querySelectorAll('.msg-row');
 
-      // Add video form toggle
-      const addForm = card.querySelector(`#add-video-form-${chIdx}`);
-      card.querySelector('.add-video-btn').onclick = () => addForm.classList.toggle('open');
-      card.querySelector('.cancel-vid-btn').onclick = () => addForm.classList.remove('open');
+  const editor=document.createElement('div');
+  editor.className='banner-msg-editor open inline-edit-form';
+  editor.style.margin='0 0 8px';
 
-      // Save new video
-      card.querySelector('.save-vid-btn').onclick = async () => {
-        const title = addForm.querySelector('.new-vid-title').value.trim();
-        const url   = addForm.querySelector('.new-vid-url').value.trim();
-        if (!title || !url) { alert("Title and URL are required."); return; }
+  const colorSwatches=['#00FFA3','#FF2D55','#FFD700','#c3f60c','#7ec8f7','#ff9f43','#ffffff']
+    .map(c=>`<div class="color-swatch${c===msg.color?' selected':''}" data-color="${c}" style="background:${c};${c===msg.color?'border-color:#fff;transform:scale(1.2);':''}"></div>`).join('');
 
-        const all = await getTVShows();
-        all[chIdx].videos.push({ title, url });
-        if (await saveData('tvShows', all)) {
-          showDopeAlert("Added", `"${title}" added to ${ch.channel}`);
-          loadAndRenderTVShows();
-        }
-      };
+  editor.innerHTML=`
+    <h4 style="margin:0 0 12px;color:#c3f60c;">Edit Message</h4>
+    <input type="text" class="edit-msg-text" value="${msg.text.replace(/"/g,'&quot;')}">
+    <div class="color-options">${colorSwatches}</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#aaa;margin-bottom:14px;">
+      <input type="checkbox" class="edit-msg-glow" ${msg.glow?'checked':''} style="width:auto;margin:0;"> Glow effect
+    </label>
+    <div class="form-row">
+      <button class="save-edit-msg btn-primary">Save</button>
+      <button class="cancel-edit-msg btn-ghost">Cancel</button>
+    </div>
+  `;
 
-      // Delete video
-      queue.querySelectorAll('.delete-vid-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const vidIdx = parseInt(btn.dataset.vid);
-          if (!confirm(`Delete "${ch.videos[vidIdx].title}"?`)) return;
-          const all = await getTVShows();
-          all[chIdx].videos.splice(vidIdx, 1);
-          if (await saveData('tvShows', all)) {
-            showDopeAlert("Deleted", "Video removed.");
-            loadAndRenderTVShows();
-          }
-        };
-      });
+  let editColor=msg.color;
+  editor.querySelectorAll('.color-swatch').forEach(sw=>{
+    sw.onclick=()=>{ editor.querySelectorAll('.color-swatch').forEach(s=>{s.classList.remove('selected');s.style.transform='';s.style.borderColor='transparent';}); sw.classList.add('selected'); sw.style.transform='scale(1.2)'; sw.style.borderColor='#fff'; editColor=sw.dataset.color; };
+  });
 
-      // Move video up
-      queue.querySelectorAll('.move-up-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const vidIdx = parseInt(btn.dataset.vid);
-          const all = await getTVShows();
-          const vids = all[chIdx].videos;
-          [vids[vidIdx - 1], vids[vidIdx]] = [vids[vidIdx], vids[vidIdx - 1]];
-          if (await saveData('tvShows', all)) loadAndRenderTVShows();
-        };
-      });
-
-      // Move video down
-      queue.querySelectorAll('.move-down-btn').forEach(btn => {
-        btn.onclick = async () => {
-          const vidIdx = parseInt(btn.dataset.vid);
-          const all = await getTVShows();
-          const vids = all[chIdx].videos;
-          [vids[vidIdx], vids[vidIdx + 1]] = [vids[vidIdx + 1], vids[vidIdx]];
-          if (await saveData('tvShows', all)) loadAndRenderTVShows();
-        };
-      });
-    });
-  }
-
-  async function loadAndRenderTVShows() {
-    const channels = await getTVShows();
-    renderTVShows(channels);
-  }
-
-  // ─── Add new channel ───
-  const newChannelForm = document.getElementById('new-channel-form');
-  document.getElementById('add-new-channel').onclick = () => newChannelForm.classList.toggle('open');
-  document.getElementById('cancel-new-channel').onclick = () => newChannelForm.classList.remove('open');
-
-  document.getElementById('save-new-channel').onclick = async () => {
-    const name = document.getElementById('new-channel-name').value.trim();
-    if (!name) { alert("Please enter a channel name."); return; }
-
-    const all = await getTVShows();
-    if (all.find(c => c.channel.toLowerCase() === name.toLowerCase())) {
-      alert(`A channel named "${name}" already exists.`);
-      return;
-    }
-
-    all.push({ channel: name, videos: [] });
-    if (await saveData('tvShows', all)) {
-      showDopeAlert("Created", `Channel "${name}" created! Now add videos to it.`);
-      document.getElementById('new-channel-name').value = '';
-      newChannelForm.classList.remove('open');
-      loadAndRenderTVShows();
-    }
+  editor.querySelector('.cancel-edit-msg').onclick=()=>editor.remove();
+  editor.querySelector('.save-edit-msg').onclick=()=>{
+    bannerMsgs[idx]={ text:editor.querySelector('.edit-msg-text').value.trim(), color:editColor, glow:editor.querySelector('.edit-msg-glow').checked };
+    editor.remove(); renderBannerMsgs(); updateBannerPreview();
   };
 
-  document.getElementById('fetch-tvshows').onclick = loadAndRenderTVShows;
+  if(rows[idx]) rows[idx].after(editor);
+  else container.appendChild(editor);
+}
 
-  // ================== UPCOMING EVENTS ==================
-  const eventsContainer   = document.getElementById('events-container');
-  const addNewEventBtn    = document.getElementById('add-new-event');
-  const fetchUpcomingBtn  = document.getElementById('fetch-upcoming');
-  const eventFormTemplate = document.getElementById('event-form-template');
-
-  async function getUpcomingEvents() {
-    showLoader("Loading events...");
-    const snap = await getDoc(doc(db, "settings", "live"));
-    hideLoader();
-    return snap.exists() ? (snap.data().upcomingEvents || []) : [];
-  }
-
-  function renderEvents(events) {
-    eventsContainer.innerHTML = '';
-    if (!events.length) { eventsContainer.innerHTML = '<p style="color:#888;">No upcoming events yet. Add one!</p>'; return; }
-
-    events.forEach((event, index) => {
-      const card = document.createElement('div');
-      card.className = 'card-preview';
-      card.innerHTML = `
-        <h4>${event.title}</h4>
-        <p><strong>Time:</strong> ${event.time}</p>
-        <p>${event.desc}</p>
-        <div class="actions">
-          <button class="edit-event" data-index="${index}">Edit</button>
-          <button class="delete-event" data-index="${index}">Delete</button>
-        </div>
-      `;
-      card.querySelector('.edit-event').onclick   = () => editEvent(index);
-      card.querySelector('.delete-event').onclick = () => deleteEvent(index);
-      eventsContainer.appendChild(card);
-    });
-  }
-
-  async function loadAndRenderEvents() {
-    const events = await getUpcomingEvents();
-    renderEvents(events);
-  }
-
-  async function editEvent(index) {
-    const events = await getUpcomingEvents();
-    const event  = events[index];
-    const form   = eventFormTemplate.content.cloneNode(true).querySelector('div');
-
-    form.querySelector('.event-title').value         = event.title     || '';
-    form.querySelector('.event-time').value          = event.time      || '';
-    form.querySelector('.event-desc').value          = event.desc      || '';
-    form.querySelector('.event-image').value         = event.imageUrl  || '';
-    form.querySelector('.event-link').value          = event.link      || '';
-    form.querySelector('.event-type').value          = event.type      || 'event';
-    form.querySelector('.event-cta').value           = event.ctaLabel  || '';
-    form.querySelector('.event-live-toggle').checked = event.isLive    || false;
-
-    form.querySelector('.save-event-btn').onclick = async () => {
-      const updated = {
-        isLive:   form.querySelector('.event-live-toggle').checked,
-        title:    form.querySelector('.event-title').value.trim(),
-        time:     form.querySelector('.event-time').value.trim(),
-        desc:     form.querySelector('.event-desc').value.trim(),
-        imageUrl: form.querySelector('.event-image').value.trim(),
-        link:     form.querySelector('.event-link').value.trim(),
-        type:     form.querySelector('.event-type').value,
-        ctaLabel: form.querySelector('.event-cta').value.trim()
-      };
-      if (!updated.title || !updated.time || !updated.desc || !updated.imageUrl) {
-        alert("Title, Time, Description and Image URL are required.");
-        return;
-      }
-      events[index] = updated;
-      if (await saveData('upcomingEvents', events)) {
-        showDopeAlert("Updated", "Event updated successfully!");
-        loadAndRenderEvents();
-      }
-    };
-
-    form.querySelector('.cancel-event-btn').onclick = () => form.remove();
-    eventsContainer.prepend(form);
-  }
-
-  async function deleteEvent(index) {
-    if (!confirm("Delete this event?")) return;
-    const events = await getUpcomingEvents();
-    events.splice(index, 1);
-    if (await saveData('upcomingEvents', events)) {
-      showDopeAlert("Deleted", "Event removed.");
-      loadAndRenderEvents();
-    }
-  }
-
-  addNewEventBtn.onclick = async () => {
-    const form = eventFormTemplate.content.cloneNode(true).querySelector('div');
-    form.querySelector('.save-event-btn').onclick = async () => {
-      const newEvent = {
-        title:    form.querySelector('.event-title').value.trim(),
-        time:     form.querySelector('.event-time').value.trim(),
-        desc:     form.querySelector('.event-desc').value.trim(),
-        imageUrl: form.querySelector('.event-image').value.trim(),
-        link:     form.querySelector('.event-link').value.trim(),
-        type:     form.querySelector('.event-type').value,
-        ctaLabel: form.querySelector('.event-cta').value.trim()
-      };
-      if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
-        alert("Title, Time, Description and Image URL are required.");
-        return;
-      }
-      const current = await getUpcomingEvents();
-      current.push(newEvent);
-      if (await saveData('upcomingEvents', current)) {
-        showDopeAlert("Added", "New event created!");
-        loadAndRenderEvents();
-      }
-    };
-    form.querySelector('.cancel-event-btn').onclick = () => form.remove();
-    eventsContainer.prepend(form);
+// Publish
+document.getElementById('save-banner').onclick=async()=>{
+  if(!bannerMsgs.length){ alert("Add at least one message first."); return; }
+  const cfg={
+    messages:   bannerMsgs,
+    intervalSecs: parseInt(document.getElementById('banner-interval').value)||21,
+    shuffle:    document.getElementById('banner-shuffle').checked,
+    updatedAt:  Date.now()
   };
-
-  fetchUpcomingBtn.onclick = loadAndRenderEvents;
-
-  // ================== PROMOS ==================
-  const promosContainer = document.getElementById("promos-container");
-  const fetchPromosBtn  = document.getElementById("fetch-promos");
-  const addPromoBtn     = document.getElementById("add-new-promo");
-  const promoTemplate   = document.getElementById("promo-form-template");
-
-  fetchPromosBtn.onclick = () => { renderPromosList(); loadAndRenderPromos(); };
-
-  let currentSlide  = 0;
-  let slideInterval = null;
-
-  function showSlide(index) {
-    const track  = document.querySelector("#leaderboardImageSlider .slider-track");
-    const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
-    if (!track || !slides.length) return;
-    currentSlide = (index + slides.length) % slides.length;
-    track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
+  if(await saveData('bannerConfig',cfg)){
+    showDopeAlert("Published!","Live banner updated — changes are live now.","🚀");
   }
-  function startSlider() {
-    const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
-    if (slideInterval || slides.length <= 1) return;
-    slideInterval = setInterval(() => showSlide(currentSlide + 1), 5000);
-  }
-  function stopSlider() { clearInterval(slideInterval); slideInterval = null; }
+};
 
-  async function getPromos() {
-    const snap = await getDoc(doc(db, "settings", "live"));
-    return snap.exists() ? (snap.data().promoSlides || []) : [];
-  }
+document.getElementById('fetch-banner').onclick=loadBannerFromFirebase;
 
-  async function renderPromosList() {
-    const promos = await getPromos();
-    promosContainer.innerHTML = '';
-    if (!promos.length) { promosContainer.innerHTML = "<p style='color:#888'>No promos yet</p>"; return; }
-
-    promos.forEach((p, index) => {
-      const card = document.createElement("div");
-      card.className = "card-preview";
-      card.innerHTML = `
-        <h4>Slide ${index + 1}</h4>
-        <p><a href="${p.imageUrl}" target="_blank">Image</a></p>
-        <div class="actions"><button class="delete-promo">Delete</button></div>
-      `;
-      card.querySelector(".delete-promo").onclick = async () => {
-        promos.splice(index, 1);
-        await saveData("promoSlides", promos);
-        showDopeAlert("Deleted", "Promo removed");
-        renderPromosList();
-        loadAndRenderPromos();
-      };
-      promosContainer.appendChild(card);
-    });
-  }
-
-  addPromoBtn.onclick = () => {
-    const form = promoTemplate.content.cloneNode(true).querySelector("div");
-    form.querySelector(".save-promo-btn").onclick = async () => {
-      const newPromo = {
-        imageUrl: form.querySelector(".promo-image").value.trim(),
-        link:     form.querySelector(".promo-link").value.trim()
-      };
-      if (!newPromo.imageUrl) { alert("Image URL required"); return; }
-      const promos = await getPromos();
-      promos.push(newPromo);
-      await saveData("promoSlides", promos);
-      showDopeAlert("Added", "Promo slide added");
-      form.remove();
-      renderPromosList();
-      loadAndRenderPromos();
-    };
-    form.querySelector(".cancel-promo-btn").onclick = () => form.remove();
-    promosContainer.prepend(form);
-  };
-
-  async function loadAndRenderPromos() {
-    try {
-      const snap = await getDoc(doc(db, "settings", "live"));
-      if (!snap.exists()) return;
-      const promos = snap.data().promoSlides || [];
-      const track  = document.querySelector("#leaderboardImageSlider .slider-track");
-      if (!track) return;
-      track.innerHTML = '';
-      promos.forEach(promo => {
-        const slide = document.createElement("a");
-        slide.href   = promo.link || "#";
-        slide.target = "_blank";
-        slide.style.cssText = "min-width:100%;height:100%;flex-shrink:0;display:flex;align-items:center;justify-content:center;";
-        const img = document.createElement("img");
-        img.src = promo.imageUrl;
-        img.className = "leaderboard-slide";
-        img.style.cssText = "width:100%;height:100%;object-fit:contain;";
-        slide.appendChild(img);
-        track.appendChild(slide);
-      });
-      currentSlide = 0;
-      setTimeout(() => { showSlide(0); startSlider(); }, 150);
-    } catch (err) {
-      console.error("Promo load failed:", err);
-    }
-  }
-
-  // ================== INITIAL LOAD ==================
-  loadAndRenderEvents();
-  loadAndRenderTVShows();
-  loadAndRenderPromos();
+// ══════════════════════════════════════════════════════════
+//  INITIAL LOAD
+// ══════════════════════════════════════════════════════════
+loadAndRenderEvents();
+loadAndRenderTVShows();
+renderPromosList();
+loadBannerFromFirebase();
 </script>
 </body>
 </html>
