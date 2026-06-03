@@ -5,102 +5,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CUBEOLOGY ADMIN</title>
   <style>
-    body { 
-      font-family: 'Poppins', sans-serif; 
-      background: #0a0a0a; 
-      color: #fff; 
-      padding: 20px; 
-      margin: 0; 
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      padding: 20px;
+      margin: 0;
     }
-    .tab-container { 
-      display: flex; 
-      gap: 12px; 
-      margin-bottom: 25px; 
-      flex-wrap: wrap; 
-    }
-    .tab { 
-      padding: 12px 24px; 
-      background: #333; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      transition: all 0.3s; 
-    }
+    .tab-container { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+    .tab { padding: 12px 24px; background: #333; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
     .tab:hover { background: #444; }
-    .tab.active { 
-      background: #c3f60c; 
-      color: #000; 
-      font-weight: bold; 
-    }
-    .section { 
-      display: none; 
-      background: #1a1a1a; 
-      padding: 25px; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
-    }
+    .tab.active { background: #c3f60c; color: #000; font-weight: bold; }
+    .section { display: none; background: #1a1a1a; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
     .section.active { display: block; }
 
-    input, textarea, button { 
-      padding: 10px; 
-      margin: 6px 6px 12px 0; 
-      border-radius: 8px; 
-      border: none; 
-      font-size: 1rem; 
+    input, textarea, select, button {
+      padding: 10px; margin: 6px 6px 12px 0;
+      border-radius: 8px; border: none; font-size: 1rem;
     }
-    button { 
-      background: #c3f60c; 
-      color: #000; 
-      cursor: pointer; 
-      font-weight: bold; 
-    }
+    button { background: #c3f60c; color: #000; cursor: pointer; font-weight: bold; }
     button:hover { transform: scale(1.05); }
 
-    #loaderOverlay { 
-      position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-      display: none; align-items: center; justify-content: center; z-index: 9999; 
+    #loaderOverlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
     }
-    #dopeAlert { 
-      position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
-      backdrop-filter: blur(16px); display: none; align-items: center; 
-      justify-content: center; z-index: 999999; 
+    #dopeAlert {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(16px); display: none; align-items: center;
+      justify-content: center; z-index: 999999;
     }
-    #dopeAlertContent { 
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); 
-      padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%; 
-      text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4); 
-      border: 2px solid #c3f60c; 
+    #dopeAlertContent {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      padding: 40px 30px; border-radius: 24px; max-width: 420px; width: 90%;
+      text-align: center; box-shadow: 0 0 80px rgba(195,246,12,0.4);
+      border: 2px solid #c3f60c;
     }
 
     .card-preview {
-      background: #111; 
-      border-radius: 12px; 
-      padding: 15px; 
-      margin: 12px 0; 
+      background: #111; border-radius: 12px; padding: 15px; margin: 12px 0;
       border: 1px solid #333;
     }
     .card-preview h4 { margin: 0 0 8px; color: #c3f60c; }
-    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; 
-    .live-badge{
-  position:absolute;
-  top:12px;
-  left:12px;
-  z-index:30;
+    .actions button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; }
 
-  display:flex;
-  align-items:center;
-  gap:7px;
+    /* ── Channel card ── */
+    .channel-card {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 18px;
+      margin: 16px 0;
+    }
+    .channel-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .channel-title-badge {
+      background: #c3f60c;
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+    .channel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-danger  { background: #c62828 !important; color: #fff !important; }
+    .btn-ghost   { background: #333 !important; color: #fff !important; }
+    .btn-sm      { padding: 5px 12px !important; font-size: 0.82rem !important; }
 
-  background:rgba(0,0,0,0.75);
-  padding:6px 12px;
-  border-radius:999px;
+    /* ── Video queue inside a channel ── */
+    .video-queue { display: flex; flex-direction: column; gap: 8px; }
+    .video-queue-item {
+      background: #1e1e1e;
+      border: 1px solid #2e2e2e;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .video-queue-item .vid-info { flex: 1; min-width: 0; }
+    .video-queue-item .vid-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .video-queue-item .vid-url   { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+    .vid-order { color: #555; font-size: 12px; min-width: 24px; text-align: center; font-weight: 700; }
+    .video-queue-item .vid-actions { display: flex; gap: 6px; }
 
-  color:#fff;
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:1px;
+    /* ── Add video inline form ── */
+    .add-video-form {
+      background: #202020;
+      border: 1px dashed #333;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    .add-video-form.open { display: block; }
+    .add-video-form input {
+      width: calc(100% - 20px);
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .add-video-form .form-row { display: flex; gap: 8px; }
 
-  backdrop-filter:blur(10px);
-}
+    /* ── New Channel form ── */
+    .new-channel-form {
+      background: #1e1e1e;
+      border: 1px dashed #444;
+      border-radius: 12px;
+      padding: 18px;
+      margin: 16px 0;
+      display: none;
+    }
+    .new-channel-form.open { display: block; }
+    .new-channel-form input {
+      width: calc(100% - 20px);
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      display: block;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -109,21 +143,11 @@
 
   <h1>CUBEOLOGY ADMIN - TV CNTNT MGMT</h1>
 
-<div class="tab-container">
-
-  <div class="tab active" data-tab="upcoming">
-    Upcoming Events
+  <div class="tab-container">
+    <div class="tab active" data-tab="upcoming">Upcoming Events</div>
+    <div class="tab" data-tab="tvshows">TV Shows</div>
+    <div class="tab" data-tab="promos">Promo Slider</div>
   </div>
-
-  <div class="tab" data-tab="tvshows">
-    TV Shows
-  </div>
-
-  <div class="tab" data-tab="promos">
-    Promo Slider
-  </div>
-
-</div>
 
   <!-- Dope Alert -->
   <div id="dopeAlert">
@@ -150,154 +174,71 @@
         <textarea placeholder="Description" class="event-desc" style="width:100%; height:80px; margin-bottom:8px;"></textarea>
         <input type="url" placeholder="Image URL" class="event-image" style="width:100%; margin-bottom:8px;">
         <input type="url" placeholder="Link (optional)" class="event-link" style="width:100%; margin-bottom:12px;">
-        <!-- EVENT TYPE -->
-<select class="event-type" style="width:100%; margin-bottom:8px;">
-  <option value="event">Event</option>
-  <option value="live">Live</option>
-  <option value="video">Video</option>
-  <option value="promo">Promo</option>
-</select>
-
-<!-- CUSTOM CTA LABEL -->
-<input
-  type="text"
-  placeholder="CTA Label (e.g. Watch Now, Join Live)"
-  class="event-cta"
-  style="width:100%; margin-bottom:12px;"
->
-        <label style="
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:12px 0;
-  color:#fff;
-  font-size:14px;
-">
-
-  <input
-    type="checkbox"
-    class="event-live-toggle"
-  >
-
-  Event is LIVE now
-
-</label>
+        <select class="event-type" style="width:100%; margin-bottom:8px;">
+          <option value="event">Event</option>
+          <option value="live">Live</option>
+          <option value="video">Video</option>
+          <option value="promo">Promo</option>
+        </select>
+        <input type="text" placeholder="CTA Label (e.g. Watch Now, Join Live)" class="event-cta" style="width:100%; margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:10px;margin:12px 0;color:#fff;font-size:14px;">
+          <input type="checkbox" class="event-live-toggle"> Event is LIVE now
+        </label>
         <button class="save-event-btn" style="background:#c3f60c; color:#000;">Save Event</button>
         <button class="cancel-event-btn">Cancel</button>
       </div>
     </template>
   </div>
 
-  <!-- TV SHOWS SECTION -->
+  <!-- ═══════════════════════════════════════════
+       TV SHOWS SECTION — multi-video channels
+  ════════════════════════════════════════════ -->
   <div id="tvshows" class="section">
     <h2>Manage TV Shows (Video Lounge)</h2>
-    <p>These will appear in the Video Lounge for logged-in users.</p>
-    <button id="fetch-tvshows">Refresh List</button>
-    <button id="add-new-tvshow">+ Add New Video</button>
-    <div id="tvshows-container" style="margin-top: 20px;"></div>
+    <p>Each channel can hold <strong>multiple videos</strong> that play one after another. Prev/Next buttons switch channels.</p>
 
-    <template id="tvshow-form-template">
-      <div style="background:#222; padding:16px; border-radius:12px; margin:16px 0;">
-        <input type="text" placeholder="Title" class="tv-title" style="width:100%; margin-bottom:8px;">
-        <input type="text" placeholder="Channel (e.g. CH 3)" class="tv-channel" style="width:100%; margin-bottom:8px;">
-        <input type="url" placeholder="Direct MP4 Video URL" class="tv-url" style="width:100%; margin-bottom:12px;">
-        <button class="save-tvshow-btn" style="background:#c3f60c; color:#000;">Save Video</button>
-        <button class="cancel-tvshow-btn">Cancel</button>
+    <button id="fetch-tvshows">🔄 Refresh</button>
+    <button id="add-new-channel">＋ Add New Channel</button>
+
+    <!-- New-channel inline form -->
+    <div class="new-channel-form" id="new-channel-form">
+      <h4 style="margin:0 0 12px;color:#c3f60c;">New Channel</h4>
+      <input type="text" id="new-channel-name" placeholder="Channel name (e.g. CH 3, Sports, Music)">
+      <div style="display:flex;gap:8px;">
+        <button id="save-new-channel">Save Channel</button>
+        <button id="cancel-new-channel" style="background:#333;color:#fff;">Cancel</button>
+      </div>
+    </div>
+
+    <div id="tvshows-container" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- PROMO SLIDER SECTION -->
+  <div id="promos" class="section">
+    <h2>Manage Promo Slider</h2>
+    <p>These images will appear inside TapMaster leaderboard slider.</p>
+
+    <div id="leaderboardImageSlider" style="position:relative;width:100%;height:240px;margin:20px 0;overflow:hidden;border-radius:14px;background:#111;">
+      <div class="slider-track" style="display:flex;width:100%;height:100%;transition:transform 0.6s ease;"></div>
+    </div>
+
+    <button id="fetch-promos">Refresh List</button>
+    <button id="add-new-promo">+ Add New Slide</button>
+    <div id="promos-container" style="margin-top:20px;"></div>
+
+    <template id="promo-form-template">
+      <div style="background:#222;padding:16px;border-radius:12px;margin:16px 0;">
+        <input type="url" placeholder="Image URL" class="promo-image" style="width:100%;margin-bottom:8px;">
+        <input type="url" placeholder="Link URL (optional)" class="promo-link" style="width:100%;margin-bottom:12px;">
+        <button class="save-promo-btn" style="background:#c3f60c;color:#000;">Save Slide</button>
+        <button class="cancel-promo-btn">Cancel</button>
       </div>
     </template>
   </div>
 
-
-  <!-- PROMO SLIDER SECTION -->
-<div id="promos" class="section">
-
-  <h2>Manage Promo Slider</h2>
-
-  <p>
-    These images will appear inside TapMaster
-    leaderboard slider.
-  </p>
-
-  <div id="leaderboardImageSlider" style="
-  position:relative;
-  width:100%;
-  height:240px;
-  margin:20px 0;
-  overflow:hidden;
-  border-radius:14px;
-  background:#111;
-">
-
-  <div class="slider-track" style="
-    display:flex;
-    width:100%;
-    height:100%;
-    transition:transform 0.6s ease;
-  "></div>
-
-</div>
-
-  <button id="fetch-promos">
-    Refresh List
-  </button>
-
-  <button id="add-new-promo">
-    + Add New Slide
-  </button>
-
-  <div
-    id="promos-container"
-    style="margin-top:20px;"
-  ></div>
-
-  <template id="promo-form-template">
-
-    <div style="
-      background:#222;
-      padding:16px;
-      border-radius:12px;
-      margin:16px 0;
-    ">
-
-      <input
-        type="url"
-        placeholder="Image URL"
-        class="promo-image"
-        style="width:100%;margin-bottom:8px;"
-      >
-
-      <input
-        type="url"
-        placeholder="Link URL (optional)"
-        class="promo-link"
-        style="width:100%;margin-bottom:12px;"
-      >
-
-      <button
-        class="save-promo-btn"
-        style="background:#c3f60c;color:#000;"
-      >
-        Save Slide
-      </button>
-
-      <button class="cancel-promo-btn">
-        Cancel
-      </button>
-
-    </div>
-
-  </template>
-
-</div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    setDoc 
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
@@ -309,32 +250,24 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db  = getFirestore(app);
 
   const loaderOverlay = document.getElementById("loaderOverlay");
-  const loaderText = document.getElementById("loaderText");
-  const dopeAlert = document.getElementById("dopeAlert");
-  const dopeTitle = document.getElementById("dopeTitle");
-  const dopeMessage = document.getElementById("dopeMessage");
-  const dopeIcon = document.getElementById("dopeIcon");
-  const dopeClose = document.getElementById("dopeClose");
+  const loaderText    = document.getElementById("loaderText");
+  const dopeAlert     = document.getElementById("dopeAlert");
+  const dopeTitle     = document.getElementById("dopeTitle");
+  const dopeMessage   = document.getElementById("dopeMessage");
+  const dopeClose     = document.getElementById("dopeClose");
 
-  function showLoader(text = "Working...") {
-    loaderText.textContent = text;
-    loaderOverlay.style.display = "flex";
-  }
-
-  function hideLoader() {
-    loaderOverlay.style.display = "none";
-  }
+  function showLoader(text = "Working...") { loaderText.textContent = text; loaderOverlay.style.display = "flex"; }
+  function hideLoader()                    { loaderOverlay.style.display = "none"; }
 
   function showDopeAlert(title, message) {
-    dopeTitle.textContent = title;
+    dopeTitle.textContent   = title;
     dopeMessage.textContent = message;
     dopeAlert.style.display = "flex";
     setTimeout(() => dopeAlert.style.opacity = "1", 50);
   }
-
   dopeClose.onclick = () => {
     dopeAlert.style.opacity = "0";
     setTimeout(() => dopeAlert.style.display = "none", 400);
@@ -350,7 +283,7 @@
     });
   });
 
-  // ================== COMMON SAVE FUNCTION ==================
+  // ================== COMMON SAVE ==================
   async function saveData(field, data) {
     try {
       await setDoc(doc(db, "settings", "live"), { [field]: data }, { merge: true });
@@ -362,121 +295,215 @@
     }
   }
 
-  // ================== TV SHOWS ==================
+  // ═══════════════════════════════════════════════════════
+  //  TV SHOWS — new channel-based structure
+  //  Firebase shape: tvShows = [{ channel, videos:[{title,url}] }]
+  // ═══════════════════════════════════════════════════════
+
   async function getTVShows() {
     showLoader("Loading TV Shows...");
     const snap = await getDoc(doc(db, "settings", "live"));
     hideLoader();
-    return snap.exists() ? (snap.data().tvShows || []) : [];
+    if (!snap.exists()) return [];
+    const raw = snap.data().tvShows || [];
+
+    // Migrate old flat shape on-the-fly if needed
+    if (raw.length > 0 && !Array.isArray(raw[0].videos)) {
+      return groupLegacy(raw);
+    }
+    return raw;
   }
 
-  function renderTVShows(shows) {
+  function groupLegacy(flat) {
+    const map = {}, order = [];
+    flat.forEach(s => {
+      const ch = s.channel || "CH 1";
+      if (!map[ch]) { map[ch] = []; order.push(ch); }
+      map[ch].push({ title: s.title, url: s.url });
+    });
+    return order.map(ch => ({ channel: ch, videos: map[ch] }));
+  }
+
+  // ─── Render all channels ───
+  function renderTVShows(channels) {
     const container = document.getElementById('tvshows-container');
     container.innerHTML = '';
-    if (shows.length === 0) {
-      container.innerHTML = '<p style="color:#888;">No videos yet. Add some!</p>';
+
+    if (!channels.length) {
+      container.innerHTML = '<p style="color:#888;">No channels yet. Add one!</p>';
       return;
     }
 
-    shows.forEach((show, index) => {
+    channels.forEach((ch, chIdx) => {
       const card = document.createElement('div');
-      card.className = 'card-preview';
+      card.className = 'channel-card';
+      card.dataset.chIdx = chIdx;
+
       card.innerHTML = `
-        <h4>${show.title}</h4>
-        <p><strong>Channel:</strong> ${show.channel || 'N/A'}</p>
-        <p><strong>URL:</strong> <a href="${show.url}" target="_blank">View Video</a></p>
-        <div class="actions">
-          <button class="edit-tvshow" data-index="${index}">Edit</button>
-          <button class="delete-tvshow" data-index="${index}">Delete</button>
+        <div class="channel-card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="channel-title-badge">${ch.channel}</span>
+            <span style="color:#888;font-size:13px;">${ch.videos.length} video${ch.videos.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="channel-actions">
+            <button class="btn-sm btn-ghost rename-ch-btn">✏️ Rename</button>
+            <button class="btn-sm btn-danger delete-ch-btn">🗑 Delete Channel</button>
+          </div>
+        </div>
+
+        <div class="video-queue" id="queue-${chIdx}"></div>
+
+        <button class="btn-sm btn-ghost add-video-btn" style="margin-top:10px;">＋ Add Video to ${ch.channel}</button>
+
+        <div class="add-video-form" id="add-video-form-${chIdx}">
+          <input type="text" class="new-vid-title" placeholder="Video Title">
+          <input type="url"  class="new-vid-url"   placeholder="Direct MP4 Video URL">
+          <div class="form-row">
+            <button class="save-vid-btn">Save</button>
+            <button class="cancel-vid-btn" style="background:#333;color:#fff;">Cancel</button>
+          </div>
         </div>
       `;
 
-      card.querySelector('.edit-tvshow').onclick = () => editTVShow(index);
-      card.querySelector('.delete-tvshow').onclick = () => deleteTVShow(index);
+      // Render video queue items
+      const queue = card.querySelector(`#queue-${chIdx}`);
+      ch.videos.forEach((vid, vidIdx) => {
+        const item = document.createElement('div');
+        item.className = 'video-queue-item';
+        item.innerHTML = `
+          <span class="vid-order">${vidIdx + 1}</span>
+          <div class="vid-info">
+            <div class="vid-title">${vid.title}</div>
+            <div class="vid-url"><a href="${vid.url}" target="_blank" style="color:#666;">${vid.url}</a></div>
+          </div>
+          <div class="vid-actions">
+            ${vidIdx > 0 ? `<button class="btn-sm btn-ghost move-up-btn" data-vid="${vidIdx}">↑</button>` : ''}
+            ${vidIdx < ch.videos.length - 1 ? `<button class="btn-sm btn-ghost move-down-btn" data-vid="${vidIdx}">↓</button>` : ''}
+            <button class="btn-sm btn-danger delete-vid-btn" data-vid="${vidIdx}">✕</button>
+          </div>
+        `;
+        queue.appendChild(item);
+      });
+
       container.appendChild(card);
+
+      // ── Wire up channel buttons ──
+
+      // Delete channel
+      card.querySelector('.delete-ch-btn').onclick = async () => {
+        if (!confirm(`Delete entire channel "${ch.channel}" and all its videos?`)) return;
+        const all = await getTVShows();
+        all.splice(chIdx, 1);
+        if (await saveData('tvShows', all)) {
+          showDopeAlert("Deleted", `Channel "${ch.channel}" removed.`);
+          loadAndRenderTVShows();
+        }
+      };
+
+      // Rename channel
+      card.querySelector('.rename-ch-btn').onclick = async () => {
+        const newName = prompt("New channel name:", ch.channel);
+        if (!newName || !newName.trim()) return;
+        const all = await getTVShows();
+        all[chIdx].channel = newName.trim();
+        if (await saveData('tvShows', all)) {
+          showDopeAlert("Renamed", `Channel renamed to "${newName.trim()}"`);
+          loadAndRenderTVShows();
+        }
+      };
+
+      // Add video form toggle
+      const addForm = card.querySelector(`#add-video-form-${chIdx}`);
+      card.querySelector('.add-video-btn').onclick = () => addForm.classList.toggle('open');
+      card.querySelector('.cancel-vid-btn').onclick = () => addForm.classList.remove('open');
+
+      // Save new video
+      card.querySelector('.save-vid-btn').onclick = async () => {
+        const title = addForm.querySelector('.new-vid-title').value.trim();
+        const url   = addForm.querySelector('.new-vid-url').value.trim();
+        if (!title || !url) { alert("Title and URL are required."); return; }
+
+        const all = await getTVShows();
+        all[chIdx].videos.push({ title, url });
+        if (await saveData('tvShows', all)) {
+          showDopeAlert("Added", `"${title}" added to ${ch.channel}`);
+          loadAndRenderTVShows();
+        }
+      };
+
+      // Delete video
+      queue.querySelectorAll('.delete-vid-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const vidIdx = parseInt(btn.dataset.vid);
+          if (!confirm(`Delete "${ch.videos[vidIdx].title}"?`)) return;
+          const all = await getTVShows();
+          all[chIdx].videos.splice(vidIdx, 1);
+          if (await saveData('tvShows', all)) {
+            showDopeAlert("Deleted", "Video removed.");
+            loadAndRenderTVShows();
+          }
+        };
+      });
+
+      // Move video up
+      queue.querySelectorAll('.move-up-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const vidIdx = parseInt(btn.dataset.vid);
+          const all = await getTVShows();
+          const vids = all[chIdx].videos;
+          [vids[vidIdx - 1], vids[vidIdx]] = [vids[vidIdx], vids[vidIdx - 1]];
+          if (await saveData('tvShows', all)) loadAndRenderTVShows();
+        };
+      });
+
+      // Move video down
+      queue.querySelectorAll('.move-down-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const vidIdx = parseInt(btn.dataset.vid);
+          const all = await getTVShows();
+          const vids = all[chIdx].videos;
+          [vids[vidIdx], vids[vidIdx + 1]] = [vids[vidIdx + 1], vids[vidIdx]];
+          if (await saveData('tvShows', all)) loadAndRenderTVShows();
+        };
+      });
     });
   }
 
   async function loadAndRenderTVShows() {
-    const shows = await getTVShows();
-    renderTVShows(shows);
+    const channels = await getTVShows();
+    renderTVShows(channels);
   }
 
-  async function editTVShow(index) {
-    const shows = await getTVShows();
-    const show = shows[index];
-    const form = document.getElementById('tvshow-form-template').content.cloneNode(true).querySelector('div');
+  // ─── Add new channel ───
+  const newChannelForm = document.getElementById('new-channel-form');
+  document.getElementById('add-new-channel').onclick = () => newChannelForm.classList.toggle('open');
+  document.getElementById('cancel-new-channel').onclick = () => newChannelForm.classList.remove('open');
 
-    form.querySelector('.tv-title').value = show.title || '';
-    form.querySelector('.tv-channel').value = show.channel || '';
-    form.querySelector('.tv-url').value = show.url || '';
+  document.getElementById('save-new-channel').onclick = async () => {
+    const name = document.getElementById('new-channel-name').value.trim();
+    if (!name) { alert("Please enter a channel name."); return; }
 
-    form.querySelector('.save-tvshow-btn').onclick = async () => {
-      const updated = {
-        title: form.querySelector('.tv-title').value.trim(),
-        channel: form.querySelector('.tv-channel').value.trim(),
-        url: form.querySelector('.tv-url').value.trim()
-      };
+    const all = await getTVShows();
+    if (all.find(c => c.channel.toLowerCase() === name.toLowerCase())) {
+      alert(`A channel named "${name}" already exists.`);
+      return;
+    }
 
-      if (!updated.title || !updated.url) {
-        alert("Title and Video URL are required.");
-        return;
-      }
-
-      shows[index] = updated;
-      if (await saveData('tvShows', shows)) {
-        showDopeAlert("Updated", "Video updated successfully!");
-        loadAndRenderTVShows();
-      }
-    };
-
-    form.querySelector('.cancel-tvshow-btn').onclick = () => form.remove();
-    document.getElementById('tvshows-container').prepend(form);
-  }
-
-  async function deleteTVShow(index) {
-    if (!confirm("Delete this video?")) return;
-    const shows = await getTVShows();
-    shows.splice(index, 1);
-    if (await saveData('tvShows', shows)) {
-      showDopeAlert("Deleted", "Video removed.");
+    all.push({ channel: name, videos: [] });
+    if (await saveData('tvShows', all)) {
+      showDopeAlert("Created", `Channel "${name}" created! Now add videos to it.`);
+      document.getElementById('new-channel-name').value = '';
+      newChannelForm.classList.remove('open');
       loadAndRenderTVShows();
     }
-  }
-
-  document.getElementById('add-new-tvshow').onclick = async () => {
-    const form = document.getElementById('tvshow-form-template').content.cloneNode(true).querySelector('div');
-
-    form.querySelector('.save-tvshow-btn').onclick = async () => {
-      const newShow = {
-        title: form.querySelector('.tv-title').value.trim(),
-        channel: form.querySelector('.tv-channel').value.trim(),
-        url: form.querySelector('.tv-url').value.trim()
-      };
-
-      if (!newShow.title || !newShow.url) {
-        alert("Title and Video URL are required.");
-        return;
-      }
-
-      const current = await getTVShows();
-      current.push(newShow);
-      if (await saveData('tvShows', current)) {
-        showDopeAlert("Added", "New video added!");
-        loadAndRenderTVShows();
-      }
-    };
-
-    form.querySelector('.cancel-tvshow-btn').onclick = () => form.remove();
-    document.getElementById('tvshows-container').prepend(form);
   };
 
   document.getElementById('fetch-tvshows').onclick = loadAndRenderTVShows;
 
   // ================== UPCOMING EVENTS ==================
-  const eventsContainer = document.getElementById('events-container');
-  const addNewEventBtn = document.getElementById('add-new-event');
-  const fetchUpcomingBtn = document.getElementById('fetch-upcoming');
+  const eventsContainer   = document.getElementById('events-container');
+  const addNewEventBtn    = document.getElementById('add-new-event');
+  const fetchUpcomingBtn  = document.getElementById('fetch-upcoming');
   const eventFormTemplate = document.getElementById('event-form-template');
 
   async function getUpcomingEvents() {
@@ -488,61 +515,22 @@
 
   function renderEvents(events) {
     eventsContainer.innerHTML = '';
-    if (events.length === 0) {
-      eventsContainer.innerHTML = '<p style="color:#888;">No upcoming events yet. Add one!</p>';
-      return;
-    }
+    if (!events.length) { eventsContainer.innerHTML = '<p style="color:#888;">No upcoming events yet. Add one!</p>'; return; }
 
     events.forEach((event, index) => {
       const card = document.createElement('div');
       card.className = 'card-preview';
       card.innerHTML = `
-        <h4>${event.title || 'No title'}</h4>
-        <p><strong>Time:</strong> ${event.time || '-'}</p>
-        <p><strong>Desc:</strong> ${event.desc?.substring(0,80)}${event.desc?.length > 80 ? '...' : ''}</p>
-        <p><strong>Image:</strong> <a href="${event.imageUrl}" target="_blank">view</a></p>
-        ${event.link ? `<p><strong>Link:</strong> <a href="${event.link}" target="_blank">open</a></p>` : ''}
-       <div class="actions">
-  <button class="edit-event" data-index="${index}">
-    Edit
-  </button>
-
-  <button class="delete-event" data-index="${index}">
-    Delete
-  </button>
-
-  <button class="toggle-live-event" data-index="${index}"
-    style="
-      background:${event.isLive ? '#ff2b2b' : '#333'};
-      color:${event.isLive ? '#fff' : '#ccc'};
-    ">
-    ${event.isLive ? 'LIVE NOW' : 'GO LIVE'}
-  </button>
-</div>
+        <h4>${event.title}</h4>
+        <p><strong>Time:</strong> ${event.time}</p>
+        <p>${event.desc}</p>
+        <div class="actions">
+          <button class="edit-event" data-index="${index}">Edit</button>
+          <button class="delete-event" data-index="${index}">Delete</button>
+        </div>
       `;
-
-      card.querySelector('.edit-event').onclick = () => editEvent(index);
+      card.querySelector('.edit-event').onclick   = () => editEvent(index);
       card.querySelector('.delete-event').onclick = () => deleteEvent(index);
-      card.querySelector('.toggle-live-event').onclick = async () => {
-
- const updatedEvents = [...events];
-
-updatedEvents[index] = {
-  ...updatedEvents[index],
-  isLive: !updatedEvents[index].isLive
-};
-
-  await saveData("upcomingEvents", updatedEvents);
-
-  showDopeAlert(
-    updatedEvents[index].isLive ? "LIVE STARTED" : "LIVE ENDED",
-    updatedEvents[index].isLive
-      ? `${updatedEvents[index].title} is now live`
-      : `Live session stopped`
-  );
-
-  loadAndRenderEvents();
-};
       eventsContainer.appendChild(card);
     });
   }
@@ -554,33 +542,33 @@ updatedEvents[index] = {
 
   async function editEvent(index) {
     const events = await getUpcomingEvents();
-    const event = events[index];
-    const form = eventFormTemplate.content.cloneNode(true).querySelector('div');
+    const event  = events[index];
+    const form   = eventFormTemplate.content.cloneNode(true).querySelector('div');
 
-    form.querySelector('.event-title').value = event.title || '';
-    form.querySelector('.event-time').value = event.time || '';
-    form.querySelector('.event-desc').value = event.desc || '';
-    form.querySelector('.event-image').value = event.imageUrl || '';
-    form.querySelector('.event-link').value = event.link || '';
-    form.querySelector('.event-type').value = event.type || "event";
-    form.querySelector('.event-cta').value = event.ctaLabel || "";
-    form.querySelector('.event-live-toggle').checked = event.isLive || false;
+    form.querySelector('.event-title').value         = event.title     || '';
+    form.querySelector('.event-time').value          = event.time      || '';
+    form.querySelector('.event-desc').value          = event.desc      || '';
+    form.querySelector('.event-image').value         = event.imageUrl  || '';
+    form.querySelector('.event-link').value          = event.link      || '';
+    form.querySelector('.event-type').value          = event.type      || 'event';
+    form.querySelector('.event-cta').value           = event.ctaLabel  || '';
+    form.querySelector('.event-live-toggle').checked = event.isLive    || false;
 
     form.querySelector('.save-event-btn').onclick = async () => {
       const updated = {
-        isLive: form.querySelector('.event-live-toggle').checked,
-        title: form.querySelector('.event-title').value.trim(),
-        time: form.querySelector('.event-time').value.trim(),
-        desc: form.querySelector('.event-desc').value.trim(),
+        isLive:   form.querySelector('.event-live-toggle').checked,
+        title:    form.querySelector('.event-title').value.trim(),
+        time:     form.querySelector('.event-time').value.trim(),
+        desc:     form.querySelector('.event-desc').value.trim(),
         imageUrl: form.querySelector('.event-image').value.trim(),
-        link: form.querySelector('.event-link').value.trim()
+        link:     form.querySelector('.event-link').value.trim(),
+        type:     form.querySelector('.event-type').value,
+        ctaLabel: form.querySelector('.event-cta').value.trim()
       };
-
       if (!updated.title || !updated.time || !updated.desc || !updated.imageUrl) {
         alert("Title, Time, Description and Image URL are required.");
         return;
       }
-
       events[index] = updated;
       if (await saveData('upcomingEvents', events)) {
         showDopeAlert("Updated", "Event updated successfully!");
@@ -604,24 +592,20 @@ updatedEvents[index] = {
 
   addNewEventBtn.onclick = async () => {
     const form = eventFormTemplate.content.cloneNode(true).querySelector('div');
-
     form.querySelector('.save-event-btn').onclick = async () => {
-       const newEvent = {
-  title: form.querySelector('.event-title').value.trim(),
-  time: form.querySelector('.event-time').value.trim(),
-  desc: form.querySelector('.event-desc').value.trim(),
-  imageUrl: form.querySelector('.event-image').value.trim(),
-  link: form.querySelector('.event-link').value.trim(),
-
-  type: form.querySelector('.event-type').value,
-  ctaLabel: form.querySelector('.event-cta').value.trim()
-};
-
+      const newEvent = {
+        title:    form.querySelector('.event-title').value.trim(),
+        time:     form.querySelector('.event-time').value.trim(),
+        desc:     form.querySelector('.event-desc').value.trim(),
+        imageUrl: form.querySelector('.event-image').value.trim(),
+        link:     form.querySelector('.event-link').value.trim(),
+        type:     form.querySelector('.event-type').value,
+        ctaLabel: form.querySelector('.event-cta').value.trim()
+      };
       if (!newEvent.title || !newEvent.time || !newEvent.desc || !newEvent.imageUrl) {
         alert("Title, Time, Description and Image URL are required.");
         return;
       }
-
       const current = await getUpcomingEvents();
       current.push(newEvent);
       if (await saveData('upcomingEvents', current)) {
@@ -629,181 +613,117 @@ updatedEvents[index] = {
         loadAndRenderEvents();
       }
     };
-
     form.querySelector('.cancel-event-btn').onclick = () => form.remove();
     eventsContainer.prepend(form);
   };
 
   fetchUpcomingBtn.onclick = loadAndRenderEvents;
+
+  // ================== PROMOS ==================
   const promosContainer = document.getElementById("promos-container");
-const fetchPromosBtn = document.getElementById("fetch-promos");
-const addPromoBtn = document.getElementById("add-new-promo");
-const promoTemplate = document.getElementById("promo-form-template");
-  fetchPromosBtn.onclick = () => {
-  renderPromosList();
-  loadAndRenderPromos();
-};
+  const fetchPromosBtn  = document.getElementById("fetch-promos");
+  const addPromoBtn     = document.getElementById("add-new-promo");
+  const promoTemplate   = document.getElementById("promo-form-template");
 
-let currentSlide = 0;
-let slideInterval = null;
+  fetchPromosBtn.onclick = () => { renderPromosList(); loadAndRenderPromos(); };
 
-function showSlide(index) {
-  const track = document.querySelector("#leaderboardImageSlider .slider-track");
-  const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
+  let currentSlide  = 0;
+  let slideInterval = null;
 
-  if (!track || slides.length === 0) return;
-
-  const slideCount = slides.length;
-  currentSlide = (index + slideCount) % slideCount;
-
-  track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
-}
-
-function startSlider() {
-  const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
-
-  if (slideInterval || slides.length <= 1) return;
-
-  slideInterval = setInterval(() => {
-    showSlide(currentSlide + 1);
-  }, 5000);
-}
-
-function stopSlider() {
-  clearInterval(slideInterval);
-  slideInterval = null;
-}
+  function showSlide(index) {
+    const track  = document.querySelector("#leaderboardImageSlider .slider-track");
+    const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
+    if (!track || !slides.length) return;
+    currentSlide = (index + slides.length) % slides.length;
+    track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`;
+  }
+  function startSlider() {
+    const slides = document.querySelectorAll("#leaderboardImageSlider .slider-track a");
+    if (slideInterval || slides.length <= 1) return;
+    slideInterval = setInterval(() => showSlide(currentSlide + 1), 5000);
+  }
+  function stopSlider() { clearInterval(slideInterval); slideInterval = null; }
 
   async function getPromos() {
-  const snap = await getDoc(doc(db, "settings", "live"));
-  return snap.exists() ? (snap.data().promoSlides || []) : [];
-}
-
-async function renderPromosList() {
-  const promos = await getPromos();
-
-  promosContainer.innerHTML = "";
-
-  if (!promos.length) {
-    promosContainer.innerHTML = "<p style='color:#888'>No promos yet</p>";
-    return;
+    const snap = await getDoc(doc(db, "settings", "live"));
+    return snap.exists() ? (snap.data().promoSlides || []) : [];
   }
 
-  promos.forEach((p, index) => {
-    const card = document.createElement("div");
-    card.className = "card-preview";
+  async function renderPromosList() {
+    const promos = await getPromos();
+    promosContainer.innerHTML = '';
+    if (!promos.length) { promosContainer.innerHTML = "<p style='color:#888'>No promos yet</p>"; return; }
 
-    card.innerHTML = `
-      <h4>Slide ${index + 1}</h4>
-      <p><a href="${p.imageUrl}" target="_blank">Image</a></p>
-      <div class="actions">
-        <button class="delete-promo">Delete</button>
-      </div>
-    `;
+    promos.forEach((p, index) => {
+      const card = document.createElement("div");
+      card.className = "card-preview";
+      card.innerHTML = `
+        <h4>Slide ${index + 1}</h4>
+        <p><a href="${p.imageUrl}" target="_blank">Image</a></p>
+        <div class="actions"><button class="delete-promo">Delete</button></div>
+      `;
+      card.querySelector(".delete-promo").onclick = async () => {
+        promos.splice(index, 1);
+        await saveData("promoSlides", promos);
+        showDopeAlert("Deleted", "Promo removed");
+        renderPromosList();
+        loadAndRenderPromos();
+      };
+      promosContainer.appendChild(card);
+    });
+  }
 
-    card.querySelector(".delete-promo").onclick = async () => {
-      promos.splice(index, 1);
+  addPromoBtn.onclick = () => {
+    const form = promoTemplate.content.cloneNode(true).querySelector("div");
+    form.querySelector(".save-promo-btn").onclick = async () => {
+      const newPromo = {
+        imageUrl: form.querySelector(".promo-image").value.trim(),
+        link:     form.querySelector(".promo-link").value.trim()
+      };
+      if (!newPromo.imageUrl) { alert("Image URL required"); return; }
+      const promos = await getPromos();
+      promos.push(newPromo);
       await saveData("promoSlides", promos);
-      showDopeAlert("Deleted", "Promo removed");
+      showDopeAlert("Added", "Promo slide added");
+      form.remove();
       renderPromosList();
       loadAndRenderPromos();
     };
-
-    promosContainer.appendChild(card);
-  });
-}
-
-  addPromoBtn.onclick = () => {
-  const form = promoTemplate.content.cloneNode(true).querySelector("div");
-
-  form.querySelector(".save-promo-btn").onclick = async () => {
-    const newPromo = {
-      imageUrl: form.querySelector(".promo-image").value.trim(),
-      link: form.querySelector(".promo-link").value.trim()
-    };
-
-    if (!newPromo.imageUrl) {
-      alert("Image URL required");
-      return;
-    }
-
-    const promos = await getPromos();
-    promos.push(newPromo);
-
-    await saveData("promoSlides", promos);
-
-    showDopeAlert("Added", "Promo slide added");
-
-    form.remove();
-
-    renderPromosList();
-    loadAndRenderPromos();
+    form.querySelector(".cancel-promo-btn").onclick = () => form.remove();
+    promosContainer.prepend(form);
   };
 
-  form.querySelector(".cancel-promo-btn").onclick = () => form.remove();
-
-  promosContainer.prepend(form);
-};
-  
-
-async function loadAndRenderPromos() {
-  try {
-    const snap = await getDoc(doc(db, "settings", "live"));
-    if (!snap.exists()) return;
-
-    const promos = snap.data().promoSlides || [];
-    const track = document.querySelector("#leaderboardImageSlider .slider-track");
-
-    if (!track) return;
-
-    track.innerHTML = "";
-
-    promos.forEach((promo) => {
-      const slide = document.createElement("a");
-
-      slide.href = promo.link || "#";
-      slide.target = "_blank";
-
-      slide.style.cssText = `
-        min-width:100%;
-        height:100%;
-        flex-shrink:0;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-      `;
-
-      const img = document.createElement("img");
-      img.src = promo.imageUrl;
-      img.className = "leaderboard-slide";
-      img.style.cssText = `
-        width:100%;
-        height:100%;
-        object-fit:contain;
-      `;
-
-      slide.appendChild(img);
-      track.appendChild(slide);
-    });
-
-    currentSlide = 0;
-
-    setTimeout(() => {
-      showSlide(0);
-      startSlider();
-    }, 150);
-
-  } catch (err) {
-    console.error("Promo load failed:", err);
+  async function loadAndRenderPromos() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "live"));
+      if (!snap.exists()) return;
+      const promos = snap.data().promoSlides || [];
+      const track  = document.querySelector("#leaderboardImageSlider .slider-track");
+      if (!track) return;
+      track.innerHTML = '';
+      promos.forEach(promo => {
+        const slide = document.createElement("a");
+        slide.href   = promo.link || "#";
+        slide.target = "_blank";
+        slide.style.cssText = "min-width:100%;height:100%;flex-shrink:0;display:flex;align-items:center;justify-content:center;";
+        const img = document.createElement("img");
+        img.src = promo.imageUrl;
+        img.className = "leaderboard-slide";
+        img.style.cssText = "width:100%;height:100%;object-fit:contain;";
+        slide.appendChild(img);
+        track.appendChild(slide);
+      });
+      currentSlide = 0;
+      setTimeout(() => { showSlide(0); startSlider(); }, 150);
+    } catch (err) {
+      console.error("Promo load failed:", err);
+    }
   }
-}
 
-  // Initial Load
- loadAndRenderEvents();
-
-loadAndRenderTVShows();
-
-loadAndRenderPromos();
+  // ================== INITIAL LOAD ==================
+  loadAndRenderEvents();
+  loadAndRenderTVShows();
+  loadAndRenderPromos();
 </script>
 </body>
 </html>
