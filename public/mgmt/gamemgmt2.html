@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ᗩᗪᗰIᑎ ᗪᗩᔕᕼᗷOᗩᖇᗪ</title>
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #0a0a0a; color: #fff; padding: 20px; }
+    .tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { padding: 10px 20px; background: #333; border-radius: 8px; cursor: pointer; }
+    .tab.active { background: #0f9; color: #000; }
+    .section { display: none; }
+    .section.active { display: block; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #333; text-align: left; }
+    input, button { padding: 8px; margin: 5px; border-radius: 5px; border: none; }
+    button { background: #0f9; color: #000; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loaderOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    #loaderText { color: #0f9; font-size: 18px; }
+    #adminGate { text-align: center; margin-top: 50px; }
+    #adminGateMsg { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div id="loaderOverlay"><div id="loaderText">Working...</div></div>
+  <div id="adminGate">
+    <h2>ᗩᗪᗰIᑎ ᒪOGIᑎ</h2>
+    <input id="adminEmail" type="email" placeholder="Admin Email">
+    <button id="adminCheckBtn">Login</button>
+    <p id="adminGateMsg"></p>
+  </div>
+  <div id="adminPanel" style="display: none;">
+    <h1>ᗰᗩᔕTEᖇ ᗩᗪᗰIᑎ ᗪᗩᔕᕼᗷOᗩᖇᗪ</h1>
+    <button id="logoutBtn">Logout</button>
+   <div class="tab-container">
+  <div class="tab active" data-tab="leaderboards">🔳 Leaderboards</div>
+  <div class="tab" data-tab="hostsLeaderboard">Hosts Leaderboard</div>
+  <div class="tab" data-tab="winners">Winners History</div>
+  <div class="tab" data-tab="rewards">Rewards Management</div>
+  <div class="tab" data-tab="configs">Game Configs</div>
+  <div class="tab" data-tab="withdrawals">Withdrawals</div>
+  <div class="tab" data-tab="hostWithdrawals">Host Withdrawals</div>
+  <div class="tab" data-tab="tmhostWithdrawals">TM Host Withdrawals</div>
+</div>
+    <!-- CUSTOM DOPE ALERT — REPLACES ALL browser alert() -->
+<div id="dopeAlert" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;z-index:999999;opacity:0;transition:opacity 0.4s ease;">
+  <div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:40px 30px;border-radius:24px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 80px rgba(0,255,150,0.4),inset 0 0 40px rgba(0,255,150,0.1);border:2px solid #0f9;transform:scale(0.9);transition:transform 0.5s cubic-bezier(0.18,0.89,0.32,1.28);">
+    <div style="font-size:52px;margin-bottom:16px;opacity:0;transform:translateY(-30px);transition:all 0.6s ease;" id="dopeIcon">Checkmark</div>
+    <h2 style="margin:0 0 16px;font-size:28px;color:#0f9;text-shadow:0 0 20px #0f9;opacity:0;transform:translateY(20px);transition:all 0.7s ease;" id="dopeTitle">Success!</h2>
+    <p style="margin:0;font-size:18px;color:#fff;opacity:0.9;line-height:1.6;opacity:0;transform:translateY(20px);transition:all 0.8s ease;" id="dopeMessage">Operation completed successfully.</p>
+    <button id="dopeClose" style="margin-top:28px;padding:14px 36px;background:#0f9;color:#000;font-weight:900;border:none;border-radius:16px;cursor:pointer;box-shadow:0 8px 20px rgba(0,255,150,0.4);transition:all 0.3s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">GOT IT</button>
+  </div>
+</div>
+    <div id="leaderboards" class="section active">
+      <h2>Leaderboard Feeds (Live)</h2>
+      <select id="lb-type">
+        <option value="daily">Daily General</option>
+        <option value="weekly">Weekly General</option>
+        <option value="monthly">Monthly General</option>
+        <option value="bid">Bid Royale</option>
+      </select>
+      <input id="lb-limit" type="number" placeholder="Top N (e.g. 50)" value="50">
+      <select id="bid-round" style="display:none;"></select>
+      <button id="fetch-lb">Refresh</button>
+      <table id="lb-table">
+        <thead><tr><th>Rank</th><th>User</th><th>Taps</th><th>Email</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button id="save-winners">Save Current as Today's Winners</button>
+    </div>
+   <div id="winners" class="section">
+  <h2>Winners History</h2>
+  
+  <div style="margin-bottom:15px;">
+    <strong>Show:</strong>  
+    <label><input type="radio" name="historyType" value="general" checked> General Winners</label>  
+    <label><input type="radio" name="historyType" value="hosts"> Hosts Winners</label>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <button id="export-csv">Export as CSV</button>
+    <button id="export-winners-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+    <button id="clear-winners" style="background:#ff3333;color:#fff;">Clear All Winners</button>
+  </div>
+  <input id="winners-from" type="date" placeholder="From Date">
+  <input id="winners-to" type="date" placeholder="To Date">
+  <button id="fetch-winners">Fetch Winners</button>
+
+  <table id="winners-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Rank</th>
+        <th>User</th>
+        <th>Taps</th>
+        <th>Rewards</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+    <!-- NEW: HOSTS LEADERBOARD SECTION -->
+<div id="hostsLeaderboard" class="section">
+  <h2>Hosts Leaderboard (Separate Scores)</h2>
+  
+  <select id="host-lb-type">
+    <option value="daily">Daily Hosts</option>
+    <option value="weekly">Weekly Hosts</option>
+    <option value="monthly">Monthly Hosts</option>
+  </select>
+
+  <!-- Inside <div id="hostsLeaderboard" class="section">, after the table -->
+<button id="save-host-winners" style="margin-top:15px; background:#ff00aa; color:#fff;">
+  Save Current Hosts Leaderboard as Winners
+</button>
+  
+  <input id="host-lb-limit" type="number" placeholder="Top N" value="50">
+  <button id="fetch-host-lb">Refresh Hosts Leaderboard</button>
+
+  <table id="host-lb-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Host Name</th>
+        <th>Taps</th>
+        <th>Email / ChatID</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+    
+   <div id="rewards" class="section">
+  <h2>Rewards Management</h2>
+  
+  <div style="margin-bottom:20px;">
+    <strong>Reward Type:</strong>  
+    <label><input type="radio" name="rewardType" value="general" checked> General Players</label>  
+    <label><input type="radio" name="rewardType" value="hosts"> Hosts Only</label>
+  </div>
+
+  <!-- SAVED REWARD TEMPLATES -->
+  <div style="background:#111;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:20px;">
+    <h3 style="margin:0 0 12px;color:#0f9;font-size:15px;letter-spacing:1px;">⚡ SAVED REWARD TEMPLATES</h3>
+    
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <select id="template-select" style="flex:1;min-width:180px;padding:8px;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:8px;">
+        <option value="">— Select a saved template —</option>
+      </select>
+      <button id="load-template-btn" style="background:#0f9;color:#000;font-weight:700;">Load Template</button>
+      <button id="delete-template-btn" style="background:#ff3333;color:#fff;">Delete</button>
+    </div>
+
+    <div id="template-meta" style="display:none;font-size:12px;color:#aaa;margin-bottom:10px;padding:8px;background:#0a0a0a;border-radius:6px;"></div>
+
+    <hr style="border-color:#222;margin:12px 0;">
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input id="template-name-input" type="text" placeholder="Template name (e.g. Weekly Standard)" style="flex:1;min-width:160px;padding:8px;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:8px;">
+      <button id="save-template-btn" style="background:#ff00aa;color:#fff;font-weight:700;">Save Current Rules as Template</button>
+    </div>
+  </div>
+
+  <p style="color:#aaa;font-size:13px;">Set batch rewards below (e.g., top 1-10: cash 5000, stars 0) then save as a template or apply directly.</p>
+  
+  <div id="reward-rules"></div>
+  <button id="add-rule">Add Reward Rule</button>
+
+  <div style="margin:20px 0;">
+    <select id="reward-winners-date"></select>
+    <button id="apply-rewards">Apply & Mass Send Rewards</button>
+  </div>
+
+  <button id="send-notifs">Send Custom Notifications</button>
+  <textarea id="notif-message" placeholder="Custom notification message" style="width:100%;height:80px;margin-top:10px;"></textarea>
+</div>
+    
+    <div id="configs" class="section">
+      <h2>Game Configurations</h2>
+      <input id="bid-cost" type="number" placeholder="Bid Cost (Stars)">
+      <input id="pool-increase" type="number" placeholder="Pool Increase per Player">
+      <input id="base-pool" type="number" placeholder="Base Prize Pool">
+      <input id="max-pool" type="number" placeholder="Max Prize Pool (0 for unlimited)">
+      <button id="save-configs">Save Configs</button>
+       <div id="referral-configs" style="margin-top:30px;">
+  <h3>Referral Ripple Percentages</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:600px;">
+    <label>Level 1 Cash %: <input id="l1-cash" type="number" step="0.1" min="0" max="100" value="10"></label>
+    <label>Level 1 Stars %: <input id="l1-stars" type="number" step="0.1" min="0" max="100" value="5"></label>
+    <label>Level 2 Cash %: <input id="l2-cash" type="number" step="0.1" min="0" max="100" value="5"></label>
+    <label>Level 2 Stars %: <input id="l2-stars" type="number" step="0.1" min="0" max="100" value="2"></label>
+  </div>
+  <p style="font-size:0.9em; color:#aaa; margin-top:8px;">Percentages are applied to the winner's reward amount.</p>
+</div>
+    </div>
+    <div id="withdrawals" class="section">
+      <h2>TapMaster Withdrawals Management</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
+      <table id="withdrawals-table">
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="hostWithdrawals" class="section">
+      <h2>Host Withdrawals Management</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-host-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-host-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
+      <table id="host-withdrawals-table">
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <!-- TM HOST WITHDRAWALS SECTION (inside adminPanel) -->
+    <div id="tmhostWithdrawals" class="section">
+      <h2>TM Host Withdrawals (tmhostwithdrawals)</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="export-tmhost-withdrawals-csv">Export Paystack CSV</button>
+        <button id="export-tmhost-withdrawals-nomba-csv" style="background:#6600ff;color:#fff;">Export Nomba CSV</button>
+      </div>
+      <table id="tmhost-withdrawals-table">
+        <thead><tr><th>Date</th><th>Username</th><th>UID</th><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Type</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import {
+            getFirestore, doc, getDoc, setDoc, increment, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp, runTransaction, addDoc, deleteDoc, onSnapshot
+        } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
+            authDomain: "dettyverse.firebaseapp.com",
+            projectId: "dettyverse",
+            storageBucket: "dettyverse.firebasestorage.app",
+            messagingSenderId: "1036459652488",
+            appId: "1:1036459652488:web:e8910172ed16e9cac9b63d",
+            measurementId: "G-NX2KWZW85V"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const adminGate = document.getElementById("adminGate");
+        const adminPanel = document.getElementById("adminPanel");
+        const adminEmailInput = document.getElementById("adminEmail");
+        const adminCheckBtn = document.getElementById("adminCheckBtn");
+        const adminGateMsg = document.getElementById("adminGateMsg");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const loaderOverlay = document.getElementById("loaderOverlay");
+        const loaderText = document.getElementById("loaderText");
+
+        // Global state
+        let currentAdmin = null;
+        let currentLbData = [];
+        let currentWinnersData = [];
+        let currentHostLbData = [];
+        let lbUnsub = null;
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showLoader(text = "Working...") {
+            loaderText.textContent = text;
+            loaderOverlay.style.display = "flex";
+        }
+
+        function hideLoader() {
+            loaderOverlay.style.display = "none";
+        }
+
+        function showConfirm(title = "Confirm", msg = "Are you sure?") {
+            return new Promise(resolve => {
+                const overlay = document.createElement("div");
+                overlay.style.cssText = `
+                    position:fixed;inset:0;
+                    background:rgba(0,0,0,0.96);
+                    backdrop-filter:blur(20px);
+                    display:flex;align-items:center;justify-content:center;
+                    z-index:999999;
+                    opacity:0;
+                    transition:opacity 0.5s ease;
+                `;
+                overlay.innerHTML = `
+                    <div style="
+                        background:linear-gradient(135deg,#1a0033,#2d1b69,#0f0c29);
+                        padding:40px 32px;
+                        border-radius:28px;
+                        max-width:440px;
+                        width:92%;
+                        text-align:center;
+                        box-shadow:0 0 120px rgba(255,0,110,0.6),inset 0 0 60px rgba(0,255,150,0.15);
+                        border:3px solid transparent;
+                        background-clip:padding-box;
+                        position:relative;
+                        overflow:hidden;
+                        transform:scale(0.9);
+                        transition:transform 0.6s cubic-bezier(0.18,0.89,0.32,1.28);
+                    ">
+                        <div style="
+                            position:absolute;
+                            inset:0;
+                            background:linear-gradient(45deg,transparent 30%,rgba(0,255,150,0.12) 50%,transparent 70%);
+                            animation:shine 5s infinite;
+                        "></div>
+                        <h3 style="margin:0 0 20px;font-size:32px;color:#0f9;text-shadow:0 0 30px #0f9,0 0 60px #0f9;font-weight:900;letter-spacing:1px;">${title}</h3>
+                        <p style="margin:0 0 36px;font-size:19px;color:#fff;line-height:1.7;opacity:0.95;">${msg}</p>
+                        <div style="display:flex;gap:22px;justify-content:center;">
+                            <button id="no" style="flex:1;padding:18px;background:#222;color:#aaa;border:none;border-radius:20px;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,0.7);transition:all 0.3s;">CANCEL</button>
+                            <button id="yes" style="flex:1;padding:18px;background:linear-gradient(90deg,#ff006e,#ff3300,#ff006e);color:#fff;border:none;border-radius:20px;font-weight:900;font-size:16px;cursor:pointer;box-shadow:0 12px 40px rgba(255,0,110,0.8);animation:pulse 2s infinite;background-size:200%;transition:all 0.4s;">YES, DO IT</button>
+                        </div>
+                    </div>
+                `;
+
+                const style = document.createElement("style");
+                style.textContent = `
+                    @keyframes shine { 0% { transform: translateX(-150%) translateY(-150%) rotate(30deg); } 100% { transform: translateX(150%) translateY(150%) rotate(30deg); } }
+                    @keyframes pulse { 0%, 100% { box-shadow: 0 12px 40px rgba(255,0,110,0.8); } 50% { box-shadow: 0 20px 60px rgba(255,0,110,1); } }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(overlay);
+
+                setTimeout(() => {
+                    overlay.style.opacity = "1";
+                    overlay.querySelector("div > div").style.transform = "scale(1)";
+                }, 50);
+
+                overlay.querySelector("#no").onclick = () => {
+                    overlay.style.opacity = "0";
+                    setTimeout(() => { overlay.remove(); style.remove(); }, 500);
+                    resolve(false);
+                };
+                overlay.querySelector("#yes").onclick = () => {
+                    overlay.style.opacity = "0";
+                    setTimeout(() => { overlay.remove(); style.remove(); }, 500);
+                    resolve(true);
+                };
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) overlay.querySelector("#no").click();
+                };
+            });
+        }
+
+        function getTodayDateString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function downloadCSV(filename, rows) {
+            const csv = rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+
+        // Nomba requires: no BOM, no quoted fields, plain UTF-8
+        function downloadCSV_Nomba(filename, rows) {
+            const csv = rows.map(r => r.map(c => String(c ?? "").replace(/,/g, " ")).join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+
+        function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
+            const alertBox = document.getElementById("dopeAlert");
+            if (!alertBox) return console.log(message);
+            
+            const iconEl = document.getElementById("dopeIcon");
+            const titleEl = document.getElementById("dopeTitle");
+            const msgEl = document.getElementById("dopeMessage");
+            
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            if (iconEl) iconEl.innerHTML = icon;
+            
+            alertBox.style.display = "flex";
+            setTimeout(() => {
+                alertBox.style.opacity = "1";
+            }, 50);
+
+            const autoClose = setTimeout(() => closeDope(), duration);
+            const closeBtn = document.getElementById("dopeClose");
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    clearTimeout(autoClose);
+                    closeDope();
+                };
+            }
+
+            function closeDope() {
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.style.display = "none", 400);
+            }
+        }
+
+      // Define this ONCE at the top level (outside any function)
+const NIGERIA_BANKS = [
+    { name: "Access Bank", code: "044" },
+    { name: "Access Bank (Diamond)", code: "063" },
+    { name: "Abbey Mortgage Bank", code: "070010" },
+    { name: "Above Only MFB", code: "090260" },
+    { name: "ALAT by Wema", code: "035" },
+    { name: "ASOSavings", code: "090001" },
+    { name: "Bowen Microfinance Bank", code: "090148" },
+    { name: "Carbon", code: "100026" },
+    { name: "Citibank Nigeria", code: "023" },
+    { name: "Coronation Merchant Bank", code: "060001" },
+    { name: "Ecobank Nigeria", code: "050" },
+    { name: "FairMoney Microfinance Bank", code: "090551" },
+    { name: "Fidelity Bank", code: "070" },
+    { name: "First Bank of Nigeria", code: "011" },
+    { name: "First City Monument Bank (FCMB)", code: "214" },
+    { name: "Globus Bank", code: "000027" },
+    { name: "Guaranty Trust Bank (GTBank)", code: "058" },
+    { name: "Heritage Bank", code: "030" },
+    { name: "Jaiz Bank", code: "301" },
+    { name: "Keystone Bank", code: "082" },
+    { name: "Kuda Bank", code: "090267" },
+    { name: "Moniepoint MFB", code: "090405" },
+    { name: "Opay", code: "100004" },
+    { name: "PalmPay", code: "100033" },
+    { name: "Parallex Bank", code: "000030" },
+    { name: "Paycom (Opay)", code: "305" },
+    { name: "Polaris Bank", code: "076" },
+    { name: "PremiumTrust Bank", code: "000031" },
+    { name: "Providus Bank", code: "101" },
+    { name: "Stanbic IBTC Bank", code: "039" },
+    { name: "Standard Chartered Bank", code: "068" },
+    { name: "Sterling Bank", code: "232" },
+    { name: "Suntrust Bank", code: "100" },
+    { name: "TAJ Bank", code: "000026" },
+    { name: "Titan Trust Bank", code: "000025" },
+    { name: "Union Bank of Nigeria", code: "032" },
+    { name: "United Bank for Africa (UBA)", code: "033" },
+    { name: "Unity Bank", code: "215" },
+    { name: "VFD Microfinance Bank", code: "566" },
+    { name: "Wema Bank", code: "035" },
+    { name: "Zenith Bank", code: "057" }
+];
+
+// Clean Bank Resolver Function
+function resolveBankForProvider(user, provider) {
+    if (!user || !user.bankName) return "";
+
+    const bankName = user.bankName.trim();
+
+    if (provider === "paystack") {
+        return user.bankSlug || user.bankName || "";
+    }
+
+    if (provider === "nomba" || provider === "moniepoint") {
+        // Try exact match first
+        let bank = NIGERIA_BANKS.find(b => b.name === bankName);
+        
+        // Fallback: fuzzy match (in case of slight name differences)
+        if (!bank) {
+            bank = NIGERIA_BANKS.find(b => 
+                b.name.toLowerCase().includes(bankName.toLowerCase()) ||
+                bankName.toLowerCase().includes(b.name.toLowerCase())
+            );
+        }
+
+        return bank?.code || "";
+    }
+
+    return "";
+}
+      
+
+        // ==================== ADMIN AUTH ====================
+        adminCheckBtn.addEventListener("click", async () => {
+            const email = adminEmailInput.value.trim().toLowerCase();
+            if (!email) {
+                adminGateMsg.textContent = "Please enter an email";
+                return;
+            }
+
+            showLoader("Verifying admin access...");
+            try {
+                const q = query(collection(db, "users"), where("email", "==", email));
+                const snap = await getDocs(q);
+                hideLoader();
+
+                if (snap.empty) {
+                    adminGateMsg.textContent = "User not found";
+                    return;
+                }
+
+                const data = snap.docs[0].data();
+                if (!data.isAdmin) {
+                    adminGateMsg.textContent = "Access denied: Not an admin";
+                    return;
+                }
+
+                currentAdmin = {
+                    id: snap.docs[0].id,
+                    email: data.email || email
+                };
+
+                adminGate.style.display = "none";
+                adminPanel.style.display = "block";
+
+                initTabs();
+                
+                await Promise.all([
+                    loadBidRounds(),
+                    loadWinnerDates(),
+                    loadConfigs(),
+                    loadRewardTemplates()
+                ]);
+
+                initRewardRules();
+
+                await Promise.all([
+                    loadWithdrawals(),
+                    loadHostWithdrawals(),
+                    loadTmHostWithdrawals()
+                ]);
+
+                await startLbListener();
+                await loadHostsLeaderboard();
+            } catch (error) {
+                hideLoader();
+                console.error("Admin login failed:", error);
+                adminGateMsg.textContent = "Login error. Check console.";
+            }
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            if (lbUnsub) {
+                lbUnsub();
+                lbUnsub = null;
+            }
+            currentAdmin = null;
+            adminPanel.style.display = "none";
+            adminGate.style.display = "block";
+            adminEmailInput.value = "";
+            adminGateMsg.textContent = "";
+        });
+
+        // ==================== TABS ====================
+        function initTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    const targetSection = document.getElementById(tab.dataset.tab);
+                    if (targetSection) targetSection.classList.add('active');
+
+                    switch (tab.dataset.tab) {
+                        case 'leaderboards':
+                            startLbListener();
+                            break;
+                        case 'hostsLeaderboard':
+                            loadHostsLeaderboard();
+                            break;
+                        case 'winners':
+                            fetchWinnersHistory();
+                            break;
+                        case 'withdrawals':
+                            loadWithdrawals();
+                            break;
+                        case 'hostWithdrawals':
+                            loadHostWithdrawals();
+                            break;
+                        case 'tmhostWithdrawals':
+                            loadTmHostWithdrawals();
+                            break;
+                    }
+
+                    if (lbUnsub && tab.dataset.tab !== 'leaderboards') {
+                        lbUnsub();
+                        lbUnsub = null;
+                    }
+                });
+            });
+        }
+
+        // ==================== LEADERBOARDS ====================
+        async function startLbListener() {
+            if (lbUnsub) lbUnsub();
+            
+            const type = document.getElementById('lb-type').value;
+            const lbLimit = parseInt(document.getElementById('lb-limit').value) || 50;
+            const tableBody = document.getElementById('lb-table').querySelector('tbody');
+            tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+            currentLbData = [];
+
+            try {
+                if (type === 'bid') {
+                    const roundId = document.getElementById('bid-round').value;
+                    const q = query(collection(db, 'taps'), where('roundId', '==', roundId));
+                    lbUnsub = onSnapshot(q, (snap) => {
+                        const scores = {};
+                        snap.forEach(d => {
+                            const data = d.data();
+                            if (!scores[data.uid]) {
+                                scores[data.uid] = { uid: data.uid, username: data.username, taps: 0, email: '' };
+                            }
+                            scores[data.uid].taps += data.count || 0;
+                        });
+                        currentLbData = Object.values(scores)
+                            .sort((a, b) => b.taps - a.taps)
+                            .slice(0, lbLimit);
+                        renderLbTable();
+                    });
+                } else {
+                    const q = query(collection(db, 'users'));
+                    lbUnsub = onSnapshot(q, (snap) => {
+                        const key = getLeaderboardKey(type);
+                        const users = snap.docs.map(doc => {
+                            const d = doc.data();
+                            const field = `taps${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                            return {
+                                uid: doc.id,
+                                username: d.chatId || d.username,
+                                taps: d[field]?.[key] || 0,
+                                email: d.email
+                            };
+                        });
+                        currentLbData = users
+                            .filter(u => u.taps > 0)
+                            .sort((a, b) => b.taps - a.taps)
+                            .slice(0, lbLimit);
+                        renderLbTable();
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderLbTable() {
+            const tableBody = document.getElementById('lb-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            currentLbData.forEach((u, i) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${i+1}</td><td>${u.username || '—'}</td><td>${u.taps}</td><td>${u.email || ''}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function getLeaderboardKey(period) {
+            const now = new Date();
+            if (period === 'daily') return now.toISOString().split('T')[0];
+            if (period === 'weekly') return `${now.getFullYear()}-W${getWeekNumber(now)}`;
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+        }
+
+        // ==================== WINNERS ====================
+        async function loadBidRounds() {
+            const bids = await getDocs(collection(db, 'bids'));
+            const uniqueRounds = [...new Set(bids.docs.map(d => d.data().roundId))].sort((a, b) => b.localeCompare(a));
+            const select = document.getElementById('bid-round');
+            select.innerHTML = uniqueRounds.map(r => `<option value="${r}">${r}</option>`).join('');
+        }
+
+        async function loadWinnerDates() {
+            const [winnersSnap, hostWinnersSnap] = await Promise.all([
+                getDocs(collection(db, 'winners')),
+                getDocs(collection(db, 'hostWinners'))
+            ]);
+
+            const dates = [];
+            winnersSnap.docs.forEach(d => dates.push({ date: d.id, type: 'general' }));
+            hostWinnersSnap.docs.forEach(d => dates.push({ date: d.id, type: 'hosts' }));
+
+            dates.sort((a, b) => b.date.localeCompare(a.date));
+
+            const select = document.getElementById('reward-winners-date');
+            select.innerHTML = dates.map(item => {
+                const label = item.type === 'hosts' ? `Hosts - ${item.date}` : item.date;
+                return `<option value="${item.date}" data-type="${item.type}">${label}</option>`;
+            }).join('');
+        }
+
+        async function saveWinners() {
+            if (currentLbData.length === 0) return dopeAlert('No data');
+            const date = new Date().toISOString().split('T')[0];
+            await setDoc(doc(db, 'winners', date), {
+                date,
+                type: document.getElementById('lb-type').value,
+                roundId: document.getElementById('lb-type').value === 'bid' ? document.getElementById('bid-round').value : null,
+                winners: currentLbData.map((u, i) => ({ rank: i+1, ...u, rewards: { cash: 0, stars: 0 } })),
+                timestamp: serverTimestamp()
+            });
+            dopeAlert('Saved');
+            loadWinnerDates();
+        }
+
+        async function fetchWinnersHistory() {
+            const from = document.getElementById('winners-from').value;
+            const to = document.getElementById('winners-to').value;
+            const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
+            const tableBody = document.getElementById('winners-table').querySelector('tbody');
+            tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+            currentWinnersData = [];
+
+            try {
+                let q = query(
+                    collection(db, historyType === 'hosts' ? 'hostWinners' : 'winners'),
+                    orderBy('date', 'desc')
+                );
+
+                if (from) q = query(q, where('date', '>=', from));
+                if (to) q = query(q, where('date', '<=', to));
+
+                const snaps = await getDocs(q);
+                tableBody.innerHTML = '';
+
+                if (snaps.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;">No winners found</td></tr>`;
+                    return;
+                }
+
+                snaps.docs.forEach(doc => {
+                    const data = doc.data();
+                    data.winners.forEach(w => {
+                        const rewardsStr = `Cash: ₦${(w.rewards?.cash || 0).toLocaleString()}, Stars: ${w.rewards?.stars || 0}`;
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${data.date}</td>
+                            <td><strong>${historyType === 'hosts' ? 'HOSTS' : 'GENERAL'}</strong></td>
+                            <td>${w.rank}</td>
+                            <td>${w.username || '—'}</td>
+                            <td>${(w.taps || 0).toLocaleString()}</td>
+                            <td>${rewardsStr}</td>
+                        `;
+                        tableBody.appendChild(row);
+
+                        currentWinnersData.push({
+                            date: data.date,
+                            type: historyType,
+                            rank: w.rank,
+                            username: w.username,
+                            taps: w.taps || 0,
+                            rewards: w.rewards || { cash: 0, stars: 0 },
+                            uid: w.uid,
+                            email: w.email || ''
+                        });
+                    });
+                });
+            } catch (error) {
+                console.error(error);
+                tableBody.innerHTML = '<tr><td colspan="6" style="color:#ff6b6b">Error loading winners</td></tr>';
+            }
+        }
+
+        async function exportCSV() {
+            if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
+
+            const historyType = document.querySelector('input[name="historyType"]:checked')?.value || 'general';
+            const prefix = historyType === 'hosts' ? 'hosts_winners' : 'winners';
+            const headers = ['Date', 'Type', 'Rank', 'User', 'Taps', 'Cash', 'Stars', 'Email'];
+            const rows = [headers];
+
+            for (const w of currentWinnersData) {
+                let email = w.email || '';
+                if (!email && w.uid) {
+                    try {
+                        const userSnap = await getDoc(doc(db, 'users', w.uid));
+                        if (userSnap.exists()) email = userSnap.data().email || '';
+                    } catch (e) {}
+                }
+                rows.push([
+                    w.date,
+                    w.type.toUpperCase(),
+                    w.rank,
+                    w.username || '—',
+                    w.taps || 0,
+                    w.rewards?.cash || 0,
+                    w.rewards?.stars || 0,
+                    email
+                ]);
+            }
+
+            downloadCSV(`${prefix}_${getTodayDateString()}.csv`, rows);
+            dopeAlert(`Exported ${rows.length - 1} winners`);
+        }
+
+        async function clearWinners() {
+            const winners = await getDocs(collection(db, 'winners'));
+            for (const d of winners.docs) await deleteDoc(d.ref);
+            dopeAlert('Cleared');
+            document.getElementById('winners-table').querySelector('tbody').innerHTML = '';
+            loadWinnerDates();
+        }
+
+        // ==================== REWARDS ====================
+        function initRewardRules() {
+            const container = document.getElementById('reward-rules');
+            if (container.children.length === 0) addRewardRule();
+        }
+
+        function addRewardRule() {
+            const container = document.getElementById('reward-rules');
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
+            div.innerHTML = `
+                Top <input type="number" class="rule-start" value="1" min="1" style="width:60px"> -
+                <input type="number" class="rule-end" value="10" min="1" style="width:60px"> :
+                Cash ₦<input type="number" class="rule-cash" value="5000" style="width:80px">,
+                Stars <input type="number" class="rule-stars" value="0" style="width:60px">
+                <button class="remove-rule" style="background:#ff3333;color:#fff;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;margin-left:4px;">✕</button>
+            `;
+            div.querySelector('.remove-rule').addEventListener('click', () => div.remove());
+            container.appendChild(div);
+            // Clear active template label when manually adding a rule
+            const lbl = document.getElementById('active-template-label');
+            if (lbl) lbl.style.display = 'none';
+        }
+
+  function formatNumber(num) {
+    if (!num || isNaN(num)) return '0';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  
+async function applyRewards() {
+  const date = document.getElementById('reward-winners-date').value;
+  if (!date) return dopeAlert('Please select a date', 'Error');
+
+  const rewardType = document.querySelector('input[name="rewardType"]:checked')?.value || 'general';
+  const isHosts = rewardType === 'hosts';
+
+  const winnersRef = isHosts
+    ? doc(db, 'hostWinners', date)
+    : doc(db, 'winners', date);
+
+  // PREFLIGHT: fetch winners + build reward preview before confirmation
+  showLoader('Fetching winners list...');
+  const snap = await getDoc(winnersRef);
+  hideLoader();
+
+  if (!snap.exists()) {
+    return dopeAlert(`No ${isHosts ? 'Host' : 'General'} winners found for ${date}`, 'Error');
+  }
+
+  const winnersDoc = snap.data();
+  let winners = winnersDoc.winners || [];
+
+  const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
+    start: parseInt(div.querySelector('.rule-start').value) || 1,
+    end:   parseInt(div.querySelector('.rule-end').value)   || 999,
+    cash:  parseInt(div.querySelector('.rule-cash').value)  || 0,
+    stars: parseInt(div.querySelector('.rule-stars').value) || 0
+  }));
+
+  if (rules.length === 0) return dopeAlert('Add at least one reward rule before applying', 'Error');
+
+  // Compute what will be sent so we can show it in the confirmation
+  winners.forEach(w => {
+    w.rewards = { cash: 0, stars: 0 };
+    for (let rule of rules) {
+      if (w.rank >= rule.start && w.rank <= rule.end) {
+        w.rewards = { cash: rule.cash, stars: rule.stars };
+        break;
+      }
+    }
+  });
+
+  const rewarded   = winners.filter(w => (w.rewards.cash + w.rewards.stars) > 0);
+  const totalCash  = rewarded.reduce((s, w) => s + (w.rewards.cash  || 0), 0);
+  const totalStars = rewarded.reduce((s, w) => s + (w.rewards.stars || 0), 0);
+  const skipped    = winners.length - rewarded.length;
+
+  if (rewarded.length === 0) {
+    return dopeAlert('No winners match the current reward rules. Check your rank ranges.', 'Error');
+  }
+
+  // CONFIRMATION DIALOG with full summary
+  const summaryLines = [
+    `DATE: ${date}`,
+    `TYPE: ${isHosts ? 'HOSTS LEADERBOARD' : 'GENERAL LEADERBOARD'}`,
+    `WINNERS TO REWARD: ${rewarded.length}`,
+    totalCash  > 0 ? `TOTAL CASH:  \u20a6${formatNumber(totalCash)}`  : null,
+    totalStars > 0 ? `TOTAL STARS: ${formatNumber(totalStars)} STRZ` : null,
+    skipped    > 0 ? `(${skipped} winner(s) outside rule ranges will get \u20a60)` : null,
+    ``,
+    `Balances will be credited and notifications sent.`,
+    `THIS CANNOT BE UNDONE.`
+  ].filter(Boolean).join('\n');
+
+  const confirmed = await showConfirm('CONFIRM REWARD SEND', summaryLines);
+  if (!confirmed) return;
+
+  // LIVE PROGRESS LOADER
+  showLoader(`Sending rewards... 0 of ${rewarded.length}`);
+
+  await updateDoc(winnersRef, { winners });
+
+  const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
+  const config = referralSnap.exists() ? referralSnap.data() : {
+    level1_cash_percent: 10,
+    level1_stars_percent: 5,
+    level2_cash_percent: 5,
+    level2_stars_percent: 2,
+    max_levels: 2
+  };
+
+  const l1Cash  = config.level1_cash_percent  / 100;
+  const l1Stars = config.level1_stars_percent / 100;
+  const l2Cash  = config.level2_cash_percent  / 100;
+  const l2Stars = config.level2_stars_percent / 100;
+
+  let processed = 0;
+
+  for (let w of winners) {
+    const directCash  = w.rewards.cash  || 0;
+    const directStars = w.rewards.stars || 0;
+    if (directCash + directStars === 0) continue;
+
+    processed++;
+    showLoader(`Sending rewards... ${processed} of ${rewarded.length} — Rank #${w.rank} ${w.username ? '(' + w.username + ')' : ''}`);
+
+    const winnerRef = doc(db, 'users', w.uid);
+
+    await runTransaction(db, async (t) => {
+      const userSnap = await t.get(winnerRef);
+      if (!userSnap.exists()) return;
+      t.update(winnerRef, {
+        cash:  increment(directCash),
+        stars: increment(directStars)
+      });
+    });
+
+    const rewardParts = [];
+    if (directCash  > 0) rewardParts.push(`\u20a6${formatNumber(directCash)}`);
+    if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
+
+    const rankText = w.rank === 1 ? "1ST PLACE \ud83e\udd47 \u2014 TAP IN!" :
+                     w.rank === 2 ? "2ND PLACE \ud83e\udd48 \u2014 TAP IN!" :
+                     w.rank === 3 ? "3RD PLACE \ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
+
+    await addDoc(collection(db, "notifications"), {
+      recipientId: w.uid,
+      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
+      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance. \ud83d\udcb8`,
+      type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
+      rank:    w.rank,
+      cash:    directCash,
+      stars:   directStars,
+      createdAt: serverTimestamp(),
+      read: false
+    });
+
+    // RIPPLE REWARDS
+    let invitedBy = w.invitedBy;
+    if (!invitedBy && w.uid) {
+      const userSnap = await getDoc(doc(db, 'users', w.uid));
+      if (userSnap.exists()) invitedBy = userSnap.data().invitedBy;
+    }
+
+    let currentUid     = invitedBy;
+    let level          = 1;
+    let chainPersonName = w.username || (isHosts ? "a Host" : "a player");
+
+    while (currentUid && level <= config.max_levels) {
+      const uplineRef  = doc(db, 'users', currentUid);
+      const uplineSnap = await getDoc(uplineRef);
+      if (!uplineSnap.exists()) break;
+
+      const uplineData   = uplineSnap.data();
+      const cashPercent  = level === 1 ? l1Cash  : l2Cash;
+      const starsPercent = level === 1 ? l1Stars : l2Stars;
+      const rippleCash   = Math.floor(directCash  * cashPercent);
+      const rippleStars  = Math.floor(directStars * starsPercent);
+
+      if (rippleCash + rippleStars > 0) {
+        await runTransaction(db, async (t) => {
+          const s = await t.get(uplineRef);
+          if (!s.exists()) return;
+          t.update(uplineRef, {
+            cash:  increment(rippleCash),
+            stars: increment(rippleStars)
+          });
+        });
+
+        const rippleParts = [];
+        if (rippleCash  > 0) rippleParts.push(`\u20a6${formatNumber(rippleCash)}`);
+        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
+
+        const message = level === 1
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus \u2014 your share of their win! \ud83e\udd29`
+          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} \u2014 your share of their win! \ud83e\udd29`;
+
+        await addDoc(collection(db, "notifications"), {
+          recipientId:  currentUid,
+          title:        isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
+          message,
+          type:         `ripple_level${level}`,
+          fromUser:     w.uid,
+          fromName:     chainPersonName,
+          amountCash:   rippleCash,
+          amountStars:  rippleStars,
+          createdAt:    serverTimestamp(),
+          read: false
+        });
+      }
+
+      chainPersonName = uplineData.chatId || uplineData.username || "a player";
+      currentUid = uplineData.invitedBy;
+      level++;
+    }
+  }
+
+  hideLoader();
+
+  const badge = document.getElementById("hostNotifBadge");
+  if (badge) badge.style.display = "flex";
+
+  dopeAlert(
+    `${isHosts ? "HOSTS" : "GENERAL"} REWARDS SENT!\n${rewarded.length} winners credited \u2022 \u20a6${formatNumber(totalCash)} cash \u2022 ${formatNumber(totalStars)} STRZ`,
+    "SUCCESS",
+    "Crown",
+    9000
+  );
+}
+
+
+        // ==================== CONFIGS ====================
+        async function loadConfigs() {
+            const [gameSnap, referralSnap] = await Promise.all([
+                getDoc(doc(db, 'configs', 'game')),
+                getDoc(doc(db, 'configs', 'referral'))
+            ]);
+
+            if (gameSnap.exists()) {
+                const d = gameSnap.data();
+                document.getElementById('bid-cost').value = d.BID_COST || '';
+                document.getElementById('pool-increase').value = d.POOL_INCREASE_PER_PLAYER || '';
+                document.getElementById('base-pool').value = d.BASE_PRIZE_POOL || '';
+                document.getElementById('max-pool').value = d.MAX_PRIZE_POOL || '';
+            }
+
+            if (referralSnap.exists()) {
+                const r = referralSnap.data();
+                document.getElementById('l1-cash').value = r.level1_cash_percent || 10;
+                document.getElementById('l1-stars').value = r.level1_stars_percent || 5;
+                document.getElementById('l2-cash').value = r.level2_cash_percent || 5;
+                document.getElementById('l2-stars').value = r.level2_stars_percent || 2;
+            }
+        }
+
+        async function saveConfigs() {
+            await Promise.all([
+                setDoc(doc(db, 'configs', 'game'), {
+                    BID_COST: parseInt(document.getElementById('bid-cost').value) || 0,
+                    POOL_INCREASE_PER_PLAYER: parseInt(document.getElementById('pool-increase').value) || 0,
+                    BASE_PRIZE_POOL: parseInt(document.getElementById('base-pool').value) || 0,
+                    MAX_PRIZE_POOL: parseInt(document.getElementById('max-pool').value) || null
+                }, { merge: true }),
+                setDoc(doc(db, 'configs', 'referral'), {
+                    level1_cash_percent: parseFloat(document.getElementById('l1-cash').value) || 10,
+                    level1_stars_percent: parseFloat(document.getElementById('l1-stars').value) || 5,
+                    level2_cash_percent: parseFloat(document.getElementById('l2-cash').value) || 5,
+                    level2_stars_percent: parseFloat(document.getElementById('l2-stars').value) || 2,
+                    max_levels: 2
+                }, { merge: true })
+            ]);
+            dopeAlert('Configurations saved');
+        }
+
+        // ==================== WITHDRAWALS ====================
+        async function loadWithdrawals() {
+            const tableBody = document.getElementById('withdrawals-table').querySelector('tbody');
+            tableBody.innerHTML = '<tr><td colspan="8" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "withdrawals"), where("status", "==", "pending"), orderBy("requestedAt", "desc"));
+            const snap = await getDocs(q);
+            tableBody.innerHTML = '';
+
+            if (snap.empty) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;">No pending withdrawals</td></tr>';
+                return;
+            }
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
+                let displayName = "—";
+
+                if (w.uid) {
+                    const userSnap = await getDoc(doc(db, "users", w.uid));
+                    if (userSnap.exists()) {
+                        const ud = userSnap.data();
+                        displayName = ud.fullName || w.username || "—";
+                    }
+                }
+
+                const row = document.createElement('tr');
+                row.dataset.id = d.id;
+                row.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${displayName}</td>
+                    <td>${(w.uid || "").replace(/_/g, ".")}</td>
+                    <td>₦${(w.amount || 0).toLocaleString()}</td>
+                    <td>${w.bankName || "—"}</td>
+                    <td>${w.bankAccountNumber || "—"}</td>
+                    <td>${w.status || "pending"}</td>
+                    <td><button class="mark-paid-withdraw">Mark Paid</button></td>
+                `;
+
+                row.querySelector('.mark-paid-withdraw').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark this withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'withdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadWithdrawals();
+                    }
+                });
+                tableBody.appendChild(row);
+            }
+        }
+
+        async function loadHostWithdrawals() {
+            const tableBody = document.getElementById('host-withdrawals-table').querySelector('tbody');
+            tableBody.innerHTML = '<tr><td colspan="8" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "hostWithdrawal"), where("status", "==", "pending"), orderBy("requestedAt", "desc"));
+            const snap = await getDocs(q);
+            tableBody.innerHTML = '';
+
+            if (snap.empty) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;">No pending host withdrawals</td></tr>';
+                return;
+            }
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
+                let displayName = "—";
+
+                if (w.uid) {
+                    const userSnap = await getDoc(doc(db, "users", w.uid));
+                    if (userSnap.exists()) displayName = userSnap.data().fullName || w.username || "—";
+                }
+
+                const row = document.createElement('tr');
+                row.dataset.id = d.id;
+                row.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${displayName}</td>
+                    <td>${w.uid || ''}</td>
+                    <td>₦${(w.amount || 0).toLocaleString()}</td>
+                    <td>${w.bankName || "—"}</td>
+                    <td>${w.bankAccountNumber || "—"}</td>
+                    <td>${w.status || "pending"}</td>
+                    <td><button class="mark-paid-host">Mark Paid</button></td>
+                `;
+
+                row.querySelector('.mark-paid-host').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark this host withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'hostWithdrawal', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadHostWithdrawals();
+                    }
+                });
+                tableBody.appendChild(row);
+            }
+        }
+
+        async function loadTmHostWithdrawals() {
+            const tableBody = document.getElementById('tmhost-withdrawals-table').querySelector('tbody');
+            tableBody.innerHTML = '<tr><td colspan="9" style="color:#aaa;text-align:center">Loading...</td></tr>';
+            const q = query(collection(db, "tmhostswithdrawals"), where("status", "in", ["pending", "fast_track"]), orderBy("requestedAt", "desc"));
+            const snap = await getDocs(q);
+            tableBody.innerHTML = '';
+
+            if (snap.empty) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;">No pending TM Host withdrawals</td></tr>';
+                return;
+            }
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                let dateStr = w.requestedAt?.toDate ? w.requestedAt.toDate().toLocaleString() : "Unknown";
+                let displayName = w.username || "—";
+
+                if (w.uid) {
+                    const userSnap = await getDoc(doc(db, "users", w.uid));
+                    if (userSnap.exists()) {
+                        const ud = userSnap.data();
+                        displayName = ud.fullName || ud.chatId || w.username || "—";
+                    }
+                }
+
+                const row = document.createElement('tr');
+                row.dataset.id = d.id;
+                row.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${displayName}</td>
+                    <td>${(w.uid || "").replace(/_/g, ".")}</td>
+                    <td>₦${(w.amount || 0).toLocaleString()}</td>
+                    <td>${w.bankName || "—"}</td>
+                    <td>${w.bankAccountNumber || "—"}</td>
+                    <td>${w.status || "pending"}</td>
+                    <td>${w.isFastTrack ? '<span style="color:#0f9">Fast Track</span>' : 'Standard'}</td>
+                    <td><button class="mark-paid-tmhost">Mark Paid</button></td>
+                `;
+
+                row.querySelector('.mark-paid-tmhost').addEventListener('click', async () => {
+                    if (await showConfirm('Mark Paid', 'Mark TM Host withdrawal as paid?')) {
+                        showLoader();
+                        await updateDoc(doc(db, 'tmhostswithdrawals', d.id), { status: 'paid', paidAt: serverTimestamp() });
+                        hideLoader();
+                        loadTmHostWithdrawals();
+                    }
+                });
+                tableBody.appendChild(row);
+            }
+        }
+
+        // ==================== CSV EXPORTS ====================
+        async function exportWithdrawalsCSV() { // Paystack
+            const headers = [
+                'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
+                'Recipient Code (This overrides all other details if available)',
+                'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
+            ];
+            const rows = [headers];
+
+            const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                rows.push([
+                    w.amount || 0,
+                    "PROMOTIONAL CASH GIFT",
+                    `PR-${d.id}`,
+                    '',
+                    resolveBankForProvider(user, "paystack"),
+                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    user.fullName || w.username || '',
+                    user.email || ''
+                ]);
+            }
+
+            downloadCSV(`withdrawals_${getTodayDateString()}_paystack.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) {
+                        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    }
+                    hideLoader();
+                    loadWithdrawals();
+                }
+            }
+        }
+
+        async function exportWithdrawalsCSV_Nomba() {
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
+            const rows = [headers];
+
+            const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                const bankCode = resolveBankForProvider(user, "nomba");
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
+
+                rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
+                    w.amount,
+                    "PROMOTIONAL CASH GIFT"
+                ]);
+            }
+
+            downloadCSV_Nomba(`withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Nomba withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) {
+                        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    }
+                    hideLoader();
+                    loadWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending withdrawals for Nomba export", "Info");
+            }
+        }
+
+        async function exportHostWithdrawalsCSV() {
+            const headers = [
+                'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
+                'Recipient Code', 'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
+            ];
+            const rows = [headers];
+
+            const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                rows.push([
+                    w.amount || 0,
+                    "HOSTS PROMOTIONAL CASH GIFT",
+                    `HPR-${d.id}`,
+                    '',
+                    resolveBankForProvider(user, "paystack"),
+                    user.bankAccountNumber || '',
+                    user.fullName || w.username || '',
+                    user.email || ''
+                ]);
+            }
+
+            downloadCSV(`host_withdrawals_${getTodayDateString()}_paystack.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} host withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    hideLoader();
+                    loadHostWithdrawals();
+                }
+            }
+        }
+
+        async function exportTmHostWithdrawalsCSV() {
+            const headers = [
+                'Transfer Amount', 'Transfer Note (Optional)', 'Transfer Reference (Optional)',
+                'Recipient Code', 'Bank Code or Slug', 'Account Number', 'Account Name (Optional)', 'Email Address (Optional)'
+            ];
+            const rows = [headers];
+
+            const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
+
+                rows.push([
+                    w.amount || 0,
+                    note,
+                    `TMH-${d.id}`,
+                    '',
+                    resolveBankForProvider(user, "paystack"),
+                    user.bankAccountNumber || w.bankAccountNumber || '',
+                    user.fullName || w.username || '',
+                    user.email || ''
+                ]);
+            }
+
+            downloadCSV(`tmhost_withdrawals_${getTodayDateString()}_paystack.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) {
+                        await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    }
+                    hideLoader();
+                    loadTmHostWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending TM Host withdrawals");
+            }
+        }
+
+        async function exportHostWithdrawalsCSV_Nomba() {
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
+            const rows = [headers];
+
+            const q = query(collection(db, 'hostWithdrawal'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                const bankCode = resolveBankForProvider(user, "nomba");
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
+
+                rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
+                    w.amount,
+                    "HOSTS PROMOTIONAL CASH GIFT"
+                ]);
+            }
+
+            downloadCSV_Nomba(`host_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} Host Nomba withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    hideLoader();
+                    loadHostWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending Host withdrawals for Nomba export", "Info");
+            }
+        }
+
+        async function exportTmHostWithdrawalsCSV_Nomba() {
+            const headers = ["accountNumber", "bankCode", "amount", "narration"];
+            const rows = [headers];
+
+            const q = query(collection(db, 'tmhostswithdrawals'), where('status', 'in', ['pending', 'fast_track']));
+            const snap = await getDocs(q);
+
+            for (const d of snap.docs) {
+                const w = d.data();
+                const userSnap = await getDoc(doc(db, 'users', w.uid));
+                const user = userSnap.data() || {};
+
+                const bankCode = resolveBankForProvider(user, "nomba");
+                const accountNumber = user.bankAccountNumber || w.bankAccountNumber || '';
+                if (!bankCode || !w.amount || !accountNumber) continue;
+
+                const note = w.isFastTrack ? "TM HOST FAST TRACK WITHDRAWAL" : "TM HOST WITHDRAWAL";
+
+                rows.push([
+                    accountNumber,
+                    `="${bankCode}"`,
+                    w.amount,
+                    note
+                ]);
+            }
+
+            downloadCSV_Nomba(`tmhost_withdrawals_${getTodayDateString()}_nomba.csv`, rows);
+
+            if (rows.length > 1) {
+                const ok = await showConfirm('Mark Paid', `Mark all ${rows.length - 1} TM Host Nomba withdrawals as paid?`);
+                if (ok) {
+                    showLoader();
+                    for (const d of snap.docs) await updateDoc(d.ref, { status: 'paid', paidAt: serverTimestamp() });
+                    hideLoader();
+                    loadTmHostWithdrawals();
+                }
+            } else {
+                dopeAlert("No pending TM Host withdrawals for Nomba export", "Info");
+            }
+        }
+
+        // ==================== HOST LEADERBOARD ====================
+        async function loadHostsLeaderboard() {
+            const type = document.getElementById('host-lb-type')?.value || 'daily';
+            const limitInput = parseInt(document.getElementById('host-lb-limit')?.value) || 50;
+            const tableBody = document.getElementById('host-lb-table')?.querySelector('tbody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+            try {
+                const key = getLeaderboardKey(type);
+                const fieldPath = `hostTaps${type.charAt(0).toUpperCase() + type.slice(1)}.${key}`;
+
+                const q = query(collection(db, "users"), orderBy(fieldPath, "desc"), limit(Math.min(limitInput, 100)));
+                const snap = await getDocs(q);
+
+                tableBody.innerHTML = '';
+                currentHostLbData = [];
+
+                let rank = 1;
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const taps = data[`hostTaps${type.charAt(0).toUpperCase() + type.slice(1)}`]?.[key] ?? 0;
+                    if (taps <= 0) return;
+
+                    const entry = {
+                        uid: docSnap.id,
+                        username: data.chatId || data.username || 'Host',
+                        taps,
+                        email: data.email || '',
+                        invitedBy: data.invitedBy
+                    };
+                    currentHostLbData.push(entry);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${rank}</td><td>${entry.username}</td><td>${taps.toLocaleString()}</td><td>${entry.email}</td>`;
+                    tableBody.appendChild(row);
+                    rank++;
+                });
+            } catch (err) {
+                console.error(err);
+                tableBody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b">Error loading hosts leaderboard</td></tr>`;
+            }
+        }
+
+        async function saveHostWinners() {
+            if (!currentHostLbData.length) return dopeAlert("No hosts data. Refresh leaderboard first.", "Error");
+
+            const date = new Date().toISOString().split('T')[0];
+            const winnersToSave = currentHostLbData.map((u, i) => ({
+                rank: i + 1,
+                uid: u.uid,
+                username: u.username,
+                taps: u.taps,
+                invitedBy: u.invitedBy,
+                rewards: { cash: 0, stars: 0 }
+            }));
+
+            await setDoc(doc(db, 'hostWinners', date), {
+                date,
+                type: "hosts",
+                isHosts: true,
+                winners: winnersToSave,
+                timestamp: serverTimestamp()
+            });
+
+            dopeAlert(`Hosts winners saved for ${date}`);
+            loadWinnerDates();
+        }
+
+
+        // ==================== REWARD TEMPLATES ====================
+
+        // In-memory store for template data — avoids fragile dataset.meta on <option>
+        const _templateCache = new Map();
+
+        async function loadRewardTemplates() {
+            const select = document.getElementById('template-select');
+            select.innerHTML = '<option value="">— Select a saved template —</option>';
+            _templateCache.clear();
+            try {
+                // No orderBy — avoids requiring a Firestore composite index
+                const snap = await getDocs(collection(db, 'rewardTemplates'));
+                // Sort client-side newest first using savedAt seconds
+                const docs = snap.docs.slice().sort((a, b) => {
+                    const aT = a.data().savedAt?.seconds || 0;
+                    const bT = b.data().savedAt?.seconds || 0;
+                    return bT - aT;
+                });
+                docs.forEach(d => {
+                    const data = d.data();
+                    _templateCache.set(d.id, data);
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = data.name;
+                    select.appendChild(opt);
+                });
+            } catch(e) {
+                console.warn('loadRewardTemplates error:', e);
+            }
+        }
+
+        function applyTemplateToUI(templateData, templateName) {
+            const container = document.getElementById('reward-rules');
+            container.innerHTML = '';
+            (templateData.rules || []).forEach(rule => {
+                const div = document.createElement('div');
+                div.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
+                div.innerHTML = `
+                    Top <input type="number" class="rule-start" value="${rule.start}" min="1" style="width:60px"> -
+                    <input type="number" class="rule-end" value="${rule.end}" min="1" style="width:60px"> :
+                    Cash ₦<input type="number" class="rule-cash" value="${rule.cash}" style="width:80px">,
+                    Stars <input type="number" class="rule-stars" value="${rule.stars}" style="width:60px">
+                    <button class="remove-rule" style="background:#ff3333;color:#fff;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;margin-left:4px;">✕</button>
+                `;
+                div.querySelector('.remove-rule').addEventListener('click', () => div.remove());
+                container.appendChild(div);
+            });
+
+            // Show active template badge
+            let activeLabel = document.getElementById('active-template-label');
+            if (!activeLabel) {
+                activeLabel = document.createElement('div');
+                activeLabel.id = 'active-template-label';
+                activeLabel.style.cssText = 'margin-top:10px;padding:6px 12px;background:rgba(0,255,150,0.12);border:1px solid #0f9;border-radius:8px;color:#0f9;font-size:13px;font-weight:700;letter-spacing:0.5px;display:inline-block;';
+                container.parentNode.insertBefore(activeLabel, container);
+            }
+            activeLabel.textContent = `⚡ Active Template: ${templateName || templateData.name || 'Loaded'}`;
+            activeLabel.style.display = 'inline-block';
+
+            // Show ripple snapshot — savedAt.seconds is safe (plain object after Firestore read)
+            const meta = document.getElementById('template-meta');
+            const r = templateData.rippleSnapshot;
+            if (r) {
+                let savedStr = '—';
+                if (templateData.savedAt?.seconds) {
+                    savedStr = new Date(templateData.savedAt.seconds * 1000).toLocaleDateString();
+                } else if (templateData.savedAt?.toDate) {
+                    savedStr = templateData.savedAt.toDate().toLocaleDateString();
+                }
+                meta.style.display = 'block';
+                meta.innerHTML = `<strong style="color:#0f9">Ripple % at save:</strong>
+                    L1 Cash ${r.level1_cash_percent || 0}% · L1 Stars ${r.level1_stars_percent || 0}%
+                    &nbsp;|&nbsp; L2 Cash ${r.level2_cash_percent || 0}% · L2 Stars ${r.level2_stars_percent || 0}%
+                    &nbsp;|&nbsp; Saved: ${savedStr}`;
+            } else {
+                meta.style.display = 'none';
+            }
+        }
+
+        async function saveRewardTemplate() {
+            const name = document.getElementById('template-name-input').value.trim();
+            if (!name) return dopeAlert('Enter a template name first', 'Error');
+
+            const rules = Array.from(document.querySelectorAll('#reward-rules > div')).map(div => ({
+                start: parseInt(div.querySelector('.rule-start').value) || 1,
+                end:   parseInt(div.querySelector('.rule-end').value)   || 999,
+                cash:  parseInt(div.querySelector('.rule-cash').value)  || 0,
+                stars: parseInt(div.querySelector('.rule-stars').value) || 0
+            }));
+
+            if (rules.length === 0) return dopeAlert('Add at least one reward rule before saving', 'Error');
+
+            // Snapshot current ripple config
+            let rippleSnapshot = null;
+            try {
+                const rSnap = await getDoc(doc(db, 'configs', 'referral'));
+                rippleSnapshot = rSnap.exists() ? rSnap.data() : null;
+            } catch(e) {}
+
+            showLoader('Saving template...');
+            try {
+                await addDoc(collection(db, 'rewardTemplates'), {
+                    name,
+                    rules,
+                    rippleSnapshot,
+                    savedAt: serverTimestamp()
+                });
+                hideLoader();
+                document.getElementById('template-name-input').value = '';
+                dopeAlert(`Template "${name}" saved!`, 'Saved');
+                await loadRewardTemplates();
+            } catch(e) {
+                hideLoader();
+                console.error(e);
+                dopeAlert('Failed to save template', 'Error');
+            }
+        }
+
+        async function deleteRewardTemplate() {
+            const select = document.getElementById('template-select');
+            const id = select.value;
+            const name = select.options[select.selectedIndex]?.text;
+            if (!id) return dopeAlert('Select a template to delete', 'Error');
+            if (!await showConfirm('Delete Template', `Delete template "${name}"? This cannot be undone.`)) return;
+            showLoader();
+            try {
+                await deleteDoc(doc(db, 'rewardTemplates', id));
+                hideLoader();
+                dopeAlert(`"${name}" deleted`, 'Done');
+                document.getElementById('template-meta').style.display = 'none';
+                await loadRewardTemplates();
+            } catch(e) {
+                hideLoader();
+                dopeAlert('Failed to delete template', 'Error');
+            }
+        }
+
+        // ==================== EVENT LISTENERS (Cleaned) ====================
+        document.getElementById('lb-type').addEventListener('change', startLbListener);
+        document.getElementById('lb-limit').addEventListener('change', startLbListener);
+        document.getElementById('bid-round').addEventListener('change', startLbListener);
+        document.getElementById('fetch-lb').addEventListener('click', startLbListener);
+
+        document.getElementById('save-winners').addEventListener('click', saveWinners);
+        document.getElementById('fetch-winners').addEventListener('click', fetchWinnersHistory);
+        document.getElementById('export-csv').addEventListener('click', exportCSV);
+        document.getElementById('clear-winners').addEventListener('click', async () => {
+            if (await showConfirm("Clear Winners", "Are you sure?")) {
+                showLoader();
+                await clearWinners();
+                hideLoader();
+            }
+        });
+
+        // Winners tab — Nomba export (exports current winners data as Nomba-format payment file)
+        document.getElementById('export-winners-nomba-csv')?.addEventListener('click', async () => {
+            if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
+            const headers = ["Amount", "Account Number", "Bank Code", "Account Name", "Narration", "Reference", "Email"];
+            const rows = [headers];
+            for (const w of currentWinnersData) {
+                if (!w.uid || !(w.rewards?.cash > 0)) continue;
+                let user = {};
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', w.uid));
+                    if (userSnap.exists()) user = userSnap.data();
+                } catch(e) {}
+                const bankCode = resolveBankForProvider(user, "nomba");
+                if (!bankCode || !user.bankAccountNumber) continue;
+                rows.push([
+                    w.rewards.cash,
+                    user.bankAccountNumber,
+                    bankCode,
+                    user.fullName || w.username || '',
+                    "TAPMASTER WINNER REWARD",
+                    `NOMBA-WIN-${w.uid}-${w.date}`,
+                    user.email || ''
+                ]);
+            }
+            downloadCSV_Nomba(`winners_${getTodayDateString()}_nomba.csv`, rows);
+            if (rows.length <= 1) dopeAlert("No eligible winners with Nomba bank details found", "Info");
+        });
+
+        document.getElementById('add-rule').addEventListener('click', addRewardRule);
+        document.getElementById('load-template-btn').addEventListener('click', () => {
+            const select = document.getElementById('template-select');
+            const id = select.value;
+            if (!id) return dopeAlert('Select a template first', 'Error');
+            const data = _templateCache.get(id);
+            if (!data) return dopeAlert('Template not found — try reloading the page', 'Error');
+            const name = select.options[select.selectedIndex]?.text || data.name;
+            applyTemplateToUI(data, name);
+            dopeAlert(`"${name}" loaded — ${(data.rules||[]).length} rule${(data.rules||[]).length !== 1 ? 's' : ''} ready`, 'Loaded ✓');
+        });
+        document.getElementById('save-template-btn').addEventListener('click', saveRewardTemplate);
+        document.getElementById('delete-template-btn').addEventListener('click', deleteRewardTemplate);
+        document.getElementById('apply-rewards').addEventListener('click', applyRewards);
+        document.getElementById('save-configs').addEventListener('click', saveConfigs);
+
+        // Send custom notifications
+        document.getElementById('send-notifs')?.addEventListener('click', async () => {
+            const msg = document.getElementById('notif-message').value.trim();
+            if (!msg) return dopeAlert('Please enter a message', 'Error');
+            if (!await showConfirm('Send Notification', `Send this to all users?`)) return;
+            showLoader('Sending notifications...');
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                let count = 0;
+                for (const d of usersSnap.docs) {
+                    await addDoc(collection(db, 'notifications'), {
+                        recipientId: d.id,
+                        title: 'ANNOUNCEMENT',
+                        message: msg,
+                        type: 'admin_broadcast',
+                        createdAt: serverTimestamp(),
+                        read: false
+                    });
+                    count++;
+                }
+                hideLoader();
+                dopeAlert(`Sent to ${count} users!`, 'Success');
+                document.getElementById('notif-message').value = '';
+            } catch(e) {
+                hideLoader();
+                console.error(e);
+                dopeAlert('Failed to send notifications. Check console.', 'Error');
+            }
+        });
+
+        // Withdrawals (Paystack)
+        document.getElementById('export-withdrawals-csv')?.addEventListener('click', exportWithdrawalsCSV);
+        // Withdrawals (Nomba)
+        document.getElementById('export-withdrawals-nomba-csv')?.addEventListener('click', exportWithdrawalsCSV_Nomba);
+
+        // Host Withdrawals (Paystack)
+        document.getElementById('export-host-withdrawals-csv')?.addEventListener('click', exportHostWithdrawalsCSV);
+        // Host Withdrawals (Nomba)
+        document.getElementById('export-host-withdrawals-nomba-csv')?.addEventListener('click', exportHostWithdrawalsCSV_Nomba);
+
+        // TM Host Withdrawals (Paystack)
+        document.getElementById('export-tmhost-withdrawals-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV);
+        // TM Host Withdrawals (Nomba)
+        document.getElementById('export-tmhost-withdrawals-nomba-csv')?.addEventListener('click', exportTmHostWithdrawalsCSV_Nomba);
+
+        // Host LB
+        document.getElementById('fetch-host-lb').addEventListener('click', loadHostsLeaderboard);
+        document.getElementById('save-host-winners').addEventListener('click', saveHostWinners);
+
+        // History type change
+        document.querySelectorAll('input[name="historyType"]').forEach(radio => {
+            radio.addEventListener('change', fetchWinnersHistory);
+        });
+
+        // Fallback for window.alert
+        window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
+</script>
+</body>
+</html>
