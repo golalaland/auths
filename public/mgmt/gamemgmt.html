@@ -103,7 +103,7 @@
   </table>
 </div>
 
-```
+
 <!-- NEW: HOSTS LEADERBOARD SECTION -->
 ```
 
@@ -469,7 +469,7 @@ const NIGERIA_BANKS = [
 function resolveBankForProvider(user, provider) {
 if (!user || !user.bankName) return “”;
 
-```
+
 const bankName = user.bankName.trim();
 
 if (provider === "paystack") {
@@ -911,7 +911,7 @@ const directCash = w.rewards.cash || 0;
 const directStars = w.rewards.stars || 0;
 if (directCash + directStars === 0) continue;
 
-```
+
 const winnerRef = doc(db, 'users', w.uid);
 
 // Direct reward
@@ -937,7 +937,7 @@ await addDoc(collection(db, "notifications"), {
   recipientId: w.uid,
   title: isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
  message: `${rankText}
-```
+
 
 Your tap score today earned you ${rewardParts.join(’ + ’)}!
 your reward is now live in your balance. 💸`,
@@ -949,7 +949,7 @@ createdAt: serverTimestamp(),
 read: false
 });
 
-```
+
 // ==================== RIPPLE REWARDS (Fixed for Hosts) ====================
 let invitedBy = w.invitedBy;
 
