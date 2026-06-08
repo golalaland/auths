@@ -1599,7 +1599,6 @@ your reward is now live in your balance. 💸`,
         document.querySelectorAll('input[name="historyType"]').forEach(radio => {
             radio.addEventListener('change', fetchWinnersHistory);
         });
- 
         // Fallback for window.alert
         window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
 </script>
