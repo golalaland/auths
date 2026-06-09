@@ -1247,13 +1247,13 @@ async function applyRewards() {
     if (directCash  > 0) rewardParts.push(`\u20a6${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
-    const rankText = w.rank === 1 ? "1ST PLACE \ud83e\udd47 \u2014 TAP IN!" :
-                     w.rank === 2 ? "2ND PLACE \ud83e\udd48 \u2014 TAP IN!" :
-                     w.rank === 3 ? "3RD PLACE \ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
+    const rankText = w.rank === 1 ? "1ST PLACE\ud83e\udd47 \u2014 TAP IN!" :
+                     w.rank === 2 ? "2ND PLACE\ud83e\udd48 \u2014 TAP IN!" :
+                     w.rank === 3 ? "3RD PLACE\ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
-      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
+      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER GAME REWARD!",
       message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance. \ud83d\udcb8`,
       type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank:    w.rank,
