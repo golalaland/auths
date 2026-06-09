@@ -1254,7 +1254,7 @@ async function applyRewards() {
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER GAME REWARD!",
-      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance. \ud83d\udcb8`,
+      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance.`,
       type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank:    w.rank,
       cash:    directCash,
