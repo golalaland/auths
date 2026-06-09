@@ -2189,8 +2189,7 @@ async function applyRewards() {
             parseBtn.addEventListener('click', async () => {
                 const raw = document.getElementById('nc-chatid-input').value;
                 // split by newline OR comma
-                const list = raw.split(/[
-,]+/).map(s => s.trim()).filter(Boolean);
+                const list = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
                 if (!list.length) return dopeAlert('Paste at least one ChatID', 'Info');
                 await parseChatIds(list);
             });
