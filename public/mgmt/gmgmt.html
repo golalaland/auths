@@ -1295,26 +1295,29 @@ async function applyRewards() {
           });
         });
 
-        const rippleParts = [];
-        if (rippleCash  > 0) rippleParts.push(`\u20a6${formatNumber(rippleCash)}`);
-        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
+     const rippleParts = [];
+if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
+if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
-        const message = level === 1
-          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus \u2014 your share of their win! \ud83e\udd29`
-          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} \u2014 your share of their win! \ud83e\udd29`;
+let message = level === 1
+  ? `@${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus — your share of their win! 🤩`
+  : `Someone from @${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win! 🤩`;
 
-        await addDoc(collection(db, "notifications"), {
-          recipientId:  currentUid,
-          title:        isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
-          message,
-          type:         `ripple_level${level}`,
-          fromUser:     w.uid,
-          fromName:     chainPersonName,
-          amountCash:   rippleCash,
-          amountStars:  rippleStars,
-          createdAt:    serverTimestamp(),
-          read: false
-        });
+// Optional: Make the mention even more prominent
+message = message.replace(`@${chainPersonName}`, `<strong>@${chainPersonName}</strong>`);
+
+await addDoc(collection(db, "notifications"), {
+  recipientId: currentUid,
+  title: isHosts ? "TAP MASTER RIPPLE REWARD!" : "TAP MASTER GAME REWARD!",
+  message,                    // ← Now contains proper @mention
+  type: `ripple_level${level}`,
+  fromUser: w.uid,
+  fromName: chainPersonName,
+  amountCash: rippleCash,
+  amountStars: rippleStars,
+  createdAt: serverTimestamp(),
+  read: false
+});
       }
 
       chainPersonName = uplineData.chatId || uplineData.username || "a player";
