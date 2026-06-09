@@ -950,7 +950,7 @@ async function applyRewards() {
 
     const rankText = w.rank === 1 ? "1ST PLACE\ud83e\udd47 \u2014 TAP IN!" :
                      w.rank === 2 ? "2ND PLACE\ud83e\udd48 \u2014 TAP IN!" :
-                     w.rank === 3 ? "3RD PLACE\ud83e\udd4 9 \u2014 TAP IN!" : `TOP ${w.rank}`;
+                     w.rank === 3 ? "3RD PLACE\ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
