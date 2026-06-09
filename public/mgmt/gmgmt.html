@@ -1295,7 +1295,7 @@ async function applyRewards() {
           });
         });
 
-     const rippleParts = [];
+    const rippleParts = [];
 if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
 if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
@@ -2105,7 +2105,8 @@ await addDoc(collection(db, "notifications"), {
 
             // ── NORMALISE ChatID ──
             function normaliseChatId(raw) {
-                return raw.trim().replace(/^@/, '').toLowerCase();
+                // Strip @ and whitespace only — preserve original case to match Firestore exactly
+                return raw.trim().replace(/^@/, '').trim();
             }
 
             // ── RENDER CHIPS ──
@@ -2164,22 +2165,33 @@ await addDoc(collection(db, "notifications"), {
                 const toFetch = cleaned.filter(id => !existingMap[id]);
 
                 // Batch Firestore lookups (max 30 per 'in' query)
+                // Query exact case AND lowercase version to handle both
                 const chunkSize = 30;
-                const results   = {};
-                for (let i = 0; i < toFetch.length; i += chunkSize) {
-                    const chunk = toFetch.slice(i, i + chunkSize);
+                const results   = {}; // keyed by chatId.toLowerCase() → { uid, originalChatId }
+
+                // Build both original and lowercase variants to maximise hit rate
+                const queryVariants = [...new Set([
+                    ...toFetch,
+                    ...toFetch.map(id => id.toLowerCase()),
+                    ...toFetch.map(id => id.toUpperCase())
+                ])];
+
+                for (let i = 0; i < queryVariants.length; i += chunkSize) {
+                    const chunk = queryVariants.slice(i, i + chunkSize);
                     const q = query(collection(db, 'users'), where('chatId', 'in', chunk));
                     const snap = await getDocs(q);
                     snap.forEach(d => {
-                        const cid = (d.data().chatId || '').toLowerCase();
-                        results[cid] = d.id;
+                        const stored = d.data().chatId || '';
+                        // Index by lowercase so we can match regardless of what user typed
+                        results[stored.toLowerCase()] = { uid: d.id, originalChatId: stored };
                     });
                 }
 
-                // Merge
+                // Merge — match input against results case-insensitively
                 ncRecipients = cleaned.map(cid => {
                     if (existingMap[cid]) return existingMap[cid];
-                    return { chatId: cid, uid: results[cid] || null, found: !!results[cid] };
+                    const hit = results[cid.toLowerCase()];
+                    return { chatId: cid, uid: hit ? hit.uid : null, found: !!hit };
                 });
 
                 hideLoader();
