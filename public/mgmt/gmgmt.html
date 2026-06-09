@@ -45,10 +45,10 @@
 </div>
     <!-- CUSTOM DOPE ALERT — REPLACES ALL browser alert() -->
 <div id="dopeAlert" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;z-index:999999;opacity:0;transition:opacity 0.4s ease;">
-  <div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:40px 30px;border-radius:24px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 80px rgba(0,255,150,0.4),inset 0 0 40px rgba(0,255,150,0.1);border:2px solid #0f9;transform:scale(0.9);transition:transform 0.5s cubic-bezier(0.18,0.89,0.32,1.28);">
-    <div style="font-size:52px;margin-bottom:16px;opacity:0;transform:translateY(-30px);transition:all 0.6s ease;" id="dopeIcon">Checkmark</div>
-    <h2 style="margin:0 0 16px;font-size:28px;color:#0f9;text-shadow:0 0 20px #0f9;opacity:0;transform:translateY(20px);transition:all 0.7s ease;" id="dopeTitle">Success!</h2>
-    <p style="margin:0;font-size:18px;color:#fff;opacity:0.9;line-height:1.6;opacity:0;transform:translateY(20px);transition:all 0.8s ease;" id="dopeMessage">Operation completed successfully.</p>
+  <div id="dopeAlertInner" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:40px 30px;border-radius:24px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 80px rgba(0,255,150,0.4),inset 0 0 40px rgba(0,255,150,0.1);border:2px solid #0f9;transform:scale(0.9);transition:transform 0.5s cubic-bezier(0.18,0.89,0.32,1.28);">
+    <div id="dopeIcon" style="font-size:52px;margin-bottom:16px;"></div>
+    <h2 id="dopeTitle" style="margin:0 0 16px;font-size:28px;color:#0f9;text-shadow:0 0 20px #0f9;white-space:pre-line;"></h2>
+    <p id="dopeMessage" style="margin:0;font-size:16px;color:#fff;line-height:1.7;white-space:pre-line;word-break:break-word;"></p>
     <button id="dopeClose" style="margin-top:28px;padding:14px 36px;background:#0f9;color:#000;font-weight:900;border:none;border-radius:16px;cursor:pointer;box-shadow:0 8px 20px rgba(0,255,150,0.4);transition:all 0.3s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">GOT IT</button>
   </div>
 </div>
@@ -372,36 +372,49 @@
             a.click();
         }
 
-        function dopeAlert(message, title = "Done!", icon = "Checkmark", duration = 5000) {
-            const alertBox = document.getElementById("dopeAlert");
-            if (!alertBox) return console.log(message);
-            
-            const iconEl = document.getElementById("dopeIcon");
-            const titleEl = document.getElementById("dopeTitle");
-            const msgEl = document.getElementById("dopeMessage");
-            
-            titleEl.textContent = title;
-            msgEl.textContent = message;
-            if (iconEl) iconEl.innerHTML = icon;
-            
-            alertBox.style.display = "flex";
-            setTimeout(() => {
-                alertBox.style.opacity = "1";
-            }, 50);
+        function dopeAlert(message, title = "Done!", icon = "✅", duration = 5000) {
+            const alertBox  = document.getElementById("dopeAlert");
+            if (!alertBox) return console.log(title, message);
 
-            const autoClose = setTimeout(() => closeDope(), duration);
-            const closeBtn = document.getElementById("dopeClose");
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    clearTimeout(autoClose);
-                    closeDope();
-                };
-            }
+            const iconEl    = document.getElementById("dopeIcon");
+            const titleEl   = document.getElementById("dopeTitle");
+            const msgEl     = document.getElementById("dopeMessage");
+            const innerEl   = document.getElementById("dopeAlertInner");
+            const closeBtn  = document.getElementById("dopeClose");
+
+            // Populate content BEFORE showing
+            if (iconEl)   iconEl.textContent  = icon;
+            if (titleEl)  titleEl.textContent = title;
+            if (msgEl)    msgEl.textContent   = message || "";
+
+            // Reset inner scale
+            if (innerEl) innerEl.style.transform = "scale(0.9)";
+
+            // Show overlay (still transparent)
+            alertBox.style.display = "flex";
+
+            // Animate in on next frame
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    alertBox.style.opacity = "1";
+                    if (innerEl) innerEl.style.transform = "scale(1)";
+                });
+            });
+
+            // Clear any previous timer
+            if (alertBox._autoClose) clearTimeout(alertBox._autoClose);
 
             function closeDope() {
                 alertBox.style.opacity = "0";
-                setTimeout(() => alertBox.style.display = "none", 400);
+                if (innerEl) innerEl.style.transform = "scale(0.9)";
+                setTimeout(() => { alertBox.style.display = "none"; }, 400);
             }
+
+            alertBox._autoClose = setTimeout(closeDope, duration);
+            if (closeBtn) closeBtn.onclick = () => {
+                clearTimeout(alertBox._autoClose);
+                closeDope();
+            };
         }
 
       // Define this ONCE at the top level (outside any function)
@@ -948,14 +961,14 @@ async function applyRewards() {
     if (directCash  > 0) rewardParts.push(`\u20a6${formatNumber(directCash)}`);
     if (directStars > 0) rewardParts.push(`${formatNumber(directStars)} STRZ`);
 
-    const rankText = w.rank === 1 ? "1ST PLACE\ud83e\udd47 \u2014 TAP IN!" :
-                     w.rank === 2 ? "2ND PLACE\ud83e\udd48 \u2014 TAP IN!" :
-                     w.rank === 3 ? "3RD PLACE\ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
+    const rankText = w.rank === 1 ? "1ST PLACE \ud83e\udd47 \u2014 TAP IN!" :
+                     w.rank === 2 ? "2ND PLACE \ud83e\udd48 \u2014 TAP IN!" :
+                     w.rank === 3 ? "3RD PLACE \ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
-      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER GAME REWARD!",
-      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance.`,
+      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
+      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance. \ud83d\udcb8`,
       type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank:    w.rank,
       cash:    directCash,
@@ -995,29 +1008,27 @@ async function applyRewards() {
             stars: increment(rippleStars)
           });
         });
-const rippleParts = [];
-if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
-if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
-let message = level === 1
-  ? `@${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus — your share of their win! 🤩`
-  : `Someone from @${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win! 🤩`;
+        const rippleParts = [];
+        if (rippleCash  > 0) rippleParts.push(`\u20a6${formatNumber(rippleCash)}`);
+        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
-// Optional: Make the mention even more prominent
-message = message.replace(`@${chainPersonName}`, `<strong>@${chainPersonName}</strong>`);
+        const message = level === 1
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus \u2014 your share of their win! \ud83e\udd29`
+          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} \u2014 your share of their win! \ud83e\udd29`;
 
-await addDoc(collection(db, "notifications"), {
-  recipientId: currentUid,
-  title: isHosts ? "TAP MASTER RIPPLE REWARD!" : "TAP MASTER GAME REWARD!",
-  message,                    // ← Now contains proper @mention
-  type: `ripple_level${level}`,
-  fromUser: w.uid,
-  fromName: chainPersonName,
-  amountCash: rippleCash,
-  amountStars: rippleStars,
-  createdAt: serverTimestamp(),
-  read: false
-});
+        await addDoc(collection(db, "notifications"), {
+          recipientId:  currentUid,
+          title:        isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
+          message,
+          type:         `ripple_level${level}`,
+          fromUser:     w.uid,
+          fromName:     chainPersonName,
+          amountCash:   rippleCash,
+          amountStars:  rippleStars,
+          createdAt:    serverTimestamp(),
+          read: false
+        });
       }
 
       chainPersonName = uplineData.chatId || uplineData.username || "a player";
