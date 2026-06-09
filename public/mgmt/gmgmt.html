@@ -20,6 +20,216 @@
     #loaderText { color: #0f9; font-size: 18px; }
     #adminGate { text-align: center; margin-top: 50px; }
     #adminGateMsg { color: #ff6b6b; }
+
+    /* ── NOTIF COMPOSER ── */
+    .nc-card {
+      background: #0e0e0e;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 28px;
+    }
+    .nc-card h3 {
+      margin: 0 0 20px;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #0f9;
+    }
+    .nc-field { margin-bottom: 16px; }
+    .nc-field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .nc-field input[type="text"],
+    .nc-field textarea {
+      width: 100%;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      padding: 12px 14px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+      margin: 0;
+    }
+    .nc-field input[type="text"]:focus,
+    .nc-field textarea:focus { border-color: #0f9; }
+    .nc-preview {
+      background: #141414;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .nc-preview-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .nc-preview-card {
+      background: linear-gradient(135deg,#0f0c29,#1a1a2e);
+      border: 1px solid #0f9;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .nc-preview-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f9;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .nc-preview-body {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .nc-recipients {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .nc-recipients-mode {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .nc-mode-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #888;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 0;
+    }
+    .nc-mode-btn.active {
+      background: #0f9;
+      color: #000;
+      border-color: #0f9;
+      font-weight: 700;
+    }
+    .nc-chip-zone {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 38px;
+      align-items: flex-start;
+    }
+    .nc-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 3px 10px 3px 12px;
+      font-size: 12px;
+      color: #ccc;
+    }
+    .nc-chip.found { border-color: #0f9; color: #0f9; }
+    .nc-chip.notfound { border-color: #ff4444; color: #ff4444; }
+    .nc-chip-remove {
+      cursor: pointer;
+      color: #555;
+      font-size: 14px;
+      line-height: 1;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nc-chip-remove:hover { color: #ff4444; }
+    .nc-paste-area {
+      width: 100%;
+      background: #0e0e0e;
+      border: 1px dashed #333;
+      border-radius: 8px;
+      color: #ccc;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
+      resize: vertical;
+      outline: none;
+      margin: 0;
+      min-height: 80px;
+    }
+    .nc-paste-area:focus { border-color: #0f9; }
+    .nc-stats {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
+    .nc-stats span.ok { color: #0f9; }
+    .nc-stats span.bad { color: #ff4444; }
+    .nc-send-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .nc-send-btn {
+      background: linear-gradient(135deg, #0f9, #00cc77);
+      color: #000;
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 1px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,255,150,0.3);
+      transition: all 0.2s;
+      margin: 0;
+    }
+    .nc-send-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,255,150,0.45); }
+    .nc-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .nc-clear-btn {
+      background: transparent;
+      color: #666;
+      border: 1px solid #333;
+      border-radius: 10px;
+      font-size: 12px;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 0;
+    }
+    .nc-clear-btn:hover { border-color: #ff4444; color: #ff4444; background: transparent; }
+    .nc-failed-list {
+      background: #1a0a0a;
+      border: 1px solid #ff3333;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      display: none;
+      font-size: 13px;
+      color: #ff8888;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -174,8 +384,84 @@
     <button id="apply-rewards">Apply & Mass Send Rewards</button>
   </div>
 
-  <button id="send-notifs">Send Custom Notifications</button>
-  <textarea id="notif-message" placeholder="Custom notification message" style="width:100%;height:80px;margin-top:10px;"></textarea>
+  <!-- ═══════════════════════════════════════════
+       CUSTOM NOTIFICATION COMPOSER
+  ═══════════════════════════════════════════ -->
+  <div class="nc-card">
+    <h3>📨 Send Custom Notification</h3>
+
+    <!-- Header -->
+    <div class="nc-field">
+      <label>Notification Header (shows as bold title in-app)</label>
+      <input type="text" id="nc-header" placeholder="e.g. SPECIAL ANNOUNCEMENT 🔥" maxlength="80">
+    </div>
+
+    <!-- Body -->
+    <div class="nc-field">
+      <label>Message Body</label>
+      <textarea id="nc-body" rows="4" placeholder="Write your message here…"></textarea>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="nc-preview" id="nc-preview">
+      <div class="nc-preview-label">Preview — how it looks in-app</div>
+      <div class="nc-preview-card">
+        <div class="nc-preview-title" id="nc-preview-title">HEADER</div>
+        <div class="nc-preview-body" id="nc-preview-body">Message body...</div>
+      </div>
+    </div>
+
+    <!-- Recipients -->
+    <div class="nc-field">
+      <label>Recipients</label>
+      <div class="nc-recipients">
+
+        <!-- Mode toggle -->
+        <div class="nc-recipients-mode">
+          <button class="nc-mode-btn active" data-mode="paste">✏️ Paste ChatIDs</button>
+          <button class="nc-mode-btn" data-mode="csv">📄 Load CSV</button>
+          <button class="nc-mode-btn" data-mode="all">📢 All Users</button>
+        </div>
+
+        <!-- PASTE MODE -->
+        <div id="nc-mode-paste">
+          <textarea class="nc-paste-area" id="nc-chatid-input"
+            placeholder="Paste ChatIDs one per line or comma-separated&#10;Works with or without @&#10;e.g.  @cube_king, cube_star, @no1"></textarea>
+          <button id="nc-parse-btn" style="margin:8px 0 0;padding:8px 18px;font-size:12px;background:#1a1a1a;color:#0f9;border:1px solid #0f9;border-radius:8px;cursor:pointer;">Parse ChatIDs →</button>
+        </div>
+
+        <!-- CSV MODE -->
+        <div id="nc-mode-csv" style="display:none;">
+          <p style="font-size:12px;color:#666;margin:0 0 10px;">CSV must have a <code style="color:#0f9">chatId</code> column (other columns ignored).</p>
+          <input type="file" id="nc-csv-file" accept=".csv" style="font-size:13px;color:#ccc;background:transparent;border:none;padding:0;margin:0;">
+        </div>
+
+        <!-- ALL MODE -->
+        <div id="nc-mode-all" style="display:none;padding:10px 0;">
+          <p style="margin:0;font-size:13px;color:#ffaa00;">⚠️ This will send to <strong>ALL users</strong> in the database. Recipient list below will be ignored.</p>
+        </div>
+
+        <!-- Chip display -->
+        <div id="nc-chips-wrap" style="margin-top:12px;display:none;">
+          <div style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Parsed Recipients</div>
+          <div class="nc-chip-zone" id="nc-chips"></div>
+          <div class="nc-stats" id="nc-stats"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Failed list (shown after send) -->
+    <div class="nc-failed-list" id="nc-failed-list"></div>
+
+    <!-- Send row -->
+    <div class="nc-send-row">
+      <button class="nc-send-btn" id="nc-send-btn" disabled>SEND NOTIFICATION</button>
+      <button class="nc-clear-btn" id="nc-clear-btn">Clear All</button>
+      <span id="nc-recipient-count" style="font-size:12px;color:#555;"></span>
+    </div>
+
+  </div>
 </div>
     
     <div id="configs" class="section">
@@ -1009,29 +1295,26 @@ async function applyRewards() {
           });
         });
 
-       const rippleParts = [];
-if (rippleCash > 0) rippleParts.push(`₦${formatNumber(rippleCash)}`);
-if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
+        const rippleParts = [];
+        if (rippleCash  > 0) rippleParts.push(`\u20a6${formatNumber(rippleCash)}`);
+        if (rippleStars > 0) rippleParts.push(`${formatNumber(rippleStars)} STRZ`);
 
-let message = level === 1
-  ? `@${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus — your share of their win! 🤩`
-  : `Someone from @${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} — your share of their win! 🤩`;
+        const message = level === 1
+          ? `${chainPersonName} won ${rewardParts.join(' + ')}!\nYou earned ${rippleParts.join(' + ')} bonus \u2014 your share of their win! \ud83e\udd29`
+          : `Someone from ${chainPersonName}'s cube won!\nYou earned ${rippleParts.join(' + ')} \u2014 your share of their win! \ud83e\udd29`;
 
-// Optional: Make the mention even more prominent
-message = message.replace(`@${chainPersonName}`, `<strong>@${chainPersonName}</strong>`);
-
-await addDoc(collection(db, "notifications"), {
-  recipientId: currentUid,
-  title: isHosts ? "TAP MASTER RIPPLE REWARD!" : "TAP MASTER GAME REWARD!",
-  message,                    // ← Now contains proper @mention
-  type: `ripple_level${level}`,
-  fromUser: w.uid,
-  fromName: chainPersonName,
-  amountCash: rippleCash,
-  amountStars: rippleStars,
-  createdAt: serverTimestamp(),
-  read: false
-});
+        await addDoc(collection(db, "notifications"), {
+          recipientId:  currentUid,
+          title:        isHosts ? "HOSTS RIPPLE REWARD!" : "TAP MASTER REWARD!",
+          message,
+          type:         `ripple_level${level}`,
+          fromUser:     w.uid,
+          fromName:     chainPersonName,
+          amountCash:   rippleCash,
+          amountStars:  rippleStars,
+          createdAt:    serverTimestamp(),
+          read: false
+        });
       }
 
       chainPersonName = uplineData.chatId || uplineData.username || "a player";
@@ -1767,34 +2050,275 @@ await addDoc(collection(db, "notifications"), {
         document.getElementById('save-configs').addEventListener('click', saveConfigs);
 
         // Send custom notifications
-        document.getElementById('send-notifs')?.addEventListener('click', async () => {
-            const msg = document.getElementById('notif-message').value.trim();
-            if (!msg) return dopeAlert('Please enter a message', 'Error');
-            if (!await showConfirm('Send Notification', `Send this to all users?`)) return;
-            showLoader('Sending notifications...');
-            try {
-                const usersSnap = await getDocs(collection(db, 'users'));
-                let count = 0;
-                for (const d of usersSnap.docs) {
-                    await addDoc(collection(db, 'notifications'), {
-                        recipientId: d.id,
-                        title: 'ANNOUNCEMENT',
-                        message: msg,
-                        type: 'admin_broadcast',
-                        createdAt: serverTimestamp(),
-                        read: false
-                    });
-                    count++;
-                }
-                hideLoader();
-                dopeAlert(`Sent to ${count} users!`, 'Success');
-                document.getElementById('notif-message').value = '';
-            } catch(e) {
-                hideLoader();
-                console.error(e);
-                dopeAlert('Failed to send notifications. Check console.', 'Error');
+        // ═══════════════════════════════════════════════
+        //  NOTIFICATION COMPOSER LOGIC
+        // ═══════════════════════════════════════════════
+        (function() {
+            let ncMode        = 'paste';   // 'paste' | 'csv' | 'all'
+            let ncRecipients  = [];        // [{chatId, uid, found}]
+
+            const headerEl   = document.getElementById('nc-header');
+            const bodyEl     = document.getElementById('nc-body');
+            const previewBox = document.getElementById('nc-preview');
+            const prevTitle  = document.getElementById('nc-preview-title');
+            const prevBody   = document.getElementById('nc-preview-body');
+            const sendBtn    = document.getElementById('nc-send-btn');
+            const clearBtn   = document.getElementById('nc-clear-btn');
+            const chipsWrap  = document.getElementById('nc-chips-wrap');
+            const chipsEl    = document.getElementById('nc-chips');
+            const statsEl    = document.getElementById('nc-stats');
+            const countEl    = document.getElementById('nc-recipient-count');
+            const failedEl   = document.getElementById('nc-failed-list');
+            const parseBtn   = document.getElementById('nc-parse-btn');
+            const csvInput   = document.getElementById('nc-csv-file');
+
+            // ── LIVE PREVIEW ──
+            function updatePreview() {
+                const h = headerEl.value.trim();
+                const b = bodyEl.value.trim();
+                if (!h && !b) { previewBox.style.display = 'none'; return; }
+                previewBox.style.display = 'block';
+                prevTitle.textContent = h || '—';
+                prevBody.textContent  = b || '—';
             }
-        });
+            headerEl.addEventListener('input', updatePreview);
+            bodyEl.addEventListener('input', updatePreview);
+
+            // ── MODE SWITCHER ──
+            document.querySelectorAll('.nc-mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    ncMode = btn.dataset.mode;
+                    document.querySelectorAll('.nc-mode-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('nc-mode-paste').style.display = ncMode === 'paste' ? 'block' : 'none';
+                    document.getElementById('nc-mode-csv').style.display   = ncMode === 'csv'   ? 'block' : 'none';
+                    document.getElementById('nc-mode-all').style.display   = ncMode === 'all'   ? 'block' : 'none';
+                    if (ncMode === 'all') {
+                        chipsWrap.style.display = 'none';
+                        updateSendBtn();
+                    }
+                });
+            });
+
+            // ── NORMALISE ChatID ──
+            function normaliseChatId(raw) {
+                return raw.trim().replace(/^@/, '').toLowerCase();
+            }
+
+            // ── RENDER CHIPS ──
+            function renderChips() {
+                chipsEl.innerHTML = '';
+                ncRecipients.forEach((r, i) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'nc-chip' + (r.found === true ? ' found' : r.found === false ? ' notfound' : '');
+                    chip.innerHTML = `@${r.chatId}<button class="nc-chip-remove" data-i="${i}" title="Remove">✕</button>`;
+                    chipsEl.appendChild(chip);
+                });
+                chipsEl.querySelectorAll('.nc-chip-remove').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        ncRecipients.splice(parseInt(btn.dataset.i), 1);
+                        renderChips();
+                        updateStats();
+                        updateSendBtn();
+                    });
+                });
+            }
+
+            // ── UPDATE STATS BAR ──
+            function updateStats() {
+                const found    = ncRecipients.filter(r => r.found === true).length;
+                const notFound = ncRecipients.filter(r => r.found === false).length;
+                const pending  = ncRecipients.filter(r => r.found === undefined).length;
+                let parts = [];
+                if (found)    parts.push(`<span class="ok">${found} found</span>`);
+                if (notFound) parts.push(`<span class="bad">${notFound} not found</span>`);
+                if (pending)  parts.push(`<span>${pending} unresolved</span>`);
+                statsEl.innerHTML = parts.join(' · ');
+                countEl.textContent = found > 0 ? `${found} recipient${found !== 1 ? 's' : ''} ready` : '';
+            }
+
+            // ── ENABLE/DISABLE SEND ──
+            function updateSendBtn() {
+                const hasContent  = headerEl.value.trim() && bodyEl.value.trim();
+                const hasTargets  = ncMode === 'all' || ncRecipients.some(r => r.found === true);
+                sendBtn.disabled  = !(hasContent && hasTargets);
+            }
+            headerEl.addEventListener('input', updateSendBtn);
+            bodyEl.addEventListener('input', updateSendBtn);
+
+            // ── PARSE CHATIDS (lookup Firestore) ──
+            async function parseChatIds(rawList) {
+                const cleaned = [...new Set(rawList.map(normaliseChatId).filter(Boolean))];
+                if (!cleaned.length) return;
+
+                chipsWrap.style.display = 'block';
+                showLoader(`Resolving ${cleaned.length} ChatID${cleaned.length !== 1 ? 's' : ''}...`);
+
+                // Build fresh recipients — preserve existing found ones to avoid re-querying
+                const existingMap = {};
+                ncRecipients.forEach(r => { existingMap[r.chatId] = r; });
+
+                const toFetch = cleaned.filter(id => !existingMap[id]);
+
+                // Batch Firestore lookups (max 30 per 'in' query)
+                const chunkSize = 30;
+                const results   = {};
+                for (let i = 0; i < toFetch.length; i += chunkSize) {
+                    const chunk = toFetch.slice(i, i + chunkSize);
+                    const q = query(collection(db, 'users'), where('chatId', 'in', chunk));
+                    const snap = await getDocs(q);
+                    snap.forEach(d => {
+                        const cid = (d.data().chatId || '').toLowerCase();
+                        results[cid] = d.id;
+                    });
+                }
+
+                // Merge
+                ncRecipients = cleaned.map(cid => {
+                    if (existingMap[cid]) return existingMap[cid];
+                    return { chatId: cid, uid: results[cid] || null, found: !!results[cid] };
+                });
+
+                hideLoader();
+                renderChips();
+                updateStats();
+                updateSendBtn();
+            }
+
+            // ── PARSE BUTTON ──
+            parseBtn.addEventListener('click', async () => {
+                const raw = document.getElementById('nc-chatid-input').value;
+                // split by newline OR comma
+                const list = raw.split(/[
+,]+/).map(s => s.trim()).filter(Boolean);
+                if (!list.length) return dopeAlert('Paste at least one ChatID', 'Info');
+                await parseChatIds(list);
+            });
+
+            // ── CSV LOAD ──
+            csvInput.addEventListener('change', async () => {
+                const file = csvInput.files[0];
+                if (!file) return;
+                const text = await file.text();
+                const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+                if (!lines.length) return dopeAlert('CSV is empty', 'Error');
+
+                // Find chatId column (case-insensitive)
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                const colIdx  = headers.indexOf('chatid');
+                if (colIdx === -1) return dopeAlert('CSV must have a "chatId" column', 'Error');
+
+                const ids = lines.slice(1)
+                    .map(l => l.split(',')[colIdx]?.replace(/"/g, '').trim())
+                    .filter(Boolean);
+
+                if (!ids.length) return dopeAlert('No ChatIDs found in CSV', 'Error');
+                chipsWrap.style.display = 'block';
+                await parseChatIds(ids);
+                csvInput.value = '';
+            });
+
+            // ── CLEAR ──
+            clearBtn.addEventListener('click', () => {
+                ncRecipients = [];
+                document.getElementById('nc-chatid-input').value = '';
+                chipsEl.innerHTML = '';
+                statsEl.innerHTML = '';
+                chipsWrap.style.display = 'none';
+                countEl.textContent = '';
+                failedEl.style.display = 'none';
+                headerEl.value = '';
+                bodyEl.value   = '';
+                previewBox.style.display = 'none';
+                updateSendBtn();
+            });
+
+            // ── SEND ──
+            sendBtn.addEventListener('click', async () => {
+                const header = headerEl.value.trim();
+                const body   = bodyEl.value.trim();
+                if (!header || !body) return dopeAlert('Header and body are both required', 'Error');
+
+                let targets = [];
+
+                if (ncMode === 'all') {
+                    // Build confirmation with live count
+                    showLoader('Counting users...');
+                    const usersSnap = await getDocs(collection(db, 'users'));
+                    hideLoader();
+                    const total = usersSnap.size;
+                    const ok = await showConfirm(
+                        '📢 BROADCAST TO ALL',
+                        `This will send to ALL ${total} users.\n\nHeader: "${header}"\n\nTHIS CANNOT BE UNDONE.`
+                    );
+                    if (!ok) return;
+                    targets = usersSnap.docs.map(d => ({ uid: d.id, chatId: 'all' }));
+                } else {
+                    const found = ncRecipients.filter(r => r.found === true);
+                    if (!found.length) return dopeAlert('No valid recipients. Parse ChatIDs first.', 'Error');
+                    const ok = await showConfirm(
+                        'CONFIRM SEND',
+                        `Header: "${header}"\n\nSend to ${found.length} recipient${found.length !== 1 ? 's' : ''}?`
+                    );
+                    if (!ok) return;
+                    targets = found;
+                }
+
+                showLoader(`Sending... 0 of ${targets.length}`);
+                failedEl.style.display = 'none';
+
+                let sent    = 0;
+                let failed  = [];
+
+                for (let i = 0; i < targets.length; i++) {
+                    const t = targets[i];
+                    showLoader(`Sending... ${i + 1} of ${targets.length}${t.chatId !== 'all' ? ' — @' + t.chatId : ''}`);
+                    try {
+                        await addDoc(collection(db, 'notifications'), {
+                            recipientId: t.uid,
+                            title:       header,
+                            message:     body,
+                            type:        'admin_broadcast',
+                            createdAt:   serverTimestamp(),
+                            read:        false
+                        });
+                        sent++;
+                    } catch(e) {
+                        failed.push(t.chatId !== 'all' ? '@' + t.chatId : t.uid);
+                        console.error('Notif failed for', t.uid, e);
+                    }
+                }
+
+                hideLoader();
+
+                // Show failed list if any
+                if (failed.length) {
+                    failedEl.style.display = 'block';
+                    failedEl.textContent   = `❌ Failed to send to ${failed.length} recipient(s):\n${failed.join('\n')}`;
+                }
+
+                dopeAlert(
+                    `Sent to ${sent} user${sent !== 1 ? 's' : ''}${failed.length ? ` · ${failed.length} failed` : ' ✓'}`,
+                    failed.length ? 'SENT WITH ERRORS' : 'NOTIFICATION SENT',
+                    failed.length ? '⚠️' : '📨',
+                    7000
+                );
+
+                // Clear on full success only
+                if (!failed.length) {
+                    ncRecipients = [];
+                    chipsEl.innerHTML = '';
+                    statsEl.innerHTML = '';
+                    chipsWrap.style.display = 'none';
+                    countEl.textContent = '';
+                    headerEl.value = '';
+                    bodyEl.value   = '';
+                    previewBox.style.display = 'none';
+                    updateSendBtn();
+                }
+            });
+
+        })(); // end IIFE
 
         // Withdrawals (Paystack)
         document.getElementById('export-withdrawals-csv')?.addEventListener('click', exportWithdrawalsCSV);
