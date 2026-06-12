@@ -1253,8 +1253,8 @@ async function applyRewards() {
 
     await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
-      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER GAME REWARD!",
-      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance.`,
+      title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
+      message: `${rankText}\nYour tap score and leaderboard rank has earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance.`,
       type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank:    w.rank,
       cash:    directCash,
@@ -1308,7 +1308,7 @@ message = message.replace(`@${chainPersonName}`, `<strong>@${chainPersonName}</s
 
 await addDoc(collection(db, "notifications"), {
   recipientId: currentUid,
-  title: isHosts ? "TAP MASTER RIPPLE REWARD!" : "TAP MASTER GAME REWARD!",
+  title: isHosts ? "TAP MASTER REWARD!" : "TAP MASTER REWARD!",
   message,                    // ← Now contains proper @mention
   type: `ripple_level${level}`,
   fromUser: w.uid,
