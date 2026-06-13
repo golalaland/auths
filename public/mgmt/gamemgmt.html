@@ -1182,6 +1182,16 @@ return "";
     async function exportRippleCSV() {
         if (currentWinnersData.length === 0) return dopeAlert('Please fetch winners first', 'Error');
 
+        // Work from the most recent date in the current view, Top 25 by rank
+        const latestDate = currentWinnersData[0]?.date;
+        const top25 = currentWinnersData
+            .filter(w => w.date === latestDate)
+            .sort((a, b) => a.rank - b.rank)
+            .slice(0, 25);
+
+        if (!top25.length) return dopeAlert('No ranked winners found. Fetch winners first.', 'Error');
+
+        // Load ripple config
         const referralSnap = await getDoc(doc(db, 'configs', 'referral'));
         const config = referralSnap.exists() ? referralSnap.data() : {
             level1_cash_percent: 10, level1_stars_percent: 5,
@@ -1192,18 +1202,23 @@ return "";
         const l2Cash  = config.level2_cash_percent  / 100;
         const l2Stars = config.level2_stars_percent / 100;
 
-        showLoader('Building ripple gift CSV...');
+        showLoader(`Resolving ripple chain for Top ${top25.length} winners...`);
 
-        // Accumulate gifts per upline uid (a host can be L1 for multiple winners)
-        // Structure: uid → { chatId, email, cash, stars }
-        const rippleMap = {};
+        // Ordered rows: process winners rank by rank
+        // Each winner gets its own L1 row then L2 row in the output
+        // If same upline appears multiple times (L1 for rank 1 AND rank 2), rows are separate — admin decides
+        const rows = [['winnerRank', 'winnerUsername', 'rippleLevel', 'chatId', 'giftcash', 'giftstars', 'email']];
+        let totalRows = 0;
 
-        for (const w of currentWinnersData) {
+        for (const w of top25) {
             const directCash  = w.rewards?.cash  || 0;
             const directStars = w.rewards?.stars || 0;
-            if (!w.uid || (directCash + directStars === 0)) continue;
 
-            // Get invitedBy chain
+            if (!w.uid) continue;
+
+            showLoader(`Processing Rank #${w.rank} — ${w.username || w.uid}...`);
+
+            // Fetch winner's invitedBy
             let invitedBy = null;
             try {
                 const userSnap = await getDoc(doc(db, 'users', w.uid));
@@ -1219,46 +1234,44 @@ return "";
                     if (!upSnap.exists()) break;
                     const upData = upSnap.data();
 
-                    const cashPct   = level === 1 ? l1Cash  : l2Cash;
-                    const starsPct  = level === 1 ? l1Stars : l2Stars;
-                    const ripCash   = Math.floor(directCash  * cashPct);
-                    const ripStars  = Math.floor(directStars * starsPct);
+                    const cashPct  = level === 1 ? l1Cash  : l2Cash;
+                    const starsPct = level === 1 ? l1Stars : l2Stars;
+                    const ripCash  = directCash  > 0 ? Math.floor(directCash  * cashPct)  : 0;
+                    const ripStars = directStars > 0 ? Math.floor(directStars * starsPct) : 0;
 
-                    if (ripCash > 0 || ripStars > 0) {
-                        if (!rippleMap[currentUid]) {
-                            rippleMap[currentUid] = {
-                                chatId: upData.chatId || '',
-                                email:  upData.email  || '',
-                                cash:   0,
-                                stars:  0,
-                                level
-                            };
-                        }
-                        rippleMap[currentUid].cash  += ripCash;
-                        rippleMap[currentUid].stars += ripStars;
-                    }
+                    // Always write a row for this level even if reward is 0
+                    // so admin sees the full chain structure
+                    rows.push([
+                        w.rank,
+                        w.username || w.uid,
+                        `L${level}`,
+                        upData.chatId || '',
+                        ripCash,
+                        ripStars,
+                        upData.email || ''
+                    ]);
+                    totalRows++;
 
                     currentUid = upData.invitedBy || null;
                     level++;
                 } catch(e) { break; }
             }
+
+            // If no chain found, write a placeholder row so admin knows
+            if (level === 1) {
+                rows.push([w.rank, w.username || w.uid, '—', '(no referrer)', 0, 0, '']);
+                totalRows++;
+            }
         }
 
         hideLoader();
 
-        const entries = Object.values(rippleMap);
-        if (!entries.length) return dopeAlert('No ripple recipients found for current winners', 'Info');
+        if (rows.length <= 1) return dopeAlert('No ripple chains found for Top 25. Winners may not have referrers.', 'Info');
 
-        const headers = ['chatId', 'giftcash', 'email', 'giftstars'];
-        const rows    = [headers];
-        entries.forEach(e => {
-            rows.push([e.chatId || '', e.cash || 0, e.email || '', e.stars || 0]);
-        });
-
-        downloadCSV(`ripple_gift_${getTodayDateString()}.csv`, rows);
+        downloadCSV(`ripple_L1L2_${latestDate}_top25.csv`, rows);
         dopeAlert(
-            `Exported ${entries.length} ripple recipient(s)\nLoad this CSV into the Notification Composer to gift & notify them.`,
-            'RIPPLE GIFT CSV READY',
+            `Exported ${totalRows} ripple rows for Top ${top25.length} winners (${latestDate})\nLoad into Notification Composer to gift & notify.`,
+            'RIPPLE GIFT CSV',
             '🎁',
             7000
         );
@@ -2620,6 +2633,8 @@ dopeAlert(
 
     // Fallback for window.alert
     window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
+```
+
 </script>
 </body>
 </html>
