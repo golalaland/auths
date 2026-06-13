@@ -1404,10 +1404,10 @@ async function applyRewards() {
                      w.rank === 2 ? "2ND PLACE\ud83e\udd48 \u2014 TAP IN!" :
                      w.rank === 3 ? "3RD PLACE\ud83e\udd49 \u2014 TAP IN!" : `TOP ${w.rank}`;
 
-    await addDoc(collection(db, "notifications"), {
+  await addDoc(collection(db, "notifications"), {
       recipientId: w.uid,
       title:   isHosts ? "HOSTS LEADERBOARD REWARD!" : "TAP MASTER REWARD!",
-      message: `${rankText}\nYour tap score today earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance. \ud83d\udcb8`,
+      message: `${rankText}\nYour tap score and leaderboard rank has earned you ${rewardParts.join(' + ')}!\nYour reward is now live in your balance.`,
       type:    isHosts ? "host_leaderboard_reward" : "daily_leaderboard",
       rank:    w.rank,
       cash:    directCash,
