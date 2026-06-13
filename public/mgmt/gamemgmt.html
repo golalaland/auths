@@ -22,7 +22,7 @@
     #adminGate { text-align: center; margin-top: 50px; }
     #adminGateMsg { color: #ff6b6b; }
 
-```
+
 /* ── NOTIF COMPOSER ── */
 .nc-card {
   background: #0e0e0e;
@@ -279,7 +279,7 @@
   border-radius: 10px;
   margin: 2px 3px;
 }
-```
+
 
   </style>
 </head>
@@ -364,9 +364,9 @@
   </table>
 </div>
 
-```
+
 <!-- NEW: HOSTS LEADERBOARD SECTION -->
-```
+
 
 <div id="hostsLeaderboard" class="section">
   <h2>Hosts Leaderboard (Separate Scores)</h2>
@@ -413,7 +413,7 @@
   <div style="background:#111;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:20px;">
     <h3 style="margin:0 0 12px;color:#0f9;font-size:15px;letter-spacing:1px;">⚡ SAVED REWARD TEMPLATES</h3>
 
-```
+
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
   <select id="template-select" style="flex:1;min-width:180px;padding:8px;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:8px;">
     <option value="">— Select a saved template —</option>
@@ -430,7 +430,7 @@
   <input id="template-name-input" type="text" placeholder="Template name (e.g. Weekly Standard)" style="flex:1;min-width:160px;padding:8px;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:8px;">
   <button id="save-template-btn" style="background:#ff00aa;color:#fff;font-weight:700;">Save Current Rules as Template</button>
 </div>
-```
+
 
   </div>
 
@@ -451,7 +451,7 @@
   <div class="nc-card">
     <h3>📨 Send Custom Notification</h3>
 
-```
+
 <!-- Header -->
 <div class="nc-field">
   <label>Notification Header (shows as bold title in-app)</label>
@@ -531,12 +531,12 @@
   <button class="nc-clear-btn" id="nc-clear-btn">Clear All</button>
   <span id="nc-recipient-count" style="font-size:12px;color:#555;"></span>
 </div>
-```
+
 
   </div>
 </div>
 
-```
+
 <div id="configs" class="section">
   <h2>Game Configurations</h2>
   <input id="bid-cost" type="number" placeholder="Bid Cost (Stars)">
@@ -545,7 +545,7 @@
   <input id="max-pool" type="number" placeholder="Max Prize Pool (0 for unlimited)">
   <button id="save-configs">Save Configs</button>
    <div id="referral-configs" style="margin-top:30px;">
-```
+
 
   <h3>Referral Ripple Percentages</h3>
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:600px;">
@@ -598,7 +598,7 @@
             getFirestore, doc, getDoc, setDoc, increment, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp, runTransaction, addDoc, deleteDoc, onSnapshot
         } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-```
+
     const firebaseConfig = {
         apiKey: "AIzaSyD_GjkTox5tum9o4AupO0LeWzjTocJg8RI",
         authDomain: "dettyverse.firebaseapp.com",
@@ -780,7 +780,7 @@
     }
 
   // Define this ONCE at the top level (outside any function)
-```
+
 
 const NIGERIA_BANKS = [
 { name: “Access Bank”, code: “044” },
@@ -830,7 +830,7 @@ const NIGERIA_BANKS = [
 function resolveBankForProvider(user, provider) {
 if (!user || !user.bankName) return “”;
 
-```
+
 const bankName = user.bankName.trim();
 
 if (provider === "paystack") {
@@ -853,11 +853,11 @@ if (provider === "nomba" || provider === "moniepoint") {
 }
 
 return "";
-```
+
 
 }
 
-```
+
     // ==================== ADMIN AUTH ====================
     adminCheckBtn.addEventListener("click", async () => {
         const email = adminEmailInput.value.trim().toLowerCase();
@@ -1308,7 +1308,7 @@ return "";
         const lbl = document.getElementById('active-template-label');
         if (lbl) lbl.style.display = 'none';
     }
-```
+
 
 function formatNumber(num) {
 if (!num || isNaN(num)) return ‘0’;
@@ -1409,7 +1409,7 @@ const directCash  = w.rewards.cash  || 0;
 const directStars = w.rewards.stars || 0;
 if (directCash + directStars === 0) continue;
 
-```
+
 processed++;
 showLoader(`Sending rewards... ${processed} of ${rewarded.length} — Rank #${w.rank} ${w.username ? '(' + w.username + ')' : ''}`);
 
@@ -1502,7 +1502,7 @@ while (currentUid && level <= config.max_levels) {
   currentUid = uplineData.invitedBy;
   level++;
 }
-```
+
 
 }
 
@@ -1519,7 +1519,7 @@ dopeAlert(
 );
 }
 
-```
+
     // ==================== CONFIGS ====================
     async function loadConfigs() {
         const [gameSnap, referralSnap] = await Promise.all([
@@ -2633,7 +2633,7 @@ dopeAlert(
 
     // Fallback for window.alert
     window.alert = (msg) => dopeAlert(msg, "Alert", "Warning", 7000);
-```
+
 
 </script>
 </body>
