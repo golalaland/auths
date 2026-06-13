@@ -2529,7 +2529,7 @@ await addDoc(collection(db, "notifications"), {
                             const giftParts = [];
                             if (gift.cash  > 0) giftParts.push(`₦${gift.cash.toLocaleString()} cash`);
                             if (gift.stars > 0) giftParts.push(`${gift.stars.toLocaleString()} STRZ`);
-                            notifMessage += `credited to your balance: +${giftParts.join(' & ')}`;
+                            notifMessage += ` credited to your balance: +${giftParts.join(' & ')}`;
                         }
 
                         await addDoc(collection(db, 'notifications'), {
